@@ -280,7 +280,7 @@ async function applyThemePreset(
       buttonStyle: preset.buttonStyle,
       heroLayout: preset.heroLayout,
       navbarStyle: preset.navbarStyle,
-      sections: sections as any,
+      sections: JSON.stringify(sections) as any,
     },
     update: {
       presetId: preset.presetId,
@@ -295,7 +295,7 @@ async function applyThemePreset(
       buttonStyle: preset.buttonStyle,
       heroLayout: preset.heroLayout,
       navbarStyle: preset.navbarStyle,
-      sections: sections as any,
+      sections: JSON.stringify(sections) as any,
     },
   });
 }

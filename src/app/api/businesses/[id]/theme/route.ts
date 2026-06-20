@@ -4,6 +4,22 @@ import { prisma } from '@/lib/db';
 import { z } from 'zod';
 import { generateThemeForBusiness } from '@/lib/business-template-generator';
 
+function stringifySections(sections: any[]) {
+  return JSON.stringify(sections);
+}
+
+function parseSections(theme: any) {
+  if (!theme) return theme;
+  if (typeof theme.sections === 'string') {
+    try {
+      return { ...theme, sections: JSON.parse(theme.sections) };
+    } catch {
+      return { ...theme, sections: [] };
+    }
+  }
+  return theme;
+}
+
 const defaultTheme = {
   presetId: null,
   primaryColor: '#7c3aed',
@@ -95,12 +111,12 @@ export async function GET(
         data: {
           businessId: business.id,
           ...defaultTheme,
-          sections: defaultTheme.sections as any,
+          sections: stringifySections(defaultTheme.sections),
         },
       });
     }
 
-    return NextResponse.json({ theme });
+    return NextResponse.json({ theme: parseSections(theme) });
   } catch (error) {
     console.error('GET /api/businesses/[id]/theme error:', error);
     return NextResponse.json({ error: 'فشل في جلب المظهر' }, { status: 500 });
@@ -135,15 +151,17 @@ export async function PUT(
         businessId: business.id,
         ...defaultTheme,
         ...data,
-        sections: data.sections ? (data.sections as any) : defaultTheme.sections,
+        sections: data.sections
+          ? stringifySections(data.sections)
+          : stringifySections(defaultTheme.sections),
       },
       update: {
         ...data,
-        sections: data.sections ? (data.sections as any) : undefined,
+        sections: data.sections ? stringifySections(data.sections) : undefined,
       },
     });
 
-    return NextResponse.json({ theme });
+    return NextResponse.json({ theme: parseSections(theme) });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'بيانات غير صالحة', details: error.issues }, { status: 400 });

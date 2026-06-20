@@ -3,6 +3,18 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
 import { generateThemeForBusiness } from '@/lib/business-template-generator';
 
+function parseSections(theme: any) {
+  if (!theme) return theme;
+  if (typeof theme.sections === 'string') {
+    try {
+      return { ...theme, sections: JSON.parse(theme.sections) };
+    } catch {
+      return { ...theme, sections: [] };
+    }
+  }
+  return theme;
+}
+
 async function getBusinessAndAuthorize(id: string, session: any) {
   const business = await prisma.business.findFirst({
     where: { OR: [{ id }, { slug: id }] },
@@ -41,7 +53,7 @@ export async function POST(
       create: {
         businessId: business.id,
         ...generated.theme,
-        sections: generated.theme.sections as any,
+        sections: JSON.stringify(generated.theme.sections),
       },
       update: {
         presetId: generated.theme.presetId,
@@ -56,7 +68,7 @@ export async function POST(
         buttonStyle: generated.theme.buttonStyle,
         heroLayout: generated.theme.heroLayout,
         navbarStyle: generated.theme.navbarStyle,
-        sections: generated.theme.sections as any,
+        sections: JSON.stringify(generated.theme.sections),
       },
     });
 
@@ -74,7 +86,7 @@ export async function POST(
       });
     }
 
-    return NextResponse.json({ theme, pages: generated.pages });
+    return NextResponse.json({ theme: parseSections(theme), pages: generated.pages });
   } catch (error) {
     console.error('POST /api/businesses/[id]/theme/generate error:', error);
     return NextResponse.json({ error: 'فشل في توليد الموقع' }, { status: 500 });

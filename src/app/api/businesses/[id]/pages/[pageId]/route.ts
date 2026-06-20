@@ -3,6 +3,15 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
+function parsePageSections(page: any) {
+  if (!page || typeof page.sections !== 'string') return page;
+  try {
+    return { ...page, sections: JSON.parse(page.sections) };
+  } catch {
+    return { ...page, sections: [] };
+  }
+}
+
 const updateSchema = z.object({
   slug: z.string().min(1).max(50).regex(/^[a-z0-9-]+$/).optional(),
   title: z.string().min(1).max(200).optional(),
@@ -51,7 +60,7 @@ export async function GET(
       return NextResponse.json({ error: 'الصفحة غير موجودة' }, { status: 404 });
     }
 
-    return NextResponse.json({ page });
+    return NextResponse.json({ page: parsePageSections(page) });
   } catch (error) {
     console.error('GET /api/businesses/[id]/pages/[pageId] error:', error);
     return NextResponse.json({ error: 'فشل في جلب الصفحة' }, { status: 500 });
@@ -99,11 +108,13 @@ export async function PUT(
       where: { id: pageId },
       data: {
         ...data,
-        sections: data.sections !== undefined ? (data.sections as any) : undefined,
+        sections: data.sections !== undefined
+          ? (data.sections ? JSON.stringify(data.sections) : null)
+          : undefined,
       },
     });
 
-    return NextResponse.json({ page });
+    return NextResponse.json({ page: parsePageSections(page) });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'بيانات غير صالحة', details: error.issues }, { status: 400 });

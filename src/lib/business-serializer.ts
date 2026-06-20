@@ -33,7 +33,9 @@ export function serializeBusiness(business: any): any {
     services: Service ?? business.services,
     products: Product ?? business.products,
     posts: Post ?? business.posts,
-    theme: BusinessTheme ?? business.theme,
+    theme: BusinessTheme
+      ? { ...BusinessTheme, sections: parseJson(BusinessTheme.sections) }
+      : business.theme,
     pages: BusinessPage ?? business.pages,
     fieldValues: BusinessFieldValue ?? business.fieldValues,
     reviews: Review ?? business.reviews,

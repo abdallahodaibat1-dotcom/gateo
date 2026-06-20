@@ -3,6 +3,15 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
+function parsePageSections(page: any) {
+  if (!page || typeof page.sections !== 'string') return page;
+  try {
+    return { ...page, sections: JSON.parse(page.sections) };
+  } catch {
+    return { ...page, sections: [] };
+  }
+}
+
 const pageSchema = z.object({
   slug: z.string().min(1).max(50).regex(/^[a-z0-9-]+$/),
   title: z.string().min(1).max(200),
@@ -48,7 +57,7 @@ export async function GET(
       orderBy: [{ isHomePage: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'asc' }],
     });
 
-    return NextResponse.json({ pages });
+    return NextResponse.json({ pages: pages.map(parsePageSections) });
   } catch (error) {
     console.error('GET /api/businesses/[id]/pages error:', error);
     return NextResponse.json({ error: 'فشل في جلب الصفحات' }, { status: 500 });
@@ -88,11 +97,11 @@ export async function POST(
       data: {
         businessId: business.id,
         ...data,
-        sections: data.sections as any,
+        sections: data.sections ? JSON.stringify(data.sections) : null,
       },
     });
 
-    return NextResponse.json({ page }, { status: 201 });
+    return NextResponse.json({ page: parsePageSections(page) }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'بيانات غير صالحة', details: error.issues }, { status: 400 });
