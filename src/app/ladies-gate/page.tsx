@@ -37,6 +37,7 @@ interface Business {
   latitude: number | null; longitude: number | null;
   category: { id: string; name: string } | null;
   subcategory: { id: string; name: string } | null;
+  customSubcategory: string | null;
   distance?: number | null;
   _count: { reviews: number };
 }
@@ -752,6 +753,8 @@ export default function LadiesGatePage() {
                         <div className="p-3.5">
                           {biz.subcategory ? (
                             <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">{biz.subcategory.name}</span>
+                          ) : biz.customSubcategory ? (
+                            <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">{biz.customSubcategory}</span>
                           ) : biz.category ? (
                             <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">{biz.category.name}</span>
                           ) : null}

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
+import { SubcategoryCombobox } from '@/components/business-apply/SubcategoryCombobox';
 import PlacesAutocomplete from '@/components/maps/PlacesAutocomplete';
 import MapPicker from '@/components/maps/MapPicker';
 import GeolocationButton from '@/components/maps/GeolocationButton';
@@ -184,6 +185,7 @@ export default function EditBusinessPage() {
           businessType: form.businessType,
           categoryId: form.categoryId,
           subcategoryId: form.subcategoryId,
+          customSubcategory: form.customSubcategory,
         };
       case 'branding':
         return { logo: form.logo, cover: form.cover };
@@ -453,7 +455,7 @@ export default function EditBusinessPage() {
                         <select
                           id="category-select"
                           value={form.categoryId || ''}
-                          onChange={(e) => setForm({ ...form, categoryId: e.target.value, subcategoryId: '' })}
+                          onChange={(e) => setForm({ ...form, categoryId: e.target.value, subcategoryId: '', customSubcategory: '' })}
                           className="w-full px-4 py-2.5 rounded-md border border-border bg-surface text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
                         >
                           <option value="">اختر تصنيفاً</option>
@@ -462,21 +464,16 @@ export default function EditBusinessPage() {
                           ))}
                         </select>
                       </div>
-                      <div>
-                        <label htmlFor="subcategory-select" className="block text-sm font-medium text-foreground mb-1">التصنيف الفرعي</label>
-                        <select
-                          id="subcategory-select"
-                          value={form.subcategoryId || ''}
-                          onChange={(e) => setForm({ ...form, subcategoryId: e.target.value })}
-                          disabled={!form.categoryId}
-                          className="w-full px-4 py-2.5 rounded-md border border-border bg-surface text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition disabled:opacity-50"
-                        >
-                          <option value="">اختر تصنيفاً فرعياً</option>
-                          {(selectedCategory?.subcategories || []).map((s) => (
-                            <option key={s.id} value={s.id}>{s.name}</option>
-                          ))}
-                        </select>
-                      </div>
+                      <SubcategoryCombobox
+                        subcategories={selectedCategory?.subcategories || []}
+                        selectedId={form.subcategoryId || ''}
+                        customValue={form.customSubcategory || ''}
+                        onChange={({ subcategoryId, customSubcategory }) =>
+                          setForm({ ...form, subcategoryId, customSubcategory })
+                        }
+                        disabled={!form.categoryId}
+                        emptyMessage={!form.categoryId ? 'اختر التصنيف الرئيسي أولاً' : 'لا توجد تصنيفات فرعية'}
+                      />
                     </div>
                     <SaveButton onClick={() => handleSave()} loading={saving} />
                   </div>

@@ -21,6 +21,7 @@ import { BusinessIntroBuilder } from '@/components/business-apply/BusinessIntroB
 import { BusinessStoreBuilder } from '@/components/business-apply/BusinessStoreBuilder';
 import type { BuilderStep } from '@/components/business-apply/BuilderStepSidebar';
 import { ThemeSelector } from '@/components/business-apply/ThemeSelector';
+import { SubcategoryCombobox } from '@/components/business-apply/SubcategoryCombobox';
 
 const DAYS = [
   { day: 'السبت', open: '09:00', close: '21:00' },
@@ -74,6 +75,7 @@ export default function BusinessApplyPage() {
     description: '',
     categoryId: '',
     subcategoryId: '',
+    customSubcategory: '',
     acceptedTerms: false,
     websiteType: '' as 'INTRO' | 'STORE' | '',
     themePresetId: '',
@@ -196,8 +198,8 @@ export default function BusinessApplyPage() {
       if (!/^[a-z0-9-]+$/.test(form.slug)) newErrors.slug = 'يحتوي على أحرف إنجليزية وأرقام وشرطات فقط';
       if (slugAvailable === false) newErrors.slug = 'الرابط مستخدم من قبل';
       if (!form.categoryId) newErrors.categoryId = 'اختر تصنيفاً';
-      if (!form.subcategoryId && subcategories.length > 0) {
-        newErrors.subcategoryId = 'اختر تصنيفاً فرعياً';
+      if (!form.subcategoryId && !form.customSubcategory && subcategories.length > 0) {
+        newErrors.subcategoryId = 'اختر أو اكتب تصنيفاً فرعياً';
       }
       if (!form.acceptedTerms) {
         newErrors.acceptedTerms = 'يجب الموافقة على الشروط والأحكام للمتابعة';
@@ -258,6 +260,7 @@ export default function BusinessApplyPage() {
           websiteType: form.websiteType || undefined,
           themePresetId: form.themePresetId || undefined,
           workingHours: form.workingHours.filter((w) => w.open && w.close),
+          customSubcategory: form.customSubcategory || undefined,
           latitude: form.latitude ? parseFloat(form.latitude) : undefined,
           longitude: form.longitude ? parseFloat(form.longitude) : undefined,
           images: form.gallery.map((url) => ({ url, type: 'gallery', caption: '' })),
@@ -815,6 +818,7 @@ export default function BusinessApplyPage() {
                                   ...prev,
                                   categoryId: e.target.value,
                                   subcategoryId: '',
+                                  customSubcategory: '',
                                 }));
                                 setErrors((prev) => {
                                   const next = { ...prev };
@@ -833,30 +837,22 @@ export default function BusinessApplyPage() {
                             {errors.categoryId && <p className="text-red-500 text-xs mt-1">{errors.categoryId}</p>}
                           </div>
 
-                          <div>
-                            <label htmlFor="business-subcategory" className="block text-sm font-medium text-foreground mb-1.5">
-                              التصنيف الفرعي {subcategories.length > 0 && <span className="text-red-500">*</span>}
-                            </label>
-                            <select
-                              id="business-subcategory"
-                              value={form.subcategoryId}
-                              onChange={(e) => updateForm('subcategoryId', e.target.value)}
-                              disabled={!form.categoryId || subcategories.length === 0}
-                              className={`w-full px-4 py-2.5 rounded-md border ${errors.subcategoryId ? 'border-red-300' : 'border-border'} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-surface disabled:opacity-50 disabled:cursor-not-allowed`}
-                            >
-                              <option value="">
-                                {!form.categoryId
-                                  ? 'اختر التصنيف الرئيسي أولاً'
-                                  : subcategories.length === 0
-                                    ? 'لا توجد تصنيفات فرعية'
-                                    : 'اختر تصنيفاً فرعياً'}
-                              </option>
-                              {subcategories.map((sub) => (
-                                <option key={sub.id} value={sub.id}>{sub.name}</option>
-                              ))}
-                            </select>
-                            {errors.subcategoryId && <p className="text-red-500 text-xs mt-1">{errors.subcategoryId}</p>}
-                          </div>
+                          <SubcategoryCombobox
+                            subcategories={subcategories}
+                            selectedId={form.subcategoryId}
+                            customValue={form.customSubcategory}
+                            onChange={({ subcategoryId, customSubcategory }) => {
+                              setForm((prev) => ({ ...prev, subcategoryId, customSubcategory }));
+                              setErrors((prev) => {
+                                const next = { ...prev };
+                                delete next.subcategoryId;
+                                return next;
+                              });
+                            }}
+                            disabled={!form.categoryId || subcategories.length === 0}
+                            error={errors.subcategoryId}
+                            emptyMessage={!form.categoryId ? 'اختر التصنيف الرئيسي أولاً' : 'لا توجد تصنيفات فرعية'}
+                          />
                         </div>
 
                         {form.categoryId && (
@@ -942,7 +938,10 @@ export default function BusinessApplyPage() {
                           }}
                           businessName={form.name}
                           categoryName={selectedCategory?.name}
-                          subcategoryName={selectedCategory?.subcategories?.find((s) => s.id === form.subcategoryId)?.name}
+                          subcategoryName={
+                            selectedCategory?.subcategories?.find((s) => s.id === form.subcategoryId)?.name ||
+                            form.customSubcategory
+                          }
                         />
                         {errors.themePresetId && (
                           <p className="text-red-500 text-xs">{errors.themePresetId}</p>
@@ -1720,7 +1719,7 @@ export default function BusinessApplyPage() {
                             <div>
                               <span className="text-muted">التصنيف الفرعي:</span>
                               <span className="text-foreground mr-2 font-medium">
-                                {selectedCategory?.subcategories?.find((s) => s.id === form.subcategoryId)?.name || form.subcategoryId || '—'}
+                                {selectedCategory?.subcategories?.find((s) => s.id === form.subcategoryId)?.name || form.customSubcategory || form.subcategoryId || '—'}
                               </span>
                             </div>
                             <div>
@@ -1956,9 +1955,9 @@ export default function BusinessApplyPage() {
                               {categories.find((c) => c.id === form.categoryId)?.name}
                             </span>
                           )}
-                          {form.subcategoryId && (
+                          {(form.subcategoryId || form.customSubcategory) && (
                             <span className="text-[10px] bg-secondary/10 text-secondary px-2 py-0.5 rounded-full font-medium">
-                              {selectedCategory?.subcategories?.find((s) => s.id === form.subcategoryId)?.name}
+                              {selectedCategory?.subcategories?.find((s) => s.id === form.subcategoryId)?.name || form.customSubcategory}
                             </span>
                           )}
                         </div>

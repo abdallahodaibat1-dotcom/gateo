@@ -10,6 +10,7 @@ const applySchema = z.object({
   description: z.string().max(2000).optional(),
   categoryId: z.string().optional(),
   subcategoryId: z.string().optional(),
+  customSubcategory: z.string().max(100).optional(),
   countryId: z.string().optional(),
   city: z.string().optional(),
   address: z.string().optional(),

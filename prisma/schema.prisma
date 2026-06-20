@@ -192,6 +192,7 @@ model Business {
   cover                  String?
   categoryId             String?
   subcategoryId          String?
+  customSubcategory      String?
   city                   String?
   address                String?
   latitude               Float?

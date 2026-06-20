@@ -12,6 +12,7 @@ const updateSchema = z.object({
   cover: z.string().url().optional().nullable(),
   categoryId: z.string().optional().nullable(),
   subcategoryId: z.string().optional().nullable(),
+  customSubcategory: z.string().max(100).optional().nullable(),
   countryId: z.string().optional().nullable(),
   city: z.string().optional().nullable(),
   address: z.string().optional().nullable(),

@@ -26,6 +26,7 @@ interface Business {
   latitude: number | null; longitude: number | null;
   subcategory: { id: string; name: string } | null;
   category: { id: string; name: string } | null;
+  customSubcategory: string | null;
   distance?: number | null;
   _count: { reviews: number };
 }
@@ -509,6 +510,8 @@ export default function CategoryPage() {
                           <div className="p-4">
                             {biz.subcategory ? (
                               <span className="text-[11px] font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">{biz.subcategory.name}</span>
+                            ) : biz.customSubcategory ? (
+                              <span className="text-[11px] font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">{biz.customSubcategory}</span>
                             ) : (
                               <span className="text-[11px] font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">{biz.category?.name}</span>
                             )}

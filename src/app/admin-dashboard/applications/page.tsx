@@ -48,6 +48,7 @@ interface BusinessApplication {
   };
   category: { id: string; name: string } | null;
   subcategory: { id: string; name: string } | null;
+  customSubcategory: string | null;
 }
 
 export default function ApplicationsPage() {
@@ -267,7 +268,7 @@ export default function ApplicationsPage() {
                       {app.category && (
                         <div className="flex items-center gap-2 text-sm text-muted">
                           <Briefcase className="w-4 h-4 text-muted" />
-                          <span className="truncate">{app.category.name} {app.subcategory ? `› ${app.subcategory.name}` : ''}</span>
+                          <span className="truncate">{app.category.name} {app.subcategory ? `› ${app.subcategory.name}` : app.customSubcategory ? `› ${app.customSubcategory}` : ''}</span>
                         </div>
                       )}
                       {app.city && (
