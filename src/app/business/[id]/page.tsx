@@ -545,12 +545,7 @@ export default function BusinessProfilePage() {
               <div className="space-y-3">
                 {prof.services.map((svc, i) => (
                   <div key={i} className="p-3 rounded-lg bg-slate-50 border border-border">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-bold text-foreground text-sm">{svc.name}</h4>
-                      {svc.startingPrice ? (
-                        <span className="text-primary font-bold text-sm">{svc.startingPrice} ر.س</span>
-                      ) : null}
-                    </div>
+                    <h4 className="font-bold text-foreground text-sm mb-1">{svc.name}</h4>
                     {svc.description && <p className="text-xs text-muted mb-2">{svc.description}</p>}
                     {svc.duration && (
                       <span className="inline-flex items-center gap-1 text-xs text-muted">
