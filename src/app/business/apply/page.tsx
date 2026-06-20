@@ -849,7 +849,7 @@ export default function BusinessApplyPage() {
                                 return next;
                               });
                             }}
-                            disabled={!form.categoryId || subcategories.length === 0}
+                            disabled={!form.categoryId}
                             error={errors.subcategoryId}
                             emptyMessage={!form.categoryId ? 'اختر التصنيف الرئيسي أولاً' : 'لا توجد تصنيفات فرعية'}
                           />

@@ -45,7 +45,20 @@ export async function GET(req: NextRequest) {
       include,
     });
 
-    return NextResponse.json({ categories });
+    const normalized = categories.map((category) => {
+      const { Subcategory, _count, ...rest } = category as any;
+      return {
+        ...rest,
+        subcategories: Subcategory || [],
+        _count: {
+          businesses: _count?.Business ?? 0,
+          subcategories: _count?.Subcategory ?? 0,
+          professionals: _count?.ProfessionalProfile ?? 0,
+        },
+      };
+    });
+
+    return NextResponse.json({ categories: normalized });
   } catch (error) {
     console.error('GET /api/categories error:', error);
     return serverError(error);
