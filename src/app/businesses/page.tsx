@@ -4,26 +4,22 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
-  Loader2,
-  Star,
+  Search,
   MapPin,
-  CalendarDays,
-  MessageSquare,
-  TrendingUp,
-  Filter,
-  ChevronDown,
-  ArrowRight,
-  User,
   ShieldCheck,
   X,
   Briefcase,
   Globe,
   Building2,
+  Filter,
+  ChevronDown,
+  User,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import CountrySelect from '@/components/CountrySelect';
 import EmptyState from '@/components/ui/EmptyState';
-import Skeleton from '@/components/ui/Skeleton';
+import ProfessionalDirectoryCard from '@/components/ProfessionalDirectoryCard';
+import ProfessionalDirectoryCardSkeleton from '@/components/ProfessionalDirectoryCardSkeleton';
 
 interface Professional {
   id: string;
@@ -68,25 +64,7 @@ const sortLabels: Record<SortType, string> = {
   projects: 'الأكثر مشاريع',
 };
 
-function ProfessionalCardSkeleton() {
-  return (
-    <div className="bg-surface rounded-lg border border-border shadow-sm p-5">
-      <div className="flex items-start gap-4">
-        <Skeleton circle className="w-20 h-20 shrink-0" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-5 w-1/2" />
-          <Skeleton className="h-4 w-1/3" />
-          <Skeleton className="h-3 w-3/4" />
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-border">
-        <Skeleton className="h-9" />
-        <Skeleton className="h-9" />
-        <Skeleton className="h-9" />
-      </div>
-    </div>
-  );
-}
+
 
 export default function BusinessesDirectoryPage() {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
@@ -109,6 +87,7 @@ export default function BusinessesDirectoryPage() {
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [sortBy, setSortBy] = useState<SortType>('newest');
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetch('/api/categories?type=PROFESSIONAL')
@@ -200,10 +179,22 @@ export default function BusinessesDirectoryPage() {
   const selectedCountry = countries.find((c) => c.id === countryId);
   const selectedCategory = categories.find((c) => c.slug === categorySlug);
 
-  const formatPhone = (phone?: string | null) => {
-    if (!phone) return '';
-    return phone.replace(/[^0-9+]/g, '');
-  };
+  const filteredProfessionals = professionals.filter((p) => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+    const name = (p.user?.name || '').toLowerCase();
+    const title = (p.title || '').toLowerCase();
+    const categoryName = (p.category?.name || '').toLowerCase();
+    const subcategoryName = (p.subcategory?.name || '').toLowerCase();
+    const cityName = (p.city || '').toLowerCase();
+    return (
+      name.includes(q) ||
+      title.includes(q) ||
+      categoryName.includes(q) ||
+      subcategoryName.includes(q) ||
+      cityName.includes(q)
+    );
+  });
 
   return (
     <>
@@ -256,8 +247,18 @@ export default function BusinessesDirectoryPage() {
             </div>
           </div>
 
-          {/* Filters */}
-          <div className="bg-surface rounded-lg border border-border shadow-sm p-4 mb-6">
+          {/* Search + Filters */}
+          <div className="bg-surface rounded-lg border border-border shadow-sm p-4 mb-6 space-y-4">
+            <div className="relative">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="ابحث بالاسم، التخصص، المدينة..."
+                className="w-full pr-10 pl-4 py-2.5 rounded-md border border-border bg-surface text-foreground text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
+              />
+            </div>
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div>
@@ -420,19 +421,19 @@ export default function BusinessesDirectoryPage() {
 
           {/* Loading */}
           {loading && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <ProfessionalCardSkeleton key={i} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <ProfessionalDirectoryCardSkeleton key={i} />
               ))}
             </div>
           )}
 
           {/* Empty */}
-          {!loading && professionals.length === 0 && (
+          {!loading && filteredProfessionals.length === 0 && (
             <EmptyState
               icon={User}
               title="لا توجد نتائج"
-              description="جرب تعديل الفلاتر أو التخصص المختار"
+              description="جرب تعديل الفلاتر أو البحث"
               actionLabel="مسح الفلاتر"
               onAction={handleClearFilters}
               className="py-16"
@@ -440,135 +441,16 @@ export default function BusinessesDirectoryPage() {
           )}
 
           {/* Grid */}
-          {!loading && professionals.length > 0 && (
+          {!loading && filteredProfessionals.length > 0 && (
             <>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {professionals.map((professional, index) => {
-                  const profileUrl = `/business/${professional.user?.id}`;
-                  const displayName = professional.user?.name || 'محترف';
-                  const displayTitle = professional.title || displayName;
-                  const avatarUrl =
-                    professional.personalLogo || professional.user?.avatar || '/logo/favicon.svg';
-                  const phone = formatPhone(professional.whatsapp || professional.phone);
-
-                  return (
-                    <motion.div
-                      key={professional.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: Math.min((index % 6) * 0.03, 0.15) }}
-                      className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden hover:shadow-md transition-shadow"
-                    >
-                      <div className="p-5">
-                        <div className="flex items-start gap-4">
-                          <Link href={profileUrl}>
-                            <div className="relative shrink-0">
-                              <img
-                                src={avatarUrl}
-                                alt={displayName}
-                                className="w-20 h-20 rounded-full object-cover border-2 border-primary/10 bg-surface shadow-sm"
-                              />
-                              {professional.isVerified && (
-                                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center border-2 border-white">
-                                  <ShieldCheck className="w-3.5 h-3.5" />
-                                </div>
-                              )}
-                            </div>
-                          </Link>
-
-                          <div className="flex-1 min-w-0">
-                            <Link href={profileUrl}>
-                              <h3 className="font-bold text-foreground text-lg hover:text-primary transition-colors truncate">
-                                {displayName}
-                              </h3>
-                            </Link>
-                            {professional.title && (
-                              <p className="text-sm text-primary font-medium mb-1 truncate">
-                                {professional.title}
-                              </p>
-                            )}
-                            <div className="flex flex-wrap items-center gap-2 mt-1 mb-2">
-                              {professional.category && (
-                                <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
-                                  {professional.category.name}
-                                </span>
-                              )}
-                              {professional.subcategory && (
-                                <span className="text-xs text-muted bg-slate-100 px-2 py-0.5 rounded-full">
-                                  {professional.subcategory.name}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
-                              {professional.experienceYears ? (
-                                <span className="flex items-center gap-1">
-                                  <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                                  <span className="font-medium text-foreground">
-                                    {professional.experienceYears}
-                                  </span>
-                                  <span>سنة خبرة</span>
-                                </span>
-                              ) : null}
-                              {professional.city && (
-                                <span className="flex items-center gap-1">
-                                  <MapPin className="w-4 h-4" />
-                                  {professional.city}
-                                </span>
-                              )}
-                              <span className="flex items-center gap-1">
-                                <CalendarDays className="w-4 h-4" />
-                                {professional.completedProjectsCount} مشروع
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <TrendingUp className="w-4 h-4 text-primary" />
-                                {professional.clientsCount} عميل
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-border">
-                          <Link
-                            href={profileUrl}
-                            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-slate-50 text-foreground text-sm font-medium hover:bg-slate-100 transition-colors"
-                          >
-                            <User className="w-4 h-4" />
-                            الملف
-                          </Link>
-                          {phone ? (
-                            <>
-                              <a
-                                href={`tel:${phone}`}
-                                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors"
-                              >
-                                <ArrowRight className="w-4 h-4 rotate-90" />
-                                اتصال
-                              </a>
-                              <a
-                                href={`https://wa.me/${phone}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-success/10 text-success text-sm font-medium hover:bg-success/20 transition-colors"
-                              >
-                                <MessageSquare className="w-4 h-4" />
-                                واتساب
-                              </a>
-                            </>
-                          ) : (
-                            <Link
-                              href={`${profileUrl}#contact`}
-                              className="col-span-2 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-success/10 text-success text-sm font-medium hover:bg-success/20 transition-colors"
-                            >
-                              <MessageSquare className="w-4 h-4" />
-                              تواصل
-                            </Link>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {filteredProfessionals.map((professional, index) => (
+                  <ProfessionalDirectoryCard
+                    key={professional.id}
+                    professional={professional}
+                    index={index}
+                  />
+                ))}
               </div>
 
               {/* Pagination */}
