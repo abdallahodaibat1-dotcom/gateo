@@ -17,6 +17,8 @@ import { DynamicFieldForm } from '@/components/dynamic-fields/DynamicFieldForm';
 import type { DynamicField } from '@/components/dynamic-fields/DynamicFieldForm';
 import { EmptyState } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
+import { BusinessIntroBuilder } from '@/components/business-apply/BusinessIntroBuilder';
+import type { BuilderStep } from '@/components/business-apply/BuilderStepSidebar';
 
 const DAYS = [
   { day: 'السبت', open: '09:00', close: '21:00' },
@@ -614,77 +616,8 @@ export default function BusinessApplyPage() {
     );
   }
 
-  const StepIcon = STEPS[step - 1]?.icon || Store;
-
-  return (
+  const renderStep = () => (
     <>
-      <Navbar />
-      <main className="pt-20 pb-10 min-h-screen bg-slate-50">
-        <div className="max-w-3xl mx-auto px-4">
-          {/* Header */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 text-center">
-            <div className="w-16 h-16 rounded-lg bg-primary flex items-center justify-center text-white mx-auto mb-4 shadow-sm">
-              <Sparkles className="w-8 h-8" />
-            </div>
-            <h1 className="text-2xl font-bold text-foreground">أنشئ حسابك التجاري</h1>
-            <p className="text-muted mt-1">
-              خطوات بسيطة تفصلك عن موقع إلكتروني احترافي لعملك
-            </p>
-            <span className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
-              {form.websiteType === 'STORE' ? <ShoppingBag className="w-3.5 h-3.5" /> : <LayoutTemplate className="w-3.5 h-3.5" />}
-              {form.websiteType === 'STORE' ? 'متجر إلكتروني' : 'موقع إلكتروني تعريفي'}
-            </span>
-          </motion.div>
-
-          {/* Steps Progress */}
-          <div className="bg-surface rounded-lg shadow-sm border border-border p-4 mb-6">
-            <div className="flex items-center justify-between">
-              {STEPS.map((s, i) => {
-                const Icon = s.icon;
-                const isActive = s.id === step;
-                const isDone = s.id < step;
-                return (
-                  <div key={s.id} className="flex items-center flex-1">
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`w-10 h-10 rounded-md flex items-center justify-center transition-all ${
-                          isActive
-                            ? 'bg-primary text-white shadow-sm'
-                            : isDone
-                            ? 'bg-green-100 text-green-600'
-                            : 'bg-slate-100 text-muted'
-                        }`}
-                      >
-                        {isDone ? <CheckCircle className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
-                      </div>
-                      <span className={`text-[10px] mt-1.5 font-medium ${isActive ? 'text-primary' : 'text-muted'}`}>
-                        {s.title}
-                      </span>
-                    </div>
-                    {i < STEPS.length - 1 && (
-                      <div className={`flex-1 h-0.5 mx-2 ${s.id < step ? 'bg-green-300' : 'bg-slate-200'}`} />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="grid lg:grid-cols-12 gap-6">
-            {/* Form */}
-            <div className="lg:col-span-8">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-surface rounded-lg shadow-sm border border-border overflow-hidden"
-              >
-                <div className="p-6 border-b border-border flex items-center gap-3">
-                  <StepIcon className="w-5 h-5 text-primary" />
-                  <h2 className="font-bold text-foreground">{STEPS[step - 1].title}</h2>
-                </div>
-
-                <div className="p-6 space-y-5 min-h-[360px]">
-                  <AnimatePresence mode="wait">
                     {/* Step 1: Basic Info */}
                     {step === 1 && (
                       <motion.div
@@ -1468,6 +1401,99 @@ export default function BusinessApplyPage() {
                         </div>
                       </motion.div>
                     )}
+    </>
+  );
+
+  if (form.websiteType === 'INTRO') {
+    return (
+      <BusinessIntroBuilder
+        steps={STEPS as BuilderStep[]}
+        step={step}
+        setStep={setStep}
+        form={form}
+        categories={categories}
+        onBack={() => setForm((prev) => ({ ...prev, websiteType: '' }))}
+        onNext={handleNext}
+        onSubmit={handleSubmit}
+        submitting={submitting}
+      >
+        {renderStep()}
+      </BusinessIntroBuilder>
+    );
+  }
+
+  const StepIcon = STEPS[step - 1]?.icon || Store;
+
+  return (
+    <>
+      <Navbar />
+      <main className="pt-20 pb-10 min-h-screen bg-slate-50">
+        <div className="max-w-3xl mx-auto px-4">
+          {/* Header */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 text-center">
+            <div className="w-16 h-16 rounded-lg bg-primary flex items-center justify-center text-white mx-auto mb-4 shadow-sm">
+              <Sparkles className="w-8 h-8" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground">أنشئ حسابك التجاري</h1>
+            <p className="text-muted mt-1">
+              خطوات بسيطة تفصلك عن موقع إلكتروني احترافي لعملك
+            </p>
+            <span className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
+              {form.websiteType === 'STORE' ? <ShoppingBag className="w-3.5 h-3.5" /> : <LayoutTemplate className="w-3.5 h-3.5" />}
+              {form.websiteType === 'STORE' ? 'متجر إلكتروني' : 'موقع إلكتروني تعريفي'}
+            </span>
+          </motion.div>
+
+          {/* Steps Progress */}
+          <div className="bg-surface rounded-lg shadow-sm border border-border p-4 mb-6">
+            <div className="flex items-center justify-between">
+              {STEPS.map((s, i) => {
+                const Icon = s.icon;
+                const isActive = s.id === step;
+                const isDone = s.id < step;
+                return (
+                  <div key={s.id} className="flex items-center flex-1">
+                    <div className="flex flex-col items-center">
+                      <div
+                        className={`w-10 h-10 rounded-md flex items-center justify-center transition-all ${
+                          isActive
+                            ? 'bg-primary text-white shadow-sm'
+                            : isDone
+                            ? 'bg-green-100 text-green-600'
+                            : 'bg-slate-100 text-muted'
+                        }`}
+                      >
+                        {isDone ? <CheckCircle className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                      </div>
+                      <span className={`text-[10px] mt-1.5 font-medium ${isActive ? 'text-primary' : 'text-muted'}`}>
+                        {s.title}
+                      </span>
+                    </div>
+                    {i < STEPS.length - 1 && (
+                      <div className={`flex-1 h-0.5 mx-2 ${s.id < step ? 'bg-green-300' : 'bg-slate-200'}`} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-12 gap-6">
+            {/* Form */}
+            <div className="lg:col-span-8">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-surface rounded-lg shadow-sm border border-border overflow-hidden"
+              >
+                <div className="p-6 border-b border-border flex items-center gap-3">
+                  <StepIcon className="w-5 h-5 text-primary" />
+                  <h2 className="font-bold text-foreground">{STEPS[step - 1].title}</h2>
+                </div>
+
+                <div className="p-6 space-y-5 min-h-[360px]">
+                  <AnimatePresence mode="wait">
+                    {renderStep()}
                   </AnimatePresence>
                 </div>
 
