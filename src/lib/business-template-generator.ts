@@ -32,6 +32,8 @@ export interface WebsiteSection {
     | 'about'
     | 'experience'
     | 'services'
+    | 'products'
+    | 'categories'
     | 'gallery'
     | 'reviews'
     | 'contact'
@@ -746,6 +748,17 @@ const DEFAULT_SECTIONS: WebsiteSection[] = [
   { id: 'cta', type: 'cta', enabled: true, order: 80 },
 ];
 
+const STORE_SECTIONS: WebsiteSection[] = [
+  { id: 'hero', type: 'hero', enabled: true, order: 10 },
+  { id: 'categories', type: 'categories', enabled: true, order: 20, title: 'التصنيفات' },
+  { id: 'products', type: 'products', enabled: true, order: 30, title: 'منتجاتنا' },
+  { id: 'about', type: 'about', enabled: true, order: 40 },
+  { id: 'gallery', type: 'gallery', enabled: true, order: 50 },
+  { id: 'reviews', type: 'reviews', enabled: true, order: 60 },
+  { id: 'contact', type: 'contact', enabled: true, order: 70 },
+  { id: 'cta', type: 'cta', enabled: true, order: 80 },
+];
+
 function resolvePreset(business: BusinessLike): ThemePreset {
   const tokens = [
     business.category?.slug?.toLowerCase(),
@@ -853,10 +866,14 @@ function resolvePreset(business: BusinessLike): ThemePreset {
   return PRESETS.default;
 }
 
-export function generateThemeForBusiness(business: BusinessLike): GeneratedWebsite {
+export function generateThemeForBusiness(
+  business: BusinessLike,
+  websiteType: 'INTRO' | 'STORE' = 'INTRO'
+): GeneratedWebsite {
   const preset = resolvePreset(business);
 
-  const sections = DEFAULT_SECTIONS.map((section) => {
+  const baseSections = websiteType === 'STORE' ? STORE_SECTIONS : DEFAULT_SECTIONS;
+  const sections = baseSections.map((section) => {
     if (section.id === 'experience') {
       return {
         ...section,
@@ -922,4 +939,8 @@ export function getThemePresetById(presetId: string): ThemePreset | undefined {
 
 export function getDefaultSections(): WebsiteSection[] {
   return DEFAULT_SECTIONS.map((s) => ({ ...s }));
+}
+
+export function getStoreDefaultSections(): WebsiteSection[] {
+  return STORE_SECTIONS.map((s) => ({ ...s }));
 }

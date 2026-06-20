@@ -57,6 +57,7 @@ export async function GET(
         Country: { select: { id: true, name: true, flagEmoji: true } },
         User: { select: { id: true, name: true, avatar: true, createdAt: true } },
         Service: { where: { isActive: true }, orderBy: { createdAt: 'desc' } },
+        Product: { where: { status: 'ACTIVE' }, orderBy: { createdAt: 'desc' } },
         Post: {
           where: { isPublic: true },
           orderBy: { createdAt: 'desc' },

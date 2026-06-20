@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
-import { getThemePresetById, getDefaultSections } from '@/lib/business-template-generator';
+import { getThemePresetById, getDefaultSections, getStoreDefaultSections } from '@/lib/business-template-generator';
 
 const applySchema = z.object({
   name: z.string().min(2).max(100),
@@ -56,6 +56,15 @@ const applySchema = z.object({
     duration: z.number().int().optional(),
     image: z.string().min(1).optional(),
   })).optional(),
+  products: z.array(z.object({
+    name: z.string().min(1).max(200),
+    description: z.string().max(2000).optional(),
+    price: z.number().min(0),
+    comparePrice: z.number().min(0).optional(),
+    quantity: z.number().int().min(0).optional(),
+    category: z.string().max(100).optional(),
+    image: z.string().min(1).optional(),
+  })).optional(),
   fieldValues: z.record(z.string(), z.string().nullable()).optional(),
 });
 
@@ -81,7 +90,7 @@ export async function POST(req: NextRequest) {
 
     if (existing) {
       // Update existing business with new data
-      const { services: _services, ...businessData } = data;
+      const { services: _services, products: _products, ...businessData } = data;
       
       // Check slug uniqueness only if slug changed
       if (data.slug !== existing.slug) {
@@ -120,12 +129,30 @@ export async function POST(req: NextRequest) {
         });
       }
 
+      // Replace old products with new ones for store type
+      await prisma.product.deleteMany({ where: { businessId: existing.id } });
+      if (data.products && data.products.length > 0) {
+        await prisma.product.createMany({
+          data: data.products.map((p) => ({
+            businessId: existing.id,
+            name: p.name,
+            description: p.description || null,
+            price: p.price,
+            comparePrice: p.comparePrice ?? null,
+            quantity: p.quantity ?? 0,
+            category: p.category || null,
+            images: p.image ? JSON.stringify([{ url: p.image, alt: p.name }]) : null,
+            isInMarketplace: true,
+          })),
+        });
+      }
+
       // Save dynamic field values
       await saveBusinessFieldValues(existing.id, data.categoryId, data.fieldValues);
 
       // Apply selected theme preset if provided
       if (data.themePresetId) {
-        await applyThemePreset(existing.id, data.themePresetId);
+        await applyThemePreset(existing.id, data.themePresetId, data.websiteType);
       }
 
       return NextResponse.json({ business: updated, updated: true }, { status: 200 });
@@ -139,7 +166,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'الرابط مستخدم من قبل' }, { status: 400 });
     }
 
-    const { services: _services, ...businessData } = data;
+    const { services: _services, products: _products, ...businessData } = data;
     const business = await prisma.business.create({
       data: {
         ...businessData,
@@ -166,11 +193,28 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Create products if provided for store type
+    if (data.products && data.products.length > 0) {
+      await prisma.product.createMany({
+        data: data.products.map((p) => ({
+          businessId: business.id,
+          name: p.name,
+          description: p.description || null,
+          price: p.price,
+          comparePrice: p.comparePrice ?? null,
+          quantity: p.quantity ?? 0,
+          category: p.category || null,
+          images: p.image ? JSON.stringify([{ url: p.image, alt: p.name }]) : null,
+          isInMarketplace: true,
+        })),
+      });
+    }
+
     // Save dynamic field values
     await saveBusinessFieldValues(business.id, data.categoryId, data.fieldValues);
 
     // Apply theme preset (selected or default)
-    await applyThemePreset(business.id, data.themePresetId || 'default');
+    await applyThemePreset(business.id, data.themePresetId || 'default', data.websiteType);
 
     // Update user account type based on business type
     const derivedAccountType = data.businessType === 'INDIVIDUAL' ? 'PROFESSIONAL' : 'COMPANY';
@@ -199,11 +243,16 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function applyThemePreset(businessId: string, presetId: string) {
+async function applyThemePreset(
+  businessId: string,
+  presetId: string,
+  websiteType: 'INTRO' | 'STORE' | undefined = 'INTRO'
+) {
   const preset = getThemePresetById(presetId) || getThemePresetById('default');
   if (!preset) return;
 
-  const sections = getDefaultSections().map((section) => ({
+  const baseSections = websiteType === 'STORE' ? getStoreDefaultSections() : getDefaultSections();
+  const sections = baseSections.map((section) => ({
     ...section,
     enabled: section.id !== 'experience',
   }));

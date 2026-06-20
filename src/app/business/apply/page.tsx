@@ -18,6 +18,7 @@ import type { DynamicField } from '@/components/dynamic-fields/DynamicFieldForm'
 import { EmptyState } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { BusinessIntroBuilder } from '@/components/business-apply/BusinessIntroBuilder';
+import { BusinessStoreBuilder } from '@/components/business-apply/BusinessStoreBuilder';
 import type { BuilderStep } from '@/components/business-apply/BuilderStepSidebar';
 import { ThemeSelector } from '@/components/business-apply/ThemeSelector';
 
@@ -43,11 +44,11 @@ interface Category {
   subcategories?: Subcategory[];
 }
 
-const STEPS = [
+const getSteps = (websiteType: 'INTRO' | 'STORE' | '') => [
   { id: 1, title: 'المعلومات الأساسية', icon: Store },
   { id: 2, title: 'التصميم والثيم', icon: Palette },
   { id: 3, title: 'الصور والهوية', icon: Image },
-  { id: 4, title: 'الخدمات', icon: Sparkles },
+  { id: 4, title: websiteType === 'STORE' ? 'المنتجات' : 'الخدمات', icon: ShoppingBag },
   { id: 5, title: 'تفاصيل إضافية', icon: List },
   { id: 6, title: 'الموقع والتواصل', icon: MapPin },
   { id: 7, title: 'ساعات العمل', icon: Clock },
@@ -80,6 +81,7 @@ export default function BusinessApplyPage() {
     cover: '',
     gallery: [] as string[],
     services: [] as { name: string; description: string; price: string; duration: string; image: string }[],
+    products: [] as { name: string; description: string; price: string; comparePrice: string; quantity: string; category: string; image: string }[],
     countryId: '',
     city: '',
     address: '',
@@ -93,6 +95,8 @@ export default function BusinessApplyPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dynamicFields, setDynamicFields] = useState<DynamicField[]>([]);
   const [fieldValues, setFieldValues] = useState<Record<string, string | null>>({});
+
+  const steps = getSteps(form.websiteType);
 
   // Load dynamic fields when category changes
   useEffect(() => {
@@ -226,7 +230,7 @@ export default function BusinessApplyPage() {
 
   const handleNext = () => {
     if (!validateStep(step)) return;
-    if (step < STEPS.length) setStep(step + 1);
+    if (step < steps.length) setStep(step + 1);
   };
 
   const handlePrev = () => {
@@ -257,13 +261,22 @@ export default function BusinessApplyPage() {
           latitude: form.latitude ? parseFloat(form.latitude) : undefined,
           longitude: form.longitude ? parseFloat(form.longitude) : undefined,
           images: form.gallery.map((url) => ({ url, type: 'gallery', caption: '' })),
-          services: form.services.map((s) => ({
+          services: form.websiteType === 'INTRO' ? form.services.map((s) => ({
             name: s.name,
             description: s.description || undefined,
             price: s.price ? Number(s.price) : undefined,
             duration: s.duration ? Number(s.duration) : undefined,
             image: s.image || undefined,
-          })),
+          })) : undefined,
+          products: form.websiteType === 'STORE' ? form.products.map((p) => ({
+            name: p.name,
+            description: p.description || undefined,
+            price: p.price ? Number(p.price) : 0,
+            comparePrice: p.comparePrice ? Number(p.comparePrice) : undefined,
+            quantity: p.quantity ? Number(p.quantity) : 0,
+            category: p.category || undefined,
+            image: p.image || undefined,
+          })) : undefined,
           fieldValues,
         }),
       });
@@ -475,6 +488,96 @@ export default function BusinessApplyPage() {
     if (editingServiceIndex === index) {
       setServiceForm({ name: '', description: '', price: '', duration: '', image: '' });
       setEditingServiceIndex(null);
+    }
+  };
+
+  // Product management for STORE
+  const [productForm, setProductForm] = useState({
+    name: '',
+    description: '',
+    price: '',
+    comparePrice: '',
+    quantity: '',
+    category: '',
+    image: '',
+  });
+  const [uploadingProductImage, setUploadingProductImage] = useState(false);
+  const [editingProductIndex, setEditingProductIndex] = useState<number | null>(null);
+
+  const handleProductImageUpload = async (file: File) => {
+    if (!file) return;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      showToast('يرجى اختيار صورة بصيغة JPEG, PNG, WebP, أو GIF', 'error');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('حجم الصورة يجب أن لا يتجاوز 5 ميجابايت', 'error');
+      return;
+    }
+    setUploadingProductImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setProductForm((prev) => ({ ...prev, image: data.url }));
+      } else {
+        showToast(data.error || 'فشل في رفع الصورة', 'error');
+      }
+    } catch {
+      showToast('فشل في رفع الصورة', 'error');
+    } finally {
+      setUploadingProductImage(false);
+    }
+  };
+
+  const addProduct = () => {
+    if (!productForm.name.trim()) {
+      showToast('اسم المنتج مطلوب', 'error');
+      return;
+    }
+    if (form.products.length >= 20) {
+      showToast('يمكنك إضافة 20 منتجاً كحد أقصى', 'error');
+      return;
+    }
+    setForm((prev) => ({
+      ...prev,
+      products: [...prev.products, { ...productForm }],
+    }));
+    setProductForm({ name: '', description: '', price: '', comparePrice: '', quantity: '', category: '', image: '' });
+    setEditingProductIndex(null);
+  };
+
+  const updateProduct = () => {
+    if (editingProductIndex === null) return;
+    if (!productForm.name.trim()) {
+      showToast('اسم المنتج مطلوب', 'error');
+      return;
+    }
+    setForm((prev) => ({
+      ...prev,
+      products: prev.products.map((p, i) => (i === editingProductIndex ? { ...productForm } : p)),
+    }));
+    setProductForm({ name: '', description: '', price: '', comparePrice: '', quantity: '', category: '', image: '' });
+    setEditingProductIndex(null);
+  };
+
+  const editProduct = (index: number) => {
+    const p = form.products[index];
+    setProductForm({ ...p });
+    setEditingProductIndex(index);
+  };
+
+  const removeProduct = (index: number) => {
+    setForm((prev) => ({
+      ...prev,
+      products: prev.products.filter((_, i) => i !== index),
+    }));
+    if (editingProductIndex === index) {
+      setProductForm({ name: '', description: '', price: '', comparePrice: '', quantity: '', category: '', image: '' });
+      setEditingProductIndex(null);
     }
   };
 
@@ -996,10 +1099,10 @@ export default function BusinessApplyPage() {
                       </motion.div>
                     )}
 
-                    {/* Step 4: Services */}
-                    {step === 4 && (
+                    {/* Step 4: Services / Products */}
+                    {step === 4 && form.websiteType === 'INTRO' && (
                       <motion.div
-                        key="step3"
+                        key="step3-services"
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
@@ -1170,6 +1273,217 @@ export default function BusinessApplyPage() {
                                       type="button"
                                       onClick={() => removeService(index)}
                                       aria-label="حذف الخدمة"
+                                      className="p-1.5 rounded-lg text-muted hover:text-red-600 hover:bg-red-50 transition-colors"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </motion.div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+
+                    {step === 4 && form.websiteType === 'STORE' && (
+                      <motion.div
+                        key="step3-products"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="space-y-4"
+                      >
+                        {/* Product Form */}
+                        <div className="bg-slate-50 rounded-md p-4 space-y-4">
+                          <h3 className="font-bold text-foreground text-sm">
+                            {editingProductIndex !== null ? 'تعديل منتج' : 'إضافة منتج جديد'}
+                          </h3>
+
+                          <div>
+                            <label htmlFor="product-name" className="block text-sm font-medium text-foreground mb-1">اسم المنتج *</label>
+                            <input
+                              id="product-name"
+                              value={productForm.name}
+                              onChange={(e) => setProductForm((prev) => ({ ...prev, name: e.target.value }))}
+                              className="w-full px-4 py-2.5 rounded-md border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                              placeholder="مثال: عطر فاخر 100 مل"
+                            />
+                          </div>
+
+                          <div className="grid md:grid-cols-3 gap-4">
+                            <div className="md:col-span-2">
+                              <label htmlFor="product-description" className="block text-sm font-medium text-foreground mb-1">الوصف</label>
+                              <textarea
+                                id="product-description"
+                                value={productForm.description}
+                                onChange={(e) => setProductForm((prev) => ({ ...prev, description: e.target.value }))}
+                                rows={3}
+                                className="w-full px-4 py-2.5 rounded-md border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
+                                placeholder="وصف مختصر للمنتج..."
+                              />
+                            </div>
+
+                            {/* Product Image Upload */}
+                            <div>
+                              <label htmlFor="product-image-upload" className="block text-sm font-medium text-foreground mb-1">صورة المنتج</label>
+                              <div className="relative h-[calc(100%-1.75rem)] min-h-[6.5rem] rounded-md border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all cursor-pointer text-center flex flex-col items-center justify-center gap-2 overflow-hidden">
+                                <input
+                                  id="product-image-upload"
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) handleProductImageUpload(file);
+                                  }}
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                                {productForm.image ? (
+                                  <img src={productForm.image} alt={productForm.name || 'صورة المنتج'} className="absolute inset-0 w-full h-full object-cover" />
+                                ) : null}
+                                {uploadingProductImage ? (
+                                  <div className="flex items-center justify-center gap-2 text-primary relative z-20 bg-surface/80 px-2 py-1 rounded">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <span className="text-sm">جاري الرفع...</span>
+                                  </div>
+                                ) : (
+                                  <div className="text-sm text-muted relative z-20 px-2">
+                                    <Camera className="w-6 h-6 mx-auto mb-1 text-slate-300" />
+                                    <span className="text-primary font-medium text-xs">اضغط لاختيار صورة</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                              <label htmlFor="product-price" className="block text-sm font-medium text-foreground mb-1">السعر (ر.س) *</label>
+                              <input
+                                id="product-price"
+                                type="number"
+                                value={productForm.price}
+                                onChange={(e) => setProductForm((prev) => ({ ...prev, price: e.target.value }))}
+                                className="w-full px-4 py-2.5 rounded-md border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                placeholder="0"
+                              />
+                            </div>
+                            <div>
+                              <label htmlFor="product-compare-price" className="block text-sm font-medium text-foreground mb-1">السعر قبل الخصم</label>
+                              <input
+                                id="product-compare-price"
+                                type="number"
+                                value={productForm.comparePrice}
+                                onChange={(e) => setProductForm((prev) => ({ ...prev, comparePrice: e.target.value }))}
+                                className="w-full px-4 py-2.5 rounded-md border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                placeholder="0"
+                              />
+                            </div>
+                            <div>
+                              <label htmlFor="product-quantity" className="block text-sm font-medium text-foreground mb-1">الكمية</label>
+                              <input
+                                id="product-quantity"
+                                type="number"
+                                value={productForm.quantity}
+                                onChange={(e) => setProductForm((prev) => ({ ...prev, quantity: e.target.value }))}
+                                className="w-full px-4 py-2.5 rounded-md border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                placeholder="10"
+                              />
+                            </div>
+                            <div>
+                              <label htmlFor="product-category" className="block text-sm font-medium text-foreground mb-1">التصنيف</label>
+                              <input
+                                id="product-category"
+                                value={productForm.category}
+                                onChange={(e) => setProductForm((prev) => ({ ...prev, category: e.target.value }))}
+                                className="w-full px-4 py-2.5 rounded-md border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                placeholder="مثال: عطور"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2">
+                            {editingProductIndex !== null ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setProductForm({ name: '', description: '', price: '', comparePrice: '', quantity: '', category: '', image: '' });
+                                    setEditingProductIndex(null);
+                                  }}
+                                  className="px-4 py-2 rounded-md text-muted hover:bg-slate-100 transition-colors text-sm"
+                                >
+                                  إلغاء
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={updateProduct}
+                                  className="flex-1 px-4 py-2 rounded-md bg-primary text-white font-medium text-sm hover:bg-primary-dark transition-colors"
+                                >
+                                  حفظ التعديل
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={addProduct}
+                                className="w-full px-4 py-2.5 rounded-md bg-primary text-white font-medium text-sm hover:shadow-sm transition-all flex items-center justify-center gap-2"
+                              >
+                                <Sparkles className="w-4 h-4" />
+                                إضافة المنتج
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Products List */}
+                        {form.products.length > 0 && (
+                          <div>
+                            <h3 className="font-bold text-foreground text-sm mb-3">
+                              المنتجات المضافة ({form.products.length})
+                            </h3>
+                            <div className="space-y-2">
+                              {form.products.map((product, index) => (
+                                <motion.div
+                                  key={index}
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  className="bg-surface rounded-md border border-border p-3 flex items-center gap-3"
+                                >
+                                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br bg-primary/5 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                    {product.image ? (
+                                      <img src={product.image} alt={product.name || 'صورة المنتج'} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <ShoppingBag className="w-5 h-5 text-primary" />
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="font-bold text-foreground text-sm">{product.name}</h4>
+                                    {product.description && (
+                                      <p className="text-xs text-muted truncate">{product.description}</p>
+                                    )}
+                                    <div className="flex items-center gap-2 mt-0.5 text-xs text-muted">
+                                      {product.category && <span className="bg-slate-100 px-1.5 py-0.5 rounded">{product.category}</span>}
+                                      {product.quantity && <span>الكمية: {product.quantity}</span>}
+                                      <span className="text-primary font-medium">{product.price || 0} ر.س</span>
+                                      {product.comparePrice && Number(product.comparePrice) > 0 && (
+                                        <span className="line-through">{product.comparePrice} ر.س</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => editProduct(index)}
+                                      aria-label="تعديل المنتج"
+                                      className="p-1.5 rounded-lg text-muted hover:text-primary-dark hover:bg-primary/5 transition-colors"
+                                    >
+                                      <FileText className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => removeProduct(index)}
+                                      aria-label="حذف المنتج"
                                       className="p-1.5 rounded-lg text-muted hover:text-red-600 hover:bg-red-50 transition-colors"
                                     >
                                       <X className="w-3.5 h-3.5" />
@@ -1445,7 +1759,7 @@ export default function BusinessApplyPage() {
   if (form.websiteType === 'INTRO') {
     return (
       <BusinessIntroBuilder
-        steps={STEPS as BuilderStep[]}
+        steps={steps as BuilderStep[]}
         step={step}
         setStep={setStep}
         form={form}
@@ -1461,7 +1775,26 @@ export default function BusinessApplyPage() {
     );
   }
 
-  const StepIcon = STEPS[step - 1]?.icon || Store;
+  if (form.websiteType === 'STORE') {
+    return (
+      <BusinessStoreBuilder
+        steps={steps as BuilderStep[]}
+        step={step}
+        setStep={setStep}
+        form={form}
+        categories={categories}
+        themePresetId={form.themePresetId}
+        onBack={() => setForm((prev) => ({ ...prev, websiteType: '' }))}
+        onNext={handleNext}
+        onSubmit={handleSubmit}
+        submitting={submitting}
+      >
+        {renderStep()}
+      </BusinessStoreBuilder>
+    );
+  }
+
+  const StepIcon = steps[step - 1]?.icon || Store;
 
   return (
     <>
@@ -1486,7 +1819,7 @@ export default function BusinessApplyPage() {
           {/* Steps Progress */}
           <div className="bg-surface rounded-lg shadow-sm border border-border p-4 mb-6">
             <div className="flex items-center justify-between">
-              {STEPS.map((s, i) => {
+              {steps.map((s, i) => {
                 const Icon = s.icon;
                 const isActive = s.id === step;
                 const isDone = s.id < step;
@@ -1508,7 +1841,7 @@ export default function BusinessApplyPage() {
                         {s.title}
                       </span>
                     </div>
-                    {i < STEPS.length - 1 && (
+                    {i < steps.length - 1 && (
                       <div className={`flex-1 h-0.5 mx-2 ${s.id < step ? 'bg-green-300' : 'bg-slate-200'}`} />
                     )}
                   </div>
@@ -1527,7 +1860,7 @@ export default function BusinessApplyPage() {
               >
                 <div className="p-6 border-b border-border flex items-center gap-3">
                   <StepIcon className="w-5 h-5 text-primary" />
-                  <h2 className="font-bold text-foreground">{STEPS[step - 1].title}</h2>
+                  <h2 className="font-bold text-foreground">{steps[step - 1].title}</h2>
                 </div>
 
                 <div className="p-6 space-y-5 min-h-[360px]">
@@ -1547,14 +1880,14 @@ export default function BusinessApplyPage() {
                     السابق
                   </button>
                   <div className="flex gap-1.5">
-                    {STEPS.map((s) => (
+                    {steps.map((s) => (
                       <div
                         key={s.id}
                         className={`w-2 h-2 rounded-full ${s.id === step ? 'bg-primary' : s.id < step ? 'bg-green-400' : 'bg-slate-200'}`}
                       />
                     ))}
                   </div>
-                  {step < STEPS.length ? (
+                  {step < steps.length ? (
                     <button
                       onClick={handleNext}
                       className="px-5 py-2.5 rounded-md bg-primary text-white font-medium hover:bg-primary-dark transition-colors flex items-center gap-2"
