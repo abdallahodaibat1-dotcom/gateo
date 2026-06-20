@@ -9,8 +9,14 @@ const applySchema = z.object({
   slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/),
   description: z.string().max(2000).optional(),
   categoryId: z.string().optional(),
-  subcategoryId: z.string().optional(),
-  customSubcategory: z.string().max(100).optional(),
+  subcategoryId: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().optional()
+  ),
+  customSubcategory: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().max(100).optional()
+  ),
   countryId: z.string().optional(),
   city: z.string().optional(),
   address: z.string().optional(),
@@ -91,7 +97,7 @@ export async function POST(req: NextRequest) {
 
     if (existing) {
       // Update existing business with new data
-      const { services: _services, products: _products, ...businessData } = data;
+      const { services: _services, products: _products, themePresetId: _themePresetId, fieldValues: _fieldValues, ...businessData } = data;
       
       // Check slug uniqueness only if slug changed
       if (data.slug !== existing.slug) {
@@ -167,7 +173,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'الرابط مستخدم من قبل' }, { status: 400 });
     }
 
-    const { services: _services, products: _products, ...businessData } = data;
+    const { services: _services, products: _products, themePresetId: _themePresetId, fieldValues: _fieldValues, ...businessData } = data;
     const business = await prisma.business.create({
       data: {
         ...businessData,
