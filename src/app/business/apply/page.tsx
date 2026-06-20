@@ -8,7 +8,7 @@ import CountrySelect from '@/components/CountrySelect';
 import {
   Loader2, Store, MapPin, Phone, Clock, FileText, CheckCircle,
   ArrowRight, ArrowLeft, Sparkles, Image, Link as LinkIcon, AlertCircle,
-  Eye, EyeOff, Camera, X, Images, Globe, ChevronDown, List
+  AlertTriangle, Eye, EyeOff, Camera, X, Images, Globe, ChevronDown, List
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -697,6 +697,30 @@ export default function BusinessApplyPage() {
                             {errors.subcategoryId && <p className="text-red-500 text-xs mt-1">{errors.subcategoryId}</p>}
                           </div>
                         </div>
+
+                        {form.categoryId && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="rounded-lg border border-amber-200 bg-amber-50 p-4"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="shrink-0 mt-0.5">
+                                <AlertTriangle className="w-5 h-5 text-amber-600" />
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-sm font-bold text-amber-800">تنبيه مهم</p>
+                                <p className="text-sm text-amber-700 leading-relaxed">
+                                  هذا الخيار متاح لأصحاب المنشآت التجارية الفعلية فقط، ويتطلب إجراء عملية توثيق.
+                                </p>
+                                <p className="text-sm text-amber-700 leading-relaxed flex items-center gap-1.5">
+                                  <Sparkles className="w-4 h-4 text-amber-600" />
+                                  استمر وأنهِ موقعك الإلكتروني خلال دقائق.
+                                </p>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
                       </motion.div>
                     )}
 
