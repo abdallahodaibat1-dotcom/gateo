@@ -1,0 +1,1520 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String
+  entityType String?
+  entityId   String?
+  metadata   String?  @db.LongText
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  User      User    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([action])
+  @@index([adminId])
+  @@index([createdAt])
+  @@map("admin_audit_logs")
+}
+
+model Ad {
+  id             String        @id @default(cuid())
+  userId         String?
+  businessId     String?
+  title          String
+  description    String?       @db.Text
+  image          String?
+  video          String?
+  link           String?
+  buttonText     String?       @default("اعرف المزيد")
+  advertiserName String?
+  advertiserLogo String?
+  placement      ads_placement @default(FEED)
+  status         ads_status    @default(PENDING)
+  startAt        DateTime?     @db.Date
+  endAt          DateTime?     @db.Date
+  targetAudience String?       @db.LongText
+  impressions    Int           @default(0)
+  clicks         Int           @default(0)
+  isPaid         Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  Business     Business?   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  User          User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([businessId], map: "ads_businessId_fkey")
+  @@index([createdAt])
+  @@index([placement])
+  @@index([startAt, endAt])
+  @@index([status])
+  @@index([status, placement])
+  @@index([userId], map: "ads_userId_fkey")
+  @@map("ads")
+}
+
+model Badge {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  nameAr       String?
+  description  String?       @db.Text
+  icon         String?
+  color        String?
+  condition    String
+  pointsReward Int           @default(0)
+  createdAt    DateTime      @default(now())
+  UserBadge  UserBadge[]
+  @@map("badges")
+}
+
+model Booking {
+  id            String                 @id @default(cuid())
+  userId        String
+  businessId    String
+  serviceId     String?
+  date          DateTime
+  time          String
+  status        bookings_status        @default(PENDING)
+  notes         String?                @db.Text
+  totalPrice    Decimal?               @db.Decimal(10, 2)
+  paymentId     String?
+  paymentStatus bookings_paymentStatus @default(UNPAID)
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime         @updatedAt
+  Business    Business             @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  Service      Service?              @relation(fields: [serviceId], references: [id])
+  User         User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@index([createdAt])
+  @@index([serviceId], map: "bookings_serviceId_fkey")
+  @@index([status])
+  @@index([userId], map: "bookings_userId_fkey")
+  @@map("bookings")
+}
+
+model BusinessFieldValue {
+  id                        String                    @id @default(cuid())
+  businessId                String
+  fieldId                   String
+  value                     String?                   @db.Text
+  createdAt                 DateTime                  @default(now())
+  updatedAt     DateTime         @updatedAt
+  Business                Business                @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  DynamicFieldDefinition DynamicFieldDefinition @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, fieldId])
+  @@index([businessId])
+  @@index([fieldId], map: "business_field_values_fieldId_fkey")
+  @@map("business_field_values")
+}
+
+model BusinessPage {
+  id         String     @id @default(cuid())
+  businessId String
+  slug       String
+  title      String
+  content    String?    @db.Text
+  sections   String?    @db.LongText
+  sortOrder  Int        @default(0)
+  isVisible  Boolean    @default(true)
+  isHomePage Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  updatedAt     DateTime         @updatedAt
+  Business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, slug])
+  @@index([businessId, isVisible, sortOrder])
+  @@map("business_pages")
+}
+
+model BusinessSubscription {
+  id                 String             @id @default(cuid())
+  businessId         String             @unique
+  planId             String
+  userId             String
+  startsAt           DateTime           @default(now())
+  expiresAt          DateTime
+  isActive           Boolean            @default(true)
+  autoRenew          Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+  updatedAt     DateTime         @updatedAt
+  Business         Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  SubscriptionPlan SubscriptionPlan @relation(fields: [planId], references: [id])
+  User              User              @relation(fields: [userId], references: [id])
+
+  @@index([businessId])
+  @@index([isActive])
+  @@index([planId], map: "business_subscriptions_planId_fkey")
+  @@index([userId], map: "business_subscriptions_userId_fkey")
+  @@map("business_subscriptions")
+}
+
+model BusinessTheme {
+  id              String     @id @default(cuid())
+  businessId      String     @unique
+  presetId        String?
+  primaryColor    String     @default("#7c3aed")
+  secondaryColor  String     @default("#ec4899")
+  accentColor     String     @default("#f59e0b")
+  backgroundColor String     @default("#ffffff")
+  surfaceColor    String     @default("#ffffff")
+  textColor       String     @default("#1a1a2e")
+  fontFamily      String     @default("Cairo")
+  borderRadius    String     @default("1rem")
+  buttonStyle     String     @default("gradient")
+  heroLayout      String     @default("center")
+  navbarStyle     String     @default("fixed")
+  sections        String?    @db.LongText
+  customCss       String?    @db.Text
+  isPublished     Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+  updatedAt     DateTime         @updatedAt
+  Business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  @@map("business_themes")
+}
+
+model Business {
+  id                     String                   @id @default(cuid())
+  userId                 String                   @unique
+  name                   String
+  slug                   String                   @unique
+  description            String?                  @db.Text
+  logo                   String?
+  cover                  String?
+  categoryId             String?
+  subcategoryId          String?
+  city                   String?
+  address                String?
+  latitude               Float?
+  longitude              Float?
+  phone                  String?
+  email                  String?
+  website                String?
+  workingHours           String?                  @db.LongText
+  documents              String?                  @db.LongText
+  status                 businesses_status        @default(PENDING)
+  isVerified             Boolean                  @default(false)
+  avgRating              Float                    @default(0)
+  reviewCount            Int                      @default(0)
+  createdAt              DateTime                 @default(now())
+  updatedAt     DateTime         @updatedAt
+  images                 String?                  @db.LongText
+  countryId              String?
+  businessType           businesses_businessType? @default(COMPANY)
+  familyInfo             String?                  @db.LongText
+  isPublicOnGateway      Boolean                  @default(true)
+  specializations        String?                  @db.LongText
+  workExperience         String?                  @db.LongText
+  Ad                    Ad[]
+  Booking               Booking[]
+  BusinessFieldValue  BusinessFieldValue[]
+  BusinessPage BusinessPage[]
+  BusinessSubscription BusinessSubscription?
+  BusinessTheme BusinessTheme?
+  Category             Category?              @relation(fields: [categoryId], references: [id])
+  Country Country?               @relation(fields: [countryId], references: [id])
+  Subcategory          Subcategory?           @relation(fields: [subcategoryId], references: [id])
+  User                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Commission            Commission[]
+  Invoice               Invoice[]
+  Post                  Post[]
+  Product              Product[]
+  Review                Review[]
+  Service               Service[]
+
+  @@index([avgRating])
+  @@index([categoryId], map: "businesses_categoryId_fkey")
+  @@index([city])
+  @@index([countryId], map: "businesses_countryId_fkey")
+  @@index([createdAt])
+  @@index([status])
+  @@index([subcategoryId], map: "businesses_subcategoryId_fkey")
+  @@index([userId])
+  @@map("businesses")
+}
+
+enum categories_type {
+  BUSINESS
+  PROFESSIONAL
+  LADIES_GATE
+  @@map("categories_type")
+}
+
+model Category {
+  id                        String                      @id @default(cuid())
+  name                      String
+  nameEn                    String?
+  slug                      String                      @unique
+  icon                      String?
+  image                     String?
+  description               String?
+  isLadiesGate              Boolean                     @default(false)
+  type                      categories_type             @default(BUSINESS)
+  sortOrder                 Int                         @default(0)
+  createdAt                 DateTime                    @default(now())
+  Business                Business[]
+  CommissionRule          CommissionRule[]
+  DynamicFieldDefinition DynamicFieldDefinition[]
+  ProfessionalProfile     ProfessionalProfile[]
+  Subcategory             Subcategory[]
+
+  @@index([type])
+  @@map("categories")
+}
+
+model City {
+  id        String    @id @default(cuid())
+  countryId String
+  name      String
+  nameEn    String?
+  isActive  Boolean   @default(true)
+  sortOrder Int       @default(0)
+  createdAt DateTime  @default(now())
+  Country Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+
+  @@unique([countryId, name])
+  @@map("cities")
+}
+
+model Comment {
+  id             String     @id @default(cuid())
+  postId         String
+  userId         String
+  content        String     @db.Text
+  parentId       String?
+  createdAt      DateTime   @default(now())
+  updatedAt     DateTime         @updatedAt
+  Comment       Comment?  @relation("commentsTocomments", fields: [parentId], references: [id], onDelete: Cascade)
+  other_comments Comment[] @relation("commentsTocomments")
+  Post          Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  User          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Like          Like[]
+
+  @@index([createdAt])
+  @@index([parentId], map: "comments_parentId_fkey")
+  @@index([postId], map: "comments_postId_fkey")
+  @@index([userId], map: "comments_userId_fkey")
+  @@map("comments")
+}
+
+model CommissionRule {
+  id            String                @id @default(cuid())
+  name          String
+  appliesTo     String
+  categoryId    String?
+  subcategoryId String?
+  type          commission_rules_type
+  value         Decimal               @db.Decimal(10, 4)
+  minAmount     Decimal?              @db.Decimal(12, 2)
+  maxAmount     Decimal?              @db.Decimal(12, 2)
+  isActive      Boolean               @default(true)
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime         @updatedAt
+  Category    Category?           @relation(fields: [categoryId], references: [id])
+  Subcategory Subcategory?        @relation(fields: [subcategoryId], references: [id])
+  Commission   Commission[]
+
+  @@index([appliesTo, isActive])
+  @@index([categoryId])
+  @@index([subcategoryId], map: "commission_rules_subcategoryId_fkey")
+  @@map("commission_rules")
+}
+
+model Commission {
+  id               String           @id @default(cuid())
+  userId           String?
+  businessId       String?
+  ruleId           String
+  amount           Decimal          @db.Decimal(12, 2)
+  currency         String           @default("USD")
+  referenceType    String
+  referenceId      String
+  status           String           @default("PENDING")
+  description      String?
+  createdAt        DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  Business       Business?      @relation(fields: [businessId], references: [id])
+  CommissionRule CommissionRule @relation(fields: [ruleId], references: [id])
+  User            User?           @relation(fields: [userId], references: [id])
+
+  @@index([businessId, status])
+  @@index([referenceType, referenceId])
+  @@index([ruleId], map: "commissions_ruleId_fkey")
+  @@index([userId, status])
+  @@map("commissions")
+}
+
+model ConversationParticipant {
+  id             String        @id @default(cuid())
+  conversationId String
+  userId         String
+  lastReadAt     DateTime?
+  createdAt      DateTime      @default(now())
+  Conversation  Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  User          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId], map: "conversation_participants_userId_fkey")
+  @@map("conversation_participants")
+}
+
+model Conversation {
+  id                        String                      @id @default(cuid())
+  isGroup                   Boolean                     @default(false)
+  name                      String?
+  image                     String?
+  createdAt                 DateTime                    @default(now())
+  updatedAt     DateTime         @updatedAt
+  ConversationParticipant ConversationParticipant[]
+  Message                  Message[]
+  @@map("conversations")
+}
+
+model Country {
+  id                    String                  @id @default(cuid())
+  name                  String                  @unique
+  nameEn                String?                 @unique
+  code                  String                  @unique
+  phoneCode             String?
+  currency              String?
+  flagEmoji             String?
+  isActive              Boolean                 @default(true)
+  sortOrder             Int                     @default(0)
+  createdAt             DateTime                @default(now())
+  Business            Business[]
+  Cities                City[]
+  ProfessionalProfile ProfessionalProfile[]
+  Profile              Profile[]
+  @@map("countries")
+}
+
+model CouponUsage {
+  id        String   @id @default(cuid())
+  couponId  String
+  userId    String
+  orderId   String?
+  discount  Decimal? @db.Decimal(12, 2)
+  createdAt DateTime @default(now())
+  Coupon   Coupon  @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  User     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([couponId, userId])
+  @@index([userId], map: "coupon_usages_userId_fkey")
+  @@map("coupon_usages")
+}
+
+model Coupon {
+  id             String          @id @default(cuid())
+  code           String          @unique
+  type           coupons_type
+  value          Decimal?        @db.Decimal(12, 2)
+  maxUses        Int?
+  usedCount      Int             @default(0)
+  minOrderAmount Decimal?        @db.Decimal(12, 2)
+  validFrom      DateTime        @default(now())
+  validUntil     DateTime?
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt     DateTime         @updatedAt
+  CouponUsage  CouponUsage[]
+
+  @@index([code, isActive])
+  @@map("coupons")
+}
+
+model DynamicFieldDefinition {
+  id                        String                              @id @default(cuid())
+  name                      String
+  label                     String
+  labelEn                   String?
+  description               String?                             @db.Text
+  fieldType                 dynamic_field_definitions_fieldType @default(TEXT)
+  options                   String?                             @db.LongText
+  placeholder               String?
+  isRequired                Boolean                             @default(false)
+  isActive                  Boolean                             @default(true)
+  sortOrder                 Int                                 @default(0)
+  appliesTo                 dynamic_field_definitions_appliesTo @default(BOTH)
+  categoryId                String?
+  subcategoryId             String?
+  createdAt                 DateTime                            @default(now())
+  updatedAt     DateTime         @updatedAt
+  BusinessFieldValue     BusinessFieldValue[]
+  Category                Category?                         @relation(fields: [categoryId], references: [id])
+  Subcategory             Subcategory?                      @relation(fields: [subcategoryId], references: [id])
+  ProfessionalFieldValues ProfessionalFieldValues[]
+
+  @@index([appliesTo])
+  @@index([categoryId])
+  @@index([isActive, sortOrder])
+  @@index([subcategoryId], map: "dynamic_field_definitions_subcategoryId_fkey")
+  @@map("dynamic_field_definitions")
+}
+
+model ExchangeRate {
+  id             String   @id @default(cuid())
+  baseCurrency   String   @default("USD")
+  targetCurrency String   @default("SAR")
+  rate           Decimal  @db.Decimal(18, 8)
+  source         String   @default("api")
+  fetchedAt      DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@unique([baseCurrency, targetCurrency])
+  @@index([baseCurrency, targetCurrency])
+  @@index([fetchedAt])
+  @@map("exchange_rates")
+}
+
+model FinancialAccount {
+  id                     String                   @id @default(cuid())
+  userId                 String
+  type                   financial_accounts_type
+  currency               String                   @default("USD")
+  balance                Decimal                  @default(0.00) @db.Decimal(12, 2)
+  isActive               Boolean                  @default(true)
+  createdAt              DateTime                 @default(now())
+  updatedAt     DateTime         @updatedAt
+  User                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  FinancialTransaction FinancialTransaction[]
+
+  @@unique([userId, type, currency])
+  @@index([userId])
+  @@map("financial_accounts")
+}
+
+model FinancialTransaction {
+  id                 String                        @id @default(cuid())
+  accountId          String
+  type               financial_transactions_type
+  amount             Decimal                       @db.Decimal(12, 2)
+  currency           String                        @default("USD")
+  status             financial_transactions_status @default(PENDING)
+  referenceType      String?
+  referenceId        String?
+  description        String?
+  metadata           String?                       @db.LongText
+  createdAt          DateTime                      @default(now())
+  updatedAt     DateTime         @updatedAt
+  FinancialAccount FinancialAccount            @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  LedgerEntry     LedgerEntry[]
+
+  @@index([accountId, createdAt])
+  @@index([referenceType, referenceId])
+  @@map("financial_transactions")
+}
+
+model Follow {
+  id                               String   @id @default(cuid())
+  followerId                       String
+  followingId                      String
+  createdAt                        DateTime @default(now())
+  users_follows_followerIdTousers  User    @relation("follows_followerIdTousers", fields: [followerId], references: [id], onDelete: Cascade)
+  users_follows_followingIdTousers User    @relation("follows_followingIdTousers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId], map: "follows_followingId_fkey")
+  @@map("follows")
+}
+
+model GroupInvitation {
+  id                                         String                   @id @default(cuid())
+  groupId                                    String
+  userId                                     String
+  invitedById                                String
+  status                                     group_invitations_status @default(PENDING)
+  createdAt                                  DateTime                 @default(now())
+  updatedAt     DateTime         @updatedAt
+  Group                                     Group                   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  users_group_invitations_invitedByIdTousers User                    @relation("group_invitations_invitedByIdTousers", fields: [invitedById], references: [id], onDelete: Cascade)
+  users_group_invitations_userIdTousers      User                    @relation("group_invitations_userIdTousers", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([invitedById], map: "group_invitations_invitedById_fkey")
+  @@index([status])
+  @@index([userId], map: "group_invitations_userId_fkey")
+  @@map("group_invitations")
+}
+
+model GroupMember {
+  id       String             @id @default(cuid())
+  groupId  String
+  userId   String
+  role     group_members_role @default(MEMBER)
+  joinedAt DateTime           @default(now())
+  Group   Group             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  User    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId], map: "group_members_userId_fkey")
+  @@map("group_members")
+}
+
+model GroupMessage {
+  id        String              @id @default(cuid())
+  groupId   String
+  senderId  String
+  content   String?             @db.Text
+  type      group_messages_type @default(TEXT)
+  mediaUrl  String?
+  lat       Float?
+  lng       Float?
+  replyToId String?
+  mentions  String?             @db.LongText
+  isDeleted Boolean             @default(false)
+  createdAt DateTime            @default(now())
+  Group    Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  User     User               @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, createdAt])
+  @@index([senderId], map: "group_messages_senderId_fkey")
+  @@map("group_messages")
+}
+
+model GroupPosts {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  content   String   @db.Text
+  images    String?  @db.LongText
+  createdAt DateTime @default(now())
+  video     String?
+  Group    Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([groupId], map: "group_posts_groupId_fkey")
+  @@map("group_posts")
+}
+
+model Group {
+  id                String              @id @default(cuid())
+  name              String
+  description       String?             @db.Text
+  image             String?
+  isPublic          Boolean             @default(true)
+  category          String?
+  createdAt         DateTime            @default(now())
+  updatedAt     DateTime         @updatedAt
+  GroupInvitation GroupInvitation[]
+  GroupMember     GroupMember[]
+  GroupMessage    GroupMessage[]
+  GroupPosts       GroupPosts[]
+
+  @@index([category])
+  @@index([createdAt])
+  @@index([isPublic])
+  @@map("groups")
+}
+
+model InvoiceLineItems {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  description String
+  quantity    Int      @default(1)
+  unitPrice   Decimal  @db.Decimal(12, 2)
+  total       Decimal  @db.Decimal(12, 2)
+  Invoice    Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("invoice_line_items")
+}
+
+model Invoice {
+  id                 String               @id @default(cuid())
+  userId             String
+  businessId         String?
+  invoiceNumber      String               @unique
+  type               invoices_type
+  subtotal           Decimal              @db.Decimal(12, 2)
+  taxAmount          Decimal              @default(0.00) @db.Decimal(12, 2)
+  discount           Decimal              @default(0.00) @db.Decimal(12, 2)
+  total              Decimal              @db.Decimal(12, 2)
+  currency           String               @default("USD")
+  status             invoices_status      @default(DRAFT)
+  dueDate            DateTime?
+  paidAt             DateTime?
+  pdfUrl             String?
+  metadata           String?              @db.LongText
+  createdAt          DateTime             @default(now())
+  updatedAt     DateTime         @updatedAt
+  InvoiceLineItems InvoiceLineItems[]
+  Business         Business?          @relation(fields: [businessId], references: [id])
+  User              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Payment           Payment[]
+
+  @@index([businessId])
+  @@index([createdAt])
+  @@index([userId, status])
+  @@map("invoices")
+}
+
+model LedgerEntry {
+  id                     String                 @id @default(cuid())
+  transactionId          String
+  accountId              String
+  debit                  Decimal                @default(0.00) @db.Decimal(12, 2)
+  credit                 Decimal                @default(0.00) @db.Decimal(12, 2)
+  entryType              String
+  costCenter             String?
+  createdAt              DateTime               @default(now())
+  FinancialTransaction FinancialTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, createdAt])
+  @@index([entryType])
+  @@index([transactionId], map: "ledger_entries_transactionId_fkey")
+  @@map("ledger_entries")
+}
+
+model Like {
+  id        String    @id @default(cuid())
+  userId    String
+  postId    String?
+  commentId String?
+  createdAt DateTime  @default(now())
+  Comment  Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  Post     Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  User     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@unique([userId, postId])
+  @@index([commentId], map: "likes_commentId_fkey")
+  @@index([postId], map: "likes_postId_fkey")
+  @@index([userId])
+  @@map("likes")
+}
+
+model MarketplaceListing {
+  id          String   @id @default(cuid())
+  productId   String   @unique
+  category    String?
+  subcategory String?
+  featured    Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  views       Int      @default(0)
+  clicks      Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt     DateTime         @updatedAt
+  Product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([category])
+  @@index([createdAt])
+  @@index([featured])
+  @@index([isActive])
+  @@map("marketplace_listings")
+}
+
+model Message {
+  id             String        @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String?       @db.Text
+  type           messages_type @default(TEXT)
+  mediaUrl       String?
+  lat            Float?
+  lng            Float?
+  replyToId      String?
+  isDeleted      Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  Conversation  Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  User          User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([createdAt])
+  @@index([senderId], map: "messages_senderId_fkey")
+  @@map("messages")
+}
+
+model Notification {
+  id        String             @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String?
+  data      String?            @db.LongText
+  isRead    Boolean            @default(false)
+  createdAt DateTime           @default(now())
+  User     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model PaymentGateway {
+  id         String     @id @default(cuid())
+  code       String     @unique
+  name       String
+  nameAr     String?
+  isActive   Boolean    @default(false)
+  isDefault  Boolean    @default(false)
+  config     String?    @db.LongText
+  Countries  String?
+  currencies String?
+  sortOrder  Int        @default(0)
+  createdAt  DateTime   @default(now())
+  updatedAt     DateTime         @updatedAt
+  Payment   Payment[]
+
+  @@index([isActive])
+  @@map("payment_gateways")
+}
+
+model Payment {
+  id               String           @id @default(cuid())
+  invoiceId        String?
+  userId           String
+  gatewayId        String
+  amount           Decimal          @db.Decimal(12, 2)
+  currency         String           @default("USD")
+  status           payments_status  @default(UNPAID)
+  gatewayRef       String?
+  failureReason    String?
+  paidAt           DateTime?
+  metadata         String?          @db.LongText
+  createdAt        DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  PaymentGateway PaymentGateway @relation(fields: [gatewayId], references: [id])
+  Invoice         Invoice?        @relation(fields: [invoiceId], references: [id])
+  User            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([gatewayId])
+  @@index([invoiceId])
+  @@index([userId, status])
+  @@map("payments")
+}
+
+model PointTransaction {
+  id          String                  @id @default(cuid())
+  userId      String
+  amount      Int
+  reason      String
+  type        point_transactions_type @default(EARN)
+  referenceId String?
+  createdAt   DateTime                @default(now())
+  User       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("point_transactions")
+}
+
+model Post {
+  id          String         @id @default(cuid())
+  userId      String?
+  businessId  String?
+  content     String?        @db.Text
+  images      String?        @db.LongText
+  video       String?
+  location    String?
+  lat         Float?
+  lng         Float?
+  hashtags    String?
+  isPublic    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt     DateTime         @updatedAt
+  postType    posts_postType @default(POST)
+  Comment    Comment[]
+  Like       Like[]
+  Business  Business?    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  User       User?         @relation(fields: [userId], references: [id])
+  SavedPosts SavedPosts[]
+
+  @@index([businessId], map: "posts_businessId_fkey")
+  @@index([createdAt])
+  @@index([isPublic])
+  @@index([postType])
+  @@index([postType, isPublic, createdAt])
+  @@index([userId], map: "posts_userId_fkey")
+  @@map("posts")
+}
+
+model Product {
+  id                   String                @id @default(cuid())
+  businessId           String
+  name                 String
+  description          String?               @db.Text
+  price                Decimal               @db.Decimal(10, 2)
+  comparePrice         Decimal?              @db.Decimal(10, 2)
+  sku                  String?
+  quantity             Int                   @default(0)
+  images               String?               @db.LongText
+  category             String?
+  tags                 String?
+  status               products_status       @default(ACTIVE)
+  isInMarketplace      Boolean               @default(true)
+  createdAt            DateTime              @default(now())
+  updatedAt     DateTime         @updatedAt
+  MarketplaceListing MarketplaceListing?
+  Business           Business            @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@index([category])
+  @@index([createdAt])
+  @@index([status])
+  @@map("products")
+}
+
+model ProfessionalFieldValues {
+  id                        String                    @id @default(cuid())
+  profileId                 String
+  fieldId                   String
+  value                     String?                   @db.Text
+  createdAt                 DateTime                  @default(now())
+  updatedAt     DateTime         @updatedAt
+  DynamicFieldDefinition DynamicFieldDefinition @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  ProfessionalProfile     ProfessionalProfile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, fieldId])
+  @@index([fieldId], map: "professional_field_values_fieldId_fkey")
+  @@index([profileId])
+  @@map("professional_field_values")
+}
+
+model ProfessionalProfile {
+  id                         String                          @id @default(cuid())
+  userId                     String                          @unique
+  title                      String?
+  bio                        String?                         @db.Text
+  personalLogo               String?
+  categoryId                 String?
+  subcategoryId              String?
+  skills                     String?                         @db.Text
+  keywords                   String?                         @db.Text
+  degree                     String?
+  academicSpecialization     String?
+  experienceYears            Int?
+  courses                    String?                         @db.Text
+  certifications             String?                         @db.Text
+  professionalAccreditations String?                         @db.Text
+  services                  String?                         @db.LongText
+  workScope                  professional_profiles_workScope @default(BOTH)
+  countryId                  String?
+  city                       String?
+  willingToTravel            Boolean                         @default(false)
+  languages                  String?
+  phone                      String?
+  whatsapp                   String?
+  email                      String?
+  website                    String?
+  socialLinks                String?                         @db.LongText
+  portfolioProjects          String?                         @db.LongText
+  availableForWork           Boolean                         @default(true)
+  availableForHiring         Boolean                         @default(false)
+  availableForFreelance      Boolean                         @default(true)
+  availableForConsultation   Boolean                         @default(true)
+  completedProjectsCount     Int                             @default(0)
+  clientsCount               Int                             @default(0)
+  isPublicOnGateway          Boolean                         @default(true)
+  status                     professional_profiles_status    @default(PENDING)
+  isVerified                 Boolean                         @default(false)
+  createdAt                  DateTime                        @default(now())
+  updatedAt     DateTime         @updatedAt
+  ProfessionalFieldValues  ProfessionalFieldValues[]
+  Category                 Category?                     @relation(fields: [categoryId], references: [id])
+  Country Country?                      @relation(fields: [countryId], references: [id])
+  Subcategory              Subcategory?                  @relation(fields: [subcategoryId], references: [id])
+  User                      User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId])
+  @@index([city])
+  @@index([countryId], map: "professional_profiles_countryId_fkey")
+  @@index([createdAt])
+  @@index([isVerified])
+  @@index([status])
+  @@index([subcategoryId], map: "professional_profiles_subcategoryId_fkey")
+  @@map("professional_profiles")
+}
+
+model Profile {
+  id                  String           @id @default(cuid())
+  userId              String           @unique
+  bio                 String?          @db.Text
+  interests           String?
+  city                String?
+  country             String?
+  birthDate           DateTime?
+  gender              profiles_gender?
+  website             String?
+  socialLinks         String?          @db.LongText
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  countryId           String?
+  lat                 Float?
+  lng                 Float?
+  locationSharing     Boolean          @default(false)
+  education           String?          @db.LongText
+  experience          String?          @db.LongText
+  skills              String?          @db.Text
+  onboardingCompleted Boolean          @default(false)
+  onboardingSkipped   Boolean          @default(false)
+  Country Country?       @relation(fields: [countryId], references: [id])
+  User               User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([city])
+  @@index([countryId], map: "profiles_countryId_fkey")
+  @@index([userId])
+  @@map("profiles")
+}
+
+model Referral {
+  id                                String           @id @default(cuid())
+  referrerId                        String
+  referredId                        String           @unique
+  status                            referrals_status @default(PENDING)
+  rewardType                        String?
+  rewardAmount                      Decimal?         @db.Decimal(12, 2)
+  rewardedAt                        DateTime?
+  createdAt                         DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  users_referrals_referredIdTousers User            @relation("referrals_referredIdTousers", fields: [referredId], references: [id], onDelete: Cascade)
+  users_referrals_referrerIdTousers User            @relation("referrals_referrerIdTousers", fields: [referrerId], references: [id], onDelete: Cascade)
+
+  @@unique([referrerId, referredId])
+  @@index([referrerId, status])
+  @@map("referrals")
+}
+
+model Report {
+  id                              String              @id @default(cuid())
+  reporterId                      String
+  reportedId                      String
+  type                            reports_type
+  reason                          String              @db.Text
+  targetId                        String?
+  targetType                      reports_targetType?
+  status                          reports_status      @default(PENDING)
+  createdAt                       DateTime            @default(now())
+  users_reports_reportedIdTousers User               @relation("reports_reportedIdTousers", fields: [reportedId], references: [id], onDelete: Cascade)
+  users_reports_reporterIdTousers User               @relation("reports_reporterIdTousers", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([reportedId], map: "reports_reportedId_fkey")
+  @@index([reporterId], map: "reports_reporterId_fkey")
+  @@index([status])
+  @@map("reports")
+}
+
+model Review {
+  id         String     @id @default(cuid())
+  businessId String
+  userId     String
+  rating     Int
+  comment    String?    @db.Text
+  images     String?    @db.LongText
+  createdAt  DateTime   @default(now())
+  updatedAt     DateTime         @updatedAt
+  Business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, userId])
+  @@index([businessId])
+  @@index([createdAt])
+  @@index([rating])
+  @@index([userId], map: "reviews_userId_fkey")
+  @@map("reviews")
+}
+
+model SavedPosts {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  Post     Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([postId], map: "saved_posts_postId_fkey")
+  @@map("saved_posts")
+}
+
+model Service {
+  id          String     @id @default(cuid())
+  businessId  String
+  name        String
+  description String?    @db.Text
+  price       Decimal?   @db.Decimal(10, 2)
+  duration    Int?
+  image       String?
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt     DateTime         @updatedAt
+  Booking    Booking[]
+  Business  Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId], map: "services_businessId_fkey")
+  @@map("services")
+}
+
+model Setting {
+  id                String   @id @default(cuid())
+  siteName          String   @default("Gateo")
+  siteDescription   String?  @db.Text
+  maintenanceMode   Boolean  @default(false)
+  allowRegistration Boolean  @default(true)
+  showAds           Boolean  @default(false)
+  contactEmail      String?
+  supportPhone      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  @@map("settings")
+}
+
+model Story {
+  id        String       @id @default(cuid())
+  userId    String
+  mediaUrl  String
+  type      stories_type @default(IMAGE)
+  duration  Int          @default(5)
+  viewedBy  String?      @db.LongText
+  expiresAt DateTime
+  createdAt DateTime     @default(now())
+  User     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([expiresAt])
+  @@index([userId], map: "stories_userId_fkey")
+  @@map("stories")
+}
+
+model Subcategory {
+  id                        String                      @id @default(cuid())
+  categoryId                String
+  name                      String
+  nameEn                    String?
+  slug                      String                      @unique
+  icon                      String?
+  sortOrder                 Int                         @default(0)
+  createdAt                 DateTime                    @default(now())
+  Business                Business[]
+  CommissionRule          CommissionRule[]
+  DynamicFieldDefinition DynamicFieldDefinition[]
+  ProfessionalProfile     ProfessionalProfile[]
+  Category                Category                  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId], map: "subcategories_categoryId_fkey")
+  @@map("subcategories")
+}
+
+model SubscriptionPlan {
+  id                     String                   @id @default(cuid())
+  name                   String                   @unique
+  nameAr                 String?
+  description            String?                  @db.Text
+  price                  Decimal                  @db.Decimal(10, 2)
+  duration               Int
+  features               String?                  @db.LongText
+  isActive               Boolean                  @default(true)
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  BusinessSubscription BusinessSubscription[]
+  @@map("subscription_plans")
+}
+
+model TaxRate {
+  id          String         @id @default(cuid())
+  countryCode String
+  name        String
+  rate        Decimal        @db.Decimal(5, 2)
+  type        tax_rates_type @default(VAT)
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@unique([countryCode, type])
+  @@index([countryCode])
+  @@map("tax_rates")
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  createdAt DateTime @default(now())
+  Badge    Badge   @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  User     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@index([badgeId], map: "user_badges_badgeId_fkey")
+  @@index([userId])
+  @@map("user_badges")
+}
+
+model User {
+  id                                                     String                      @id @default(cuid())
+  email                                                  String?                     @unique
+  phone                                                  String?                     @unique
+  password                                               String?
+  name                                                   String?
+  avatar                                                 String?
+  accountType                                            users_accountType           @default(USER)
+  role                                                   users_role                  @default(USER)
+  emailVerified                                          DateTime?
+  phoneVerified                                          DateTime?
+  createdAt                                              DateTime                    @default(now())
+  updatedAt     DateTime         @updatedAt
+  otpCode                                                String?
+  otpExpiresAt                                           DateTime?
+  level                                                  Int                         @default(1)
+  points                                                 Int                         @default(0)
+  xp                                                     Int                         @default(0)
+  isPrivate                                              Boolean                     @default(false)
+  notificationSettings                                   String?                     @db.LongText
+  username                                               String?                     @unique
+  failedLoginAttempts                                    Int                         @default(0)
+  lastFailedLoginAt                                      DateTime?
+  lastLoginAt                                            DateTime?
+  lockedUntil                                            DateTime?
+  passwordChangedAt                                      DateTime?
+  resetPasswordExpiresAt                                 DateTime?
+  resetPasswordToken                                     String?                     @unique
+  firstName                                              String?
+  lastName                                               String?
+  AdminAuditLog                                       AdminAuditLog[]
+  Ad                                                    Ad[]
+  Booking                                               Booking[]
+  BusinessSubscription                                 BusinessSubscription[]
+  Business                                             Business?
+  Comment                                               Comment[]
+  Commission                                            Commission[]
+  ConversationParticipant                              ConversationParticipant[]
+  CouponUsage                                          CouponUsage[]
+  FinancialAccount                                     FinancialAccount[]
+  follows_follows_followerIdTousers                      Follow[]                   @relation("follows_followerIdTousers")
+  follows_follows_followingIdTousers                     Follow[]                   @relation("follows_followingIdTousers")
+  group_invitations_group_invitations_invitedByIdTousers GroupInvitation[]         @relation("group_invitations_invitedByIdTousers")
+  group_invitations_group_invitations_userIdTousers      GroupInvitation[]         @relation("group_invitations_userIdTousers")
+  GroupMember                                          GroupMember[]
+  GroupMessage                                         GroupMessage[]
+  Invoice                                               Invoice[]
+  Like                                                  Like[]
+  Message                                               Message[]
+  Notification                                          Notification[]
+  Payment                                               Payment[]
+  PointTransaction                                     PointTransaction[]
+  Post                                                  Post[]
+  ProfessionalProfile                                  ProfessionalProfile?
+  Profile                                               Profile?
+  referrals_referrals_referredIdTousers                  Referral?                  @relation("referrals_referredIdTousers")
+  referrals_referrals_referrerIdTousers                  Referral[]                 @relation("referrals_referrerIdTousers")
+  reports_reports_reportedIdTousers                      Report[]                   @relation("reports_reportedIdTousers")
+  reports_reports_reporterIdTousers                      Report[]                   @relation("reports_reporterIdTousers")
+  Review                                                Review[]
+  Story                                                Story[]
+  UserBadge                                            UserBadge[]
+  Withdrawal                                            Withdrawal[]
+
+  @@index([accountType])
+  @@index([createdAt])
+  @@index([email])
+  @@index([name])
+  @@index([phone])
+  @@index([role])
+  @@index([username])
+  @@map("users")
+}
+
+model Withdrawal {
+  id            String             @id @default(cuid())
+  userId        String
+  amount        Decimal            @db.Decimal(12, 2)
+  currency      String             @default("USD")
+  method        withdrawals_method
+  methodDetails String?            @db.LongText
+  status        withdrawals_status @default(PENDING)
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  notes         String?            @db.Text
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime         @updatedAt
+  User         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([userId, status])
+}
+
+enum financial_transactions_type {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+  HOLD
+  RELEASE
+  REFUND
+  COMMISSION
+  FEE
+  REWARD
+}
+
+enum coupons_type {
+  PERCENTAGE
+  FIXED
+  FREE_SHIPPING
+  FREE_ADS
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  FOLLOW
+  MESSAGE
+  BOOKING
+  BOOKING_UPDATE
+  REVIEW
+  SYSTEM
+  PROMOTION
+  GROUP_INVITE
+}
+
+enum financial_accounts_type {
+  CASH
+  HOLD
+  EARNINGS
+  COMMISSION
+  REWARDS
+  ADS_CREDIT
+}
+
+enum referrals_status {
+  PENDING
+  COMPLETED
+  REWARDED
+}
+
+enum group_members_role {
+  MEMBER
+  ADMIN
+  MODERATOR
+}
+
+enum stories_type {
+  IMAGE
+  VIDEO
+}
+
+enum reports_type {
+  SPAM
+  HARASSMENT
+  INAPPROPRIATE_CONTENT
+  FAKE_ACCOUNT
+  OTHER
+}
+
+enum tax_rates_type {
+  VAT
+  SALES
+  LOCAL
+}
+
+enum point_transactions_type {
+  EARN
+  SPEND
+  BONUS
+  REFUND
+}
+
+enum invoices_type {
+  SUBSCRIPTION
+  AD
+  MARKETPLACE
+  BOOKING
+  SERVICE
+  FEE
+}
+
+enum withdrawals_method {
+  BANK
+  CLIQ
+  PAYPAL
+}
+
+enum group_invitations_status {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum group_messages_type {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  LOCATION
+  FILE
+}
+
+enum messages_type {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  LOCATION
+  FILE
+}
+
+enum commission_rules_type {
+  PERCENTAGE
+  FIXED
+  TIERED
+}
+
+enum financial_transactions_status {
+  PENDING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+enum dynamic_field_definitions_fieldType {
+  TEXT
+  TEXTAREA
+  NUMBER
+  BOOLEAN
+  SELECT
+  MULTISELECT
+  DATE
+  URL
+}
+
+enum users_accountType {
+  USER
+  BUSINESS
+  PROFESSIONAL
+  COMPANY
+}
+
+enum payments_status {
+  UNPAID
+  PAID
+  REFUNDED
+  FAILED
+}
+
+enum withdrawals_status {
+  PENDING
+  APPROVED
+  REJECTED
+  SENT
+}
+
+enum bookings_status {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED_BY_USER
+  CANCELLED_BY_BUSINESS
+  NO_SHOW
+}
+
+enum reports_targetType {
+  POST
+  COMMENT
+  USER
+  BUSINESS
+  MESSAGE
+}
+
+enum users_role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum profiles_gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum reports_status {
+  PENDING
+  REVIEWING
+  RESOLVED
+  DISMISSED
+}
+
+enum invoices_status {
+  DRAFT
+  ISSUED
+  PAID
+  OVERDUE
+  CANCELLED
+  REFUNDED
+}
+
+enum bookings_paymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+  FAILED
+}
+
+enum products_status {
+  ACTIVE
+  OUT_OF_STOCK
+  DRAFT
+  ARCHIVED
+}
+
+enum dynamic_field_definitions_appliesTo {
+  BUSINESS
+  PROFESSIONAL
+  BOTH
+}
+
+enum ads_placement {
+  FEED
+  SIDEBAR
+  HERO
+  BANNER
+  BUSINESS_LISTING
+}
+
+enum ads_status {
+  PENDING
+  ACTIVE
+  PAUSED
+  EXPIRED
+  REJECTED
+}
+
+enum posts_postType {
+  POST
+  REEL
+}
+
+enum professional_profiles_workScope {
+  IN_PERSON
+  REMOTE
+  BOTH
+}
+
+enum businesses_status {
+  PENDING
+  ACTIVE
+  REJECTED
+  SUSPENDED
+}
+
+enum businesses_businessType {
+  INDIVIDUAL
+  COMPANY
+}
+
+enum professional_profiles_status {
+  PENDING
+  ACTIVE
+  REJECTED
+  SUSPENDED
+  @@map("withdrawals")
+}
