@@ -334,7 +334,7 @@ async function main() {
   }
 
   // ─── Admin user ───
-  const hashedPassword = await bcrypt.hash('admin123', 10);
+  const hashedPassword = await bcrypt.hash('Admin123!', 10);
   await prisma.user.upsert({
     where: { email: 'admin@gateo.com' },
     update: {},
