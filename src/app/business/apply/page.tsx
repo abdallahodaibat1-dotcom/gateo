@@ -68,6 +68,7 @@ export default function BusinessApplyPage() {
     description: '',
     categoryId: '',
     subcategoryId: '',
+    acceptedTerms: false,
     logo: '',
     cover: '',
     gallery: [] as string[],
@@ -186,6 +187,9 @@ export default function BusinessApplyPage() {
       if (!form.categoryId) newErrors.categoryId = 'اختر تصنيفاً';
       if (!form.subcategoryId && subcategories.length > 0) {
         newErrors.subcategoryId = 'اختر تصنيفاً فرعياً';
+      }
+      if (!form.acceptedTerms) {
+        newErrors.acceptedTerms = 'يجب الموافقة على الشروط والأحكام للمتابعة';
       }
     }
     if (s === 4) {
@@ -699,27 +703,63 @@ export default function BusinessApplyPage() {
                         </div>
 
                         {form.categoryId && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="rounded-lg border border-amber-200 bg-amber-50 p-4"
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className="shrink-0 mt-0.5">
-                                <AlertTriangle className="w-5 h-5 text-amber-600" />
+                          <>
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="rounded-lg border border-amber-200 bg-amber-50 p-4"
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="shrink-0 mt-0.5">
+                                  <AlertTriangle className="w-5 h-5 text-amber-600" />
+                                </div>
+                                <div className="space-y-1">
+                                  <p className="text-sm font-bold text-amber-800">تنبيه مهم</p>
+                                  <p className="text-sm text-amber-700 leading-relaxed">
+                                    هذا الخيار متاح لأصحاب المنشآت التجارية الفعلية فقط، ويتطلب إجراء عملية توثيق.
+                                  </p>
+                                  <p className="text-sm text-amber-700 leading-relaxed flex items-center gap-1.5">
+                                    <Sparkles className="w-4 h-4 text-amber-600" />
+                                    استمر وأنهِ موقعك الإلكتروني خلال دقائق.
+                                  </p>
+                                </div>
                               </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-bold text-amber-800">تنبيه مهم</p>
-                                <p className="text-sm text-amber-700 leading-relaxed">
-                                  هذا الخيار متاح لأصحاب المنشآت التجارية الفعلية فقط، ويتطلب إجراء عملية توثيق.
-                                </p>
-                                <p className="text-sm text-amber-700 leading-relaxed flex items-center gap-1.5">
-                                  <Sparkles className="w-4 h-4 text-amber-600" />
-                                  استمر وأنهِ موقعك الإلكتروني خلال دقائق.
-                                </p>
+                            </motion.div>
+
+                            <div className="rounded-lg border border-border bg-surface p-4 space-y-3">
+                              <p className="text-sm font-bold text-foreground">الشروط والأحكام الخاصة بالنشاطات التجارية</p>
+                              <div className="max-h-32 overflow-y-auto rounded-md border border-border bg-slate-50 p-3 text-xs text-muted leading-relaxed space-y-2">
+                                <p>باستخدامك هذا الخيار فإنك توافق على ما يلي:</p>
+                                <ul className="list-disc list-inside space-y-1">
+                                  <li>أنك صاحب منشأة تجارية فعلية ومسجلة بشكل قانوني.</li>
+                                  <li>أن جميع البيانات المقدمة صحيحة وقابلة للتوثيق.</li>
+                                  <li>أن المنصة لها الحق في طلب مستندات إثبات في أي وقت.</li>
+                                  <li>أن المنصة قد ترفض أو تعلّق أي حساب لا يتوافق مع هذه الشروط.</li>
+                                  <li>الالتزام بكافة سياسات المحتوى والخصوصية المعمول بها في Gateo.</li>
+                                </ul>
                               </div>
+                              <label className="flex items-start gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={form.acceptedTerms}
+                                  onChange={(e) => {
+                                    setForm((prev) => ({ ...prev, acceptedTerms: e.target.checked }));
+                                    setErrors((prev) => {
+                                      if (!prev.acceptedTerms) return prev;
+                                      const next = { ...prev };
+                                      delete next.acceptedTerms;
+                                      return next;
+                                    });
+                                  }}
+                                  className="mt-0.5 w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                                />
+                                <span className="text-sm text-foreground">قرأت الشروط والأحكام وأوافق عليها</span>
+                              </label>
+                              {errors.acceptedTerms && (
+                                <p className="text-red-500 text-xs">{errors.acceptedTerms}</p>
+                              )}
                             </div>
-                          </motion.div>
+                          </>
                         )}
                       </motion.div>
                     )}
