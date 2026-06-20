@@ -25,6 +25,7 @@ interface FormShape {
   services?: Service[];
   city?: string;
   phone?: string;
+  themePresetId?: string;
 }
 
 interface Category {
@@ -39,6 +40,7 @@ interface BusinessIntroBuilderProps {
   setStep: (step: number) => void;
   form: FormShape;
   categories?: Category[];
+  themePresetId?: string;
   onBack: () => void;
   onNext: () => void;
   onSubmit: () => void;
@@ -52,6 +54,7 @@ export function BusinessIntroBuilder({
   setStep,
   form,
   categories,
+  themePresetId,
   onBack,
   onNext,
   onSubmit,
@@ -164,7 +167,7 @@ export function BusinessIntroBuilder({
 
         {/* Preview panel */}
         <aside className="w-[45%] min-w-[360px] max-w-[520px] shrink-0 hidden lg:block overflow-auto border-r border-border bg-slate-50 p-5">
-          <IntroWebsitePreview form={form} categories={categories} />
+          <IntroWebsitePreview form={form} categories={categories} themePresetId={themePresetId} />
         </aside>
       </div>
 
@@ -186,7 +189,7 @@ export function BusinessIntroBuilder({
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <IntroWebsitePreview form={form} categories={categories} />
+            <IntroWebsitePreview form={form} categories={categories} themePresetId={themePresetId} />
           </div>
         </div>
       )}

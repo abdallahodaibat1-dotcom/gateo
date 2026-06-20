@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
+import { getThemePresetById, getDefaultSections } from '@/lib/business-template-generator';
 
 const applySchema = z.object({
   name: z.string().min(2).max(100),
@@ -33,6 +34,7 @@ const applySchema = z.object({
   cover: z.string().min(1).optional(),
   businessType: z.enum(['INDIVIDUAL', 'COMPANY']).optional(),
   websiteType: z.enum(['INTRO', 'STORE']).optional(),
+  themePresetId: z.string().optional(),
   images: z.array(z.object({
     url: z.string().min(1),
     type: z.string().optional(),
@@ -121,6 +123,11 @@ export async function POST(req: NextRequest) {
       // Save dynamic field values
       await saveBusinessFieldValues(existing.id, data.categoryId, data.fieldValues);
 
+      // Apply selected theme preset if provided
+      if (data.themePresetId) {
+        await applyThemePreset(existing.id, data.themePresetId);
+      }
+
       return NextResponse.json({ business: updated, updated: true }, { status: 200 });
     }
 
@@ -162,6 +169,9 @@ export async function POST(req: NextRequest) {
     // Save dynamic field values
     await saveBusinessFieldValues(business.id, data.categoryId, data.fieldValues);
 
+    // Apply theme preset (selected or default)
+    await applyThemePreset(business.id, data.themePresetId || 'default');
+
     // Update user account type based on business type
     const derivedAccountType = data.businessType === 'INDIVIDUAL' ? 'PROFESSIONAL' : 'COMPANY';
     await prisma.user.update({
@@ -187,6 +197,51 @@ export async function POST(req: NextRequest) {
     console.error('POST /api/businesses/apply error:', error);
     return NextResponse.json({ error: 'فشل في تقديم الطلب' }, { status: 500 });
   }
+}
+
+async function applyThemePreset(businessId: string, presetId: string) {
+  const preset = getThemePresetById(presetId) || getThemePresetById('default');
+  if (!preset) return;
+
+  const sections = getDefaultSections().map((section) => ({
+    ...section,
+    enabled: section.id !== 'experience',
+  }));
+
+  await prisma.businessTheme.upsert({
+    where: { businessId },
+    create: {
+      businessId,
+      presetId: preset.presetId,
+      primaryColor: preset.primaryColor,
+      secondaryColor: preset.secondaryColor,
+      accentColor: preset.accentColor,
+      backgroundColor: preset.backgroundColor,
+      surfaceColor: preset.surfaceColor,
+      textColor: preset.textColor,
+      fontFamily: preset.fontFamily,
+      borderRadius: preset.borderRadius,
+      buttonStyle: preset.buttonStyle,
+      heroLayout: preset.heroLayout,
+      navbarStyle: preset.navbarStyle,
+      sections: sections as any,
+    },
+    update: {
+      presetId: preset.presetId,
+      primaryColor: preset.primaryColor,
+      secondaryColor: preset.secondaryColor,
+      accentColor: preset.accentColor,
+      backgroundColor: preset.backgroundColor,
+      surfaceColor: preset.surfaceColor,
+      textColor: preset.textColor,
+      fontFamily: preset.fontFamily,
+      borderRadius: preset.borderRadius,
+      buttonStyle: preset.buttonStyle,
+      heroLayout: preset.heroLayout,
+      navbarStyle: preset.navbarStyle,
+      sections: sections as any,
+    },
+  });
 }
 
 async function saveBusinessFieldValues(

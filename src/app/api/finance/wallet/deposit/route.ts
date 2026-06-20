@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     const data = depositSchema.parse(body);
     const currency = data.currency || 'USD';
 
-    let account = await ensureFinancialAccount(userId, 'CASH', currency);
+    const account = await ensureFinancialAccount(userId, 'CASH', currency);
     const transaction = await recordTransaction({
       accountId: account.id,
       type: 'DEPOSIT',
@@ -31,9 +31,9 @@ export async function POST(req: NextRequest) {
     });
 
     // Refetch account so the returned balance reflects the new transaction
-    account = await prisma.financialAccount.findUnique({ where: { id: account.id } });
+    const updatedAccount = await prisma.financialAccount.findUnique({ where: { id: account.id } });
 
-    return NextResponse.json({ success: true, transaction, account }, { status: 201 });
+    return NextResponse.json({ success: true, transaction, account: updatedAccount }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return badRequest('المبلغ غير صالح');

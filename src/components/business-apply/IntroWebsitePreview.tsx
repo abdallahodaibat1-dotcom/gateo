@@ -1,6 +1,7 @@
 'use client';
 
 import { Store, MapPin, Phone, Eye, CheckCircle, Sparkles } from 'lucide-react';
+import { getThemePresetById } from '@/lib/business-template-generator';
 
 interface Service {
   name: string;
@@ -33,18 +34,32 @@ interface Category {
 interface IntroWebsitePreviewProps {
   form: FormShape;
   categories?: Category[];
+  themePresetId?: string;
 }
 
-export function IntroWebsitePreview({ form, categories = [] }: IntroWebsitePreviewProps) {
+export function IntroWebsitePreview({ form, categories = [], themePresetId }: IntroWebsitePreviewProps) {
   const selectedCategory = categories.find((c) => c.id === form.categoryId);
   const gallery = form.gallery || [];
   const services = form.services || [];
+  const theme = getThemePresetById(themePresetId || 'default') || getThemePresetById('default')!;
+  const themeVars = {
+    '--theme-primary': theme.primaryColor,
+    '--theme-secondary': theme.secondaryColor,
+    '--theme-accent': theme.accentColor,
+    '--theme-background': theme.backgroundColor,
+    '--theme-surface': theme.surfaceColor,
+    '--theme-text': theme.textColor,
+    '--theme-radius': theme.borderRadius,
+  } as React.CSSProperties;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" style={themeVars}>
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center">
-          <Eye className="w-4 h-4 text-primary" />
+        <div
+          className="w-8 h-8 rounded-md flex items-center justify-center"
+          style={{ backgroundColor: 'color-mix(in srgb, var(--theme-primary) 10%, transparent)' }}
+        >
+          <Eye className="w-4 h-4" style={{ color: 'var(--theme-primary)' }} />
         </div>
         <div>
           <h3 className="font-bold text-foreground text-sm">معاينة صفحة عملك</h3>
@@ -52,9 +67,12 @@ export function IntroWebsitePreview({ form, categories = [] }: IntroWebsitePrevi
         </div>
       </div>
 
-      <div className="rounded-xl border border-border shadow-sm bg-surface overflow-hidden">
+      <div className="rounded-xl border border-border shadow-sm overflow-hidden" style={{ backgroundColor: 'var(--theme-surface)' }}>
         {/* Cover */}
-        <div className="h-32 bg-gradient-to-br from-primary to-primary-dark relative">
+        <div
+          className="h-32 relative"
+          style={{ background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor})` }}
+        >
           {form.cover ? (
             <img src={form.cover} alt={form.name || 'صورة الغلاف'} className="w-full h-full object-cover" />
           ) : null}
@@ -82,12 +100,24 @@ export function IntroWebsitePreview({ form, categories = [] }: IntroWebsitePrevi
             {(form.categoryId || form.subcategoryId) && (
               <div className="flex flex-wrap gap-1.5">
                 {form.categoryId && (
-                  <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                  <span
+                    className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                    style={{
+                      backgroundColor: 'color-mix(in srgb, var(--theme-primary) 10%, transparent)',
+                      color: 'var(--theme-primary)',
+                    }}
+                  >
                     {selectedCategory?.name || form.categoryId}
                   </span>
                 )}
                 {form.subcategoryId && (
-                  <span className="text-[10px] bg-secondary/10 text-secondary px-2 py-0.5 rounded-full font-medium">
+                  <span
+                    className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                    style={{
+                      backgroundColor: 'color-mix(in srgb, var(--theme-secondary) 10%, transparent)',
+                      color: 'var(--theme-secondary)',
+                    }}
+                  >
                     {selectedCategory?.subcategories?.find((s) => s.id === form.subcategoryId)?.name || form.subcategoryId}
                   </span>
                 )}
@@ -126,7 +156,9 @@ export function IntroWebsitePreview({ form, categories = [] }: IntroWebsitePrevi
                     <div key={i} className="flex items-center justify-between bg-slate-50 rounded-md px-2 py-1.5">
                       <span className="text-xs text-foreground truncate flex-1">{service.name}</span>
                       {service.price && (
-                        <span className="text-xs text-primary font-medium mr-2">{service.price} ر.س</span>
+                        <span className="text-xs font-medium mr-2" style={{ color: 'var(--theme-primary)' }}>
+                          {service.price} ر.س
+                        </span>
                       )}
                     </div>
                   ))}
@@ -153,7 +185,10 @@ export function IntroWebsitePreview({ form, categories = [] }: IntroWebsitePrevi
 
             {/* CTA Buttons */}
             <div className="pt-3 border-t border-border flex gap-2">
-              <div className="flex-1 py-2 rounded-lg bg-primary text-white text-xs font-bold text-center">
+              <div
+                className="flex-1 py-2 rounded-lg text-white text-xs font-bold text-center"
+                style={{ backgroundColor: 'var(--theme-primary)' }}
+              >
                 حجز موعد
               </div>
               <div className="flex-1 py-2 rounded-lg bg-slate-100 text-muted text-xs font-bold text-center">
@@ -184,7 +219,7 @@ export function IntroWebsitePreview({ form, categories = [] }: IntroWebsitePrevi
             نظام حجوزات وخدمات
           </li>
           <li className="flex items-start gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
+            <Sparkles className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: 'var(--theme-primary)' }} />
             ظهور في نتائج البحث
           </li>
         </ul>

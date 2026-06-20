@@ -9,7 +9,7 @@ import {
   Loader2, Store, MapPin, Phone, Clock, FileText, CheckCircle,
   ArrowRight, ArrowLeft, Sparkles, Image, Link as LinkIcon, AlertCircle,
   AlertTriangle, Eye, EyeOff, Camera, X, Images, Globe, ChevronDown, List,
-  LayoutTemplate, ShoppingBag, Check
+  LayoutTemplate, ShoppingBag, Check, Palette
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -19,6 +19,7 @@ import { EmptyState } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { BusinessIntroBuilder } from '@/components/business-apply/BusinessIntroBuilder';
 import type { BuilderStep } from '@/components/business-apply/BuilderStepSidebar';
+import { ThemeSelector } from '@/components/business-apply/ThemeSelector';
 
 const DAYS = [
   { day: 'السبت', open: '09:00', close: '21:00' },
@@ -44,12 +45,13 @@ interface Category {
 
 const STEPS = [
   { id: 1, title: 'المعلومات الأساسية', icon: Store },
-  { id: 2, title: 'الصور والهوية', icon: Image },
-  { id: 3, title: 'الخدمات', icon: Sparkles },
-  { id: 4, title: 'تفاصيل إضافية', icon: List },
-  { id: 5, title: 'الموقع والتواصل', icon: MapPin },
-  { id: 6, title: 'ساعات العمل', icon: Clock },
-  { id: 7, title: 'المراجعة والإرسال', icon: CheckCircle },
+  { id: 2, title: 'التصميم والثيم', icon: Palette },
+  { id: 3, title: 'الصور والهوية', icon: Image },
+  { id: 4, title: 'الخدمات', icon: Sparkles },
+  { id: 5, title: 'تفاصيل إضافية', icon: List },
+  { id: 6, title: 'الموقع والتواصل', icon: MapPin },
+  { id: 7, title: 'ساعات العمل', icon: Clock },
+  { id: 8, title: 'المراجعة والإرسال', icon: CheckCircle },
 ];
 export default function BusinessApplyPage() {
   const { data: session, status } = useSession();
@@ -73,6 +75,7 @@ export default function BusinessApplyPage() {
     subcategoryId: '',
     acceptedTerms: false,
     websiteType: '' as 'INTRO' | 'STORE' | '',
+    themePresetId: '',
     logo: '',
     cover: '',
     gallery: [] as string[],
@@ -196,14 +199,19 @@ export default function BusinessApplyPage() {
         newErrors.acceptedTerms = 'يجب الموافقة على الشروط والأحكام للمتابعة';
       }
     }
-    if (s === 4) {
+    if (s === 2) {
+      if (!form.themePresetId) {
+        newErrors.themePresetId = 'اختر قالباً لتصميم موقعك';
+      }
+    }
+    if (s === 5) {
       dynamicFields.forEach((field) => {
         if (field.isRequired && (!fieldValues[field.id] || fieldValues[field.id] === '')) {
           newErrors[`field_${field.id}`] = `${field.label} مطلوب`;
         }
       });
     }
-    if (s === 5) {
+    if (s === 6) {
       if (!form.countryId) newErrors.countryId = 'اختر الدولة';
       if (form.phone && form.phone.length < 8) {
         newErrors.phone = 'رقم هاتف غير صالح';
@@ -244,6 +252,7 @@ export default function BusinessApplyPage() {
         body: JSON.stringify({
           ...form,
           websiteType: form.websiteType || undefined,
+          themePresetId: form.themePresetId || undefined,
           workingHours: form.workingHours.filter((w) => w.open && w.close),
           latitude: form.latitude ? parseFloat(form.latitude) : undefined,
           longitude: form.longitude ? parseFloat(form.longitude) : undefined,
@@ -809,8 +818,37 @@ export default function BusinessApplyPage() {
                       </motion.div>
                     )}
 
-                    {/* Step 2: Images */}
+                    {/* Step 2: Theme */}
                     {step === 2 && (
+                      <motion.div
+                        key="step2-theme"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="space-y-4"
+                      >
+                        <ThemeSelector
+                          selectedPresetId={form.themePresetId}
+                          onSelect={(presetId) => {
+                            setForm((prev) => ({ ...prev, themePresetId: presetId }));
+                            setErrors((prev) => {
+                              const next = { ...prev };
+                              delete next.themePresetId;
+                              return next;
+                            });
+                          }}
+                          businessName={form.name}
+                          categoryName={selectedCategory?.name}
+                          subcategoryName={selectedCategory?.subcategories?.find((s) => s.id === form.subcategoryId)?.name}
+                        />
+                        {errors.themePresetId && (
+                          <p className="text-red-500 text-xs">{errors.themePresetId}</p>
+                        )}
+                      </motion.div>
+                    )}
+
+                    {/* Step 3: Images */}
+                    {step === 3 && (
                       <motion.div
                         key="step2"
                         initial={{ opacity: 0, x: 20 }}
@@ -958,8 +996,8 @@ export default function BusinessApplyPage() {
                       </motion.div>
                     )}
 
-                    {/* Step 3: Services */}
-                    {step === 3 && (
+                    {/* Step 4: Services */}
+                    {step === 4 && (
                       <motion.div
                         key="step3"
                         initial={{ opacity: 0, x: 20 }}
@@ -1145,8 +1183,8 @@ export default function BusinessApplyPage() {
                       </motion.div>
                     )}
 
-                    {/* Step 4: Dynamic Fields */}
-                    {step === 4 && (
+                    {/* Step 5: Dynamic Fields */}
+                    {step === 5 && (
                       <motion.div
                         key="step4-fields"
                         initial={{ opacity: 0, x: 20 }}
@@ -1181,8 +1219,8 @@ export default function BusinessApplyPage() {
                       </motion.div>
                     )}
 
-                    {/* Step 5: Contact & Location */}
-                    {step === 5 && (
+                    {/* Step 6: Contact & Location */}
+                    {step === 6 && (
                       <motion.div
                         key="step3"
                         initial={{ opacity: 0, x: 20 }}
@@ -1298,8 +1336,8 @@ export default function BusinessApplyPage() {
                       </motion.div>
                     )}
 
-                    {/* Step 6: Working Hours */}
-                    {step === 6 && (
+                    {/* Step 7: Working Hours */}
+                    {step === 7 && (
                       <motion.div
                         key="step6"
                         initial={{ opacity: 0, x: 20 }}
@@ -1339,8 +1377,8 @@ export default function BusinessApplyPage() {
                       </motion.div>
                     )}
 
-                    {/* Step 7: Review */}
-                    {step === 7 && (
+                    {/* Step 8: Review */}
+                    {step === 8 && (
                       <motion.div
                         key="step7"
                         initial={{ opacity: 0, x: 20 }}
@@ -1412,6 +1450,7 @@ export default function BusinessApplyPage() {
         setStep={setStep}
         form={form}
         categories={categories}
+        themePresetId={form.themePresetId}
         onBack={() => setForm((prev) => ({ ...prev, websiteType: '' }))}
         onNext={handleNext}
         onSubmit={handleSubmit}
