@@ -210,6 +210,7 @@ model Business {
   images                 String?                  @db.LongText
   countryId              String?
   businessType           businesses_businessType? @default(COMPANY)
+  websiteType            businesses_websiteType?  @default(INTRO)
   familyInfo             String?                  @db.LongText
   isPublicOnGateway      Boolean                  @default(true)
   specializations        String?                  @db.LongText
@@ -1509,6 +1510,11 @@ enum businesses_status {
 enum businesses_businessType {
   INDIVIDUAL
   COMPANY
+}
+
+enum businesses_websiteType {
+  INTRO
+  STORE
 }
 
 enum professional_profiles_status {

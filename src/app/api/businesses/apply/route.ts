@@ -32,6 +32,7 @@ const applySchema = z.object({
   logo: z.string().min(1).optional(),
   cover: z.string().min(1).optional(),
   businessType: z.enum(['INDIVIDUAL', 'COMPANY']).optional(),
+  websiteType: z.enum(['INTRO', 'STORE']).optional(),
   images: z.array(z.object({
     url: z.string().min(1),
     type: z.string().optional(),

@@ -8,7 +8,8 @@ import CountrySelect from '@/components/CountrySelect';
 import {
   Loader2, Store, MapPin, Phone, Clock, FileText, CheckCircle,
   ArrowRight, ArrowLeft, Sparkles, Image, Link as LinkIcon, AlertCircle,
-  AlertTriangle, Eye, EyeOff, Camera, X, Images, Globe, ChevronDown, List
+  AlertTriangle, Eye, EyeOff, Camera, X, Images, Globe, ChevronDown, List,
+  LayoutTemplate, ShoppingBag, Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -69,6 +70,7 @@ export default function BusinessApplyPage() {
     categoryId: '',
     subcategoryId: '',
     acceptedTerms: false,
+    websiteType: '' as 'INTRO' | 'STORE' | '',
     logo: '',
     cover: '',
     gallery: [] as string[],
@@ -239,6 +241,7 @@ export default function BusinessApplyPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          websiteType: form.websiteType || undefined,
           workingHours: form.workingHours.filter((w) => w.open && w.close),
           latitude: form.latitude ? parseFloat(form.latitude) : undefined,
           longitude: form.longitude ? parseFloat(form.longitude) : undefined,
@@ -506,6 +509,111 @@ export default function BusinessApplyPage() {
     );
   }
 
+  const websiteTypeOptions = [
+    {
+      key: 'INTRO' as const,
+      title: 'موقع إلكتروني تعريفي',
+      description: 'مناسب لعرض خدماتك وجذب العملاء وحجز المواعيد بشكل احترافي.',
+      icon: LayoutTemplate,
+      features: [
+        'صفحات تعريفية احترافية',
+        'عرض الخدمات والأسعار',
+        'نماذج طلب واستفسار',
+        'نظام حجز المواعيد',
+        'استقبال المدفوعات للحجوزات والخدمات',
+        'معرض أعمال وصور',
+        'تقييمات وآراء العملاء',
+        'تحسين الظهور بمحركات البحث',
+        'ربط بوسائل التواصل الاجتماعي',
+      ],
+    },
+    {
+      key: 'STORE' as const,
+      title: 'متجر إلكتروني',
+      description: 'يتضمن كل مزايا الموقع التعريفي، بالإضافة إلى بيع المنتجات وإدارة الطلبات.',
+      icon: ShoppingBag,
+      features: [
+        'جميع مزايا الموقع التعريفي',
+        'إدارة المنتجات والتصنيفات',
+        'إدارة المخزون والكميات',
+        'سلة شراء متكاملة',
+        'بوابات دفع إلكتروني',
+        'إدارة الطلبات والشحن',
+        'كوبونات وعروض ترويجية',
+        'تقارير المبيعات والإيرادات',
+        'إدارة العملاء والطلبات المتكررة',
+      ],
+    },
+  ];
+
+  if (!form.websiteType) {
+    return (
+      <>
+        <Navbar />
+        <main className="pt-20 pb-10 min-h-screen bg-slate-50">
+          <div className="max-w-5xl mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 text-center"
+            >
+              <div className="w-16 h-16 rounded-lg bg-primary flex items-center justify-center text-white mx-auto mb-4 shadow-sm">
+                <Sparkles className="w-8 h-8" />
+              </div>
+              <h1 className="text-2xl font-bold text-foreground">اختر نوع موقعك الإلكتروني</h1>
+              <p className="text-muted mt-1">
+                كل خيار يمنحك أدوات تناسب أهدافك، وكلاهما يدعم الدفع الإلكتروني
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {websiteTypeOptions.map((option, index) => {
+                const Icon = option.icon;
+                return (
+                  <motion.div
+                    key={option.key}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-surface rounded-xl border border-border p-6 shadow-sm hover:shadow-md transition-all flex flex-col"
+                  >
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <h2 className="text-lg font-bold text-foreground mb-2">{option.title}</h2>
+                    <p className="text-sm text-muted mb-4">{option.description}</p>
+                    <ul className="space-y-2 mb-6 flex-1">
+                      {option.features.map((feature) => (
+                        <li key={feature} className="flex items-start gap-2 text-sm text-foreground">
+                          <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForm((prev) => ({ ...prev, websiteType: option.key }));
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="w-full px-4 py-2.5 rounded-md bg-primary text-white font-medium hover:bg-primary-dark transition-colors"
+                    >
+                      اختر {option.title}
+                    </button>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            <p className="mt-6 text-center text-xs text-muted">
+              ✦ كلتا الخيارين يتضمنان وسائل دفع إلكتروني آمنة للخدمات والحجوزات
+            </p>
+          </div>
+        </main>
+      </>
+    );
+  }
+
   const StepIcon = STEPS[step - 1]?.icon || Store;
 
   return (
@@ -522,6 +630,10 @@ export default function BusinessApplyPage() {
             <p className="text-muted mt-1">
               خطوات بسيطة تفصلك عن موقع إلكتروني احترافي لعملك
             </p>
+            <span className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
+              {form.websiteType === 'STORE' ? <ShoppingBag className="w-3.5 h-3.5" /> : <LayoutTemplate className="w-3.5 h-3.5" />}
+              {form.websiteType === 'STORE' ? 'متجر إلكتروني' : 'موقع إلكتروني تعريفي'}
+            </span>
           </motion.div>
 
           {/* Steps Progress */}
