@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ArrowRight, ArrowLeft, Loader2, Sparkles, Eye, X } from 'lucide-react';
 import { BuilderStepSidebar, BuilderStep } from './BuilderStepSidebar';
 import { IntroWebsitePreview } from './IntroWebsitePreview';
+import type { ExtractedThemeColors } from '@/lib/color-extraction';
 
 interface Service {
   name: string;
@@ -25,7 +26,8 @@ interface FormShape {
   services?: Service[];
   city?: string;
   phone?: string;
-  themePresetId?: string;
+  designId?: string;
+  themeColors?: ExtractedThemeColors | null;
 }
 
 interface Category {
@@ -40,7 +42,8 @@ interface BusinessIntroBuilderProps {
   setStep: (step: number) => void;
   form: FormShape;
   categories?: Category[];
-  themePresetId?: string;
+  designId?: string;
+  themeColors?: ExtractedThemeColors | null;
   onBack: () => void;
   onNext: () => void;
   onSubmit: () => void;
@@ -54,7 +57,8 @@ export function BusinessIntroBuilder({
   setStep,
   form,
   categories,
-  themePresetId,
+  designId,
+  themeColors,
   onBack,
   onNext,
   onSubmit,
@@ -167,7 +171,7 @@ export function BusinessIntroBuilder({
 
         {/* Preview panel */}
         <aside className="w-[45%] min-w-[360px] max-w-[520px] shrink-0 hidden lg:block overflow-auto border-r border-border bg-slate-50 p-5">
-          <IntroWebsitePreview form={form} categories={categories} themePresetId={themePresetId} />
+          <IntroWebsitePreview form={form} categories={categories} designId={designId} themeColors={themeColors} />
         </aside>
       </div>
 
@@ -189,7 +193,7 @@ export function BusinessIntroBuilder({
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <IntroWebsitePreview form={form} categories={categories} themePresetId={themePresetId} />
+            <IntroWebsitePreview form={form} categories={categories} designId={designId} themeColors={themeColors} />
           </div>
         </div>
       )}

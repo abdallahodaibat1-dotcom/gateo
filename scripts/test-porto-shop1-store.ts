@@ -185,8 +185,7 @@ async function applyStore(jar: CookieJar) {
     subcategoryId: subcategory?.id || undefined,
     acceptedTerms: true,
     websiteType: 'STORE',
-    themePresetId: 'fashion',
-    homeTemplate: 'porto-shop1',
+    designId: 'store-porto-shop1',
     logo: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=400&h=400&fit=crop',
     cover: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&h=900&fit=crop',
     gallery: [

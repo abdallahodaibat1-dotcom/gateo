@@ -22,6 +22,7 @@ function parseSections(theme: any) {
 
 const defaultTheme = {
   presetId: null,
+  designId: null,
   primaryColor: '#7c3aed',
   secondaryColor: '#ec4899',
   accentColor: '#f59e0b',
@@ -49,6 +50,8 @@ const defaultTheme = {
 };
 
 const updateSchema = z.object({
+  designId: z.string().optional().nullable(),
+  presetId: z.string().optional().nullable(),
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),

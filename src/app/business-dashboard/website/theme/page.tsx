@@ -16,18 +16,23 @@ import {
   MousePointer,
 } from 'lucide-react';
 import {
-  getThemePresetList,
-  getHomeTemplateList,
+  getThemePresetById,
   WebsiteSection,
 } from '@/lib/business-template-generator';
+import { DesignLibrarySelector } from '@/components/business-apply/DesignLibrarySelector';
+import { getDesignById, resolvePresetId, resolveHomeTemplate } from '@/lib/business-design-library';
+import { extractColorsFromImage } from '@/lib/color-extraction';
 import Skeleton from '@/components/ui/Skeleton';
 
 interface Business {
   id: string;
   slug: string;
+  logo?: string | null;
+  websiteType?: 'INTRO' | 'STORE' | null;
 }
 
 interface Theme {
+  designId: string | null;
   presetId: string | null;
   primaryColor: string;
   secondaryColor: string;
@@ -142,6 +147,48 @@ export default function ThemeEditorPage() {
     }
   };
 
+  const handleDesignSelect = (designId: string) => {
+    const design = getDesignById(designId);
+    if (!design || !business) return;
+    const preset = getThemePresetById(resolvePresetId(design));
+    if (!preset) return;
+
+    updateTheme({
+      designId,
+      presetId: preset.presetId,
+      homeTemplate: resolveHomeTemplate(design, business.websiteType || 'INTRO'),
+      primaryColor: preset.primaryColor,
+      secondaryColor: preset.secondaryColor,
+      accentColor: preset.accentColor,
+      backgroundColor: preset.backgroundColor,
+      surfaceColor: preset.surfaceColor,
+      textColor: preset.textColor,
+      heroLayout: preset.heroLayout,
+      navbarStyle: preset.navbarStyle,
+      buttonStyle: preset.buttonStyle,
+      borderRadius: preset.borderRadius,
+      fontFamily: preset.fontFamily,
+    });
+  };
+
+  const handleExtractColors = async () => {
+    if (!business?.logo || !theme) return;
+    try {
+      const colors = await extractColorsFromImage(business.logo);
+      updateTheme({
+        primaryColor: colors.primaryColor,
+        secondaryColor: colors.secondaryColor,
+        accentColor: colors.accentColor,
+        backgroundColor: colors.backgroundColor,
+        surfaceColor: colors.surfaceColor,
+        textColor: colors.textColor,
+      });
+      setSuccess('تم استخراج الألوان من الشعار بنجاح');
+    } catch (e) {
+      setError('فشل في استخراج الألوان من الشعار');
+    }
+  };
+
   const toggleSection = (sectionId: string) => {
     if (!theme) return;
     const sections = (theme.sections || defaultSections).map((s) =>
@@ -149,8 +196,6 @@ export default function ThemeEditorPage() {
     );
     updateTheme({ sections });
   };
-
-  const presets = getThemePresetList();
 
   if (loading) {
     return (
@@ -237,80 +282,34 @@ export default function ThemeEditorPage() {
           transition={{ duration: 0.2, delay: 0.05 }}
           className="lg:col-span-2 space-y-6"
         >
-          {/* Presets */}
-          <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
-            <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-              <Palette className="w-5 h-5 text-primary" />
-              القوالب الذكية
-            </h3>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {presets.map((preset) => (
-                <button
-                  key={preset.presetId}
-                  onClick={() =>
-                    updateTheme({
-                      presetId: preset.presetId,
-                      primaryColor: preset.primaryColor,
-                      secondaryColor: preset.secondaryColor,
-                      accentColor: preset.accentColor,
-                      backgroundColor: preset.backgroundColor,
-                      surfaceColor: preset.surfaceColor,
-                      textColor: preset.textColor,
-                      heroLayout: preset.heroLayout,
-                      navbarStyle: preset.navbarStyle,
-                      buttonStyle: preset.buttonStyle,
-                      borderRadius: preset.borderRadius,
-                    })
-                  }
-                  className={`p-4 rounded-lg border text-right transition-all ${
-                    theme.presetId === preset.presetId
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span
-                      className="w-5 h-5 rounded-full border border-border"
-                      style={{ backgroundColor: preset.primaryColor }}
-                    />
-                    <span
-                      className="w-5 h-5 rounded-full border border-border"
-                      style={{ backgroundColor: preset.secondaryColor }}
-                    />
-                  </div>
-                  <div className="font-medium text-foreground text-sm">{preset.nameAr}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Home Page Template */}
+          {/* Design Library */}
           <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
             <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
               <Layout className="w-5 h-5 text-primary" />
-              قالب الصفحة الرئيسية
+              مكتبة التصاميم
             </h3>
-            <div className="grid sm:grid-cols-2 gap-3">
-              {getHomeTemplateList().map((template) => (
-                <button
-                  key={template.id}
-                  onClick={() => updateTheme({ homeTemplate: template.id })}
-                  className={`p-4 rounded-lg border text-right transition-all ${
-                    theme.homeTemplate === template.id
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/30'
-                  }`}
-                >
-                  <div className="font-medium text-foreground text-sm mb-1">{template.nameAr}</div>
-                  <p className="text-xs text-muted leading-relaxed">{template.descriptionAr}</p>
-                </button>
-              ))}
-            </div>
+            <DesignLibrarySelector
+              selectedDesignId={theme.designId || undefined}
+              onSelect={handleDesignSelect}
+              websiteType={business?.websiteType || undefined}
+            />
           </div>
 
           {/* Colors */}
           <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
-            <h3 className="font-bold text-foreground mb-4">الألوان</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-foreground">الألوان</h3>
+              {business?.logo && (
+                <button
+                  type="button"
+                  onClick={handleExtractColors}
+                  className="px-3 py-1.5 rounded-md bg-accent/10 text-accent text-xs font-medium hover:bg-accent/20 transition-colors flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  استخراج من الشعار
+                </button>
+              )}
+            </div>
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
               {[
                 { key: 'primaryColor', label: 'اللون الأساسي' },

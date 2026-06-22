@@ -3,7 +3,9 @@
 import { useMemo } from 'react';
 import { Store, MapPin, Phone, Eye, ShoppingCart, Tag, Search, Star } from 'lucide-react';
 import { getThemePresetById } from '@/lib/business-template-generator';
+import { getDesignById, resolvePresetId } from '@/lib/business-design-library';
 import { useCurrency } from '@/hooks/useCurrency';
+import type { ExtractedThemeColors } from '@/lib/color-extraction';
 
 interface Product {
   id?: string;
@@ -39,24 +41,35 @@ interface Category {
 interface StoreWebsitePreviewProps {
   form: FormShape;
   categories?: Category[];
-  themePresetId?: string;
+  designId?: string;
+  themeColors?: ExtractedThemeColors | null;
 }
 
-export function StoreWebsitePreview({ form, categories = [], themePresetId }: StoreWebsitePreviewProps) {
+export function StoreWebsitePreview({ form, categories = [], designId, themeColors }: StoreWebsitePreviewProps) {
   const { format } = useCurrency();
   const selectedCategory = categories.find((c) => c.id === form.categoryId);
   const gallery = form.gallery || [];
   const products = form.products || [];
-  const theme = getThemePresetById(themePresetId || 'default') || getThemePresetById('default')!;
+
+  const design = designId ? getDesignById(designId) : undefined;
+  const preset = getThemePresetById(resolvePresetId(design)) || getThemePresetById('default')!;
+  const colors = themeColors || {
+    primaryColor: preset.primaryColor,
+    secondaryColor: preset.secondaryColor,
+    accentColor: preset.accentColor,
+    backgroundColor: preset.backgroundColor,
+    surfaceColor: preset.surfaceColor,
+    textColor: preset.textColor,
+  };
 
   const themeVars = {
-    '--theme-primary': theme.primaryColor,
-    '--theme-secondary': theme.secondaryColor,
-    '--theme-accent': theme.accentColor,
-    '--theme-background': theme.backgroundColor,
-    '--theme-surface': theme.surfaceColor,
-    '--theme-text': theme.textColor,
-    '--theme-radius': theme.borderRadius,
+    '--theme-primary': colors.primaryColor,
+    '--theme-secondary': colors.secondaryColor,
+    '--theme-accent': colors.accentColor,
+    '--theme-background': colors.backgroundColor,
+    '--theme-surface': colors.surfaceColor,
+    '--theme-text': colors.textColor,
+    '--theme-radius': preset.borderRadius,
   } as React.CSSProperties;
 
   const categoriesList = useMemo(() => {
@@ -120,7 +133,7 @@ export function StoreWebsitePreview({ form, categories = [], themePresetId }: St
         {/* Cover / Hero */}
         <div
           className="h-28 relative"
-          style={{ background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor})` }}
+          style={{ background: `linear-gradient(135deg, ${colors.primaryColor}, ${colors.secondaryColor})` }}
         >
           {form.cover ? (
             <img src={form.cover} alt={form.name || 'صورة الغلاف'} className="w-full h-full object-cover" />

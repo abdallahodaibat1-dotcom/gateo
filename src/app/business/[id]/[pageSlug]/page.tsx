@@ -311,91 +311,96 @@ export default function BusinessCustomPage() {
       })),
   ];
 
+  const isPortoShop1 = business.theme?.homeTemplate === 'porto-shop1';
+  const useTemplateShell = isPortoShop1 && business.websiteType === 'STORE' && page.isHomePage;
+
   return (
     <BusinessThemeProvider theme={business.theme}>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[var(--theme-primary)]/95 backdrop-blur-md shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <Link href={`/business/${business.slug || business.id}`}>
-                {business.logo ? (
-                  <img src={business.logo} alt={business.name} className="w-10 h-10 rounded-full object-cover border-2 border-white/30" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                    <Home className="w-5 h-5 text-white" />
-                  </div>
-                )}
-              </Link>
-              <Link href={`/business/${business.slug || business.id}`}>
-                <h1 className="text-white font-bold text-lg leading-tight hover:opacity-80 transition-opacity">
-                  {business.name}
-                </h1>
-              </Link>
-            </div>
-
-            <nav className="hidden lg:flex items-center gap-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    item.slug === pageSlug
-                      ? 'bg-white/20 text-white'
-                      : 'text-white/80 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  {item.label}
+      {!useTemplateShell && (
+        <header className="fixed top-0 left-0 right-0 z-50 bg-[var(--theme-primary)]/95 backdrop-blur-md shadow-lg">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center gap-3">
+                <Link href={`/business/${business.slug || business.id}`}>
+                  {business.logo ? (
+                    <img src={business.logo} alt={business.name} className="w-10 h-10 rounded-full object-cover border-2 border-white/30" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                      <Home className="w-5 h-5 text-white" />
+                    </div>
+                  )}
                 </Link>
-              ))}
-            </nav>
+                <Link href={`/business/${business.slug || business.id}`}>
+                  <h1 className="text-white font-bold text-lg leading-tight hover:opacity-80 transition-opacity">
+                    {business.name}
+                  </h1>
+                </Link>
+              </div>
 
-            <div className="flex items-center gap-2">
-              {business.websiteType === 'STORE' ? (
+              <nav className="hidden lg:flex items-center gap-1">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      item.slug === pageSlug
+                        ? 'bg-white/20 text-white'
+                        : 'text-white/80 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+
+              <div className="flex items-center gap-2">
+                {business.websiteType === 'STORE' ? (
+                  <button
+                    type="button"
+                    className="hidden sm:flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-[var(--theme-secondary)] to-[var(--theme-primary)] text-white text-sm font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    السلة
+                  </button>
+                ) : (
+                  <Link
+                    href={`/book/${business.id}`}
+                    className="hidden sm:flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-[var(--theme-secondary)] to-[var(--theme-primary)] text-white text-sm font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                  >
+                    <Calendar className="w-4 h-4" />
+                    احجز موعد
+                  </Link>
+                )}
                 <button
                   type="button"
-                  className="hidden sm:flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-[var(--theme-secondary)] to-[var(--theme-primary)] text-white text-sm font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  aria-label={mobileMenuOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
+                  className="lg:hidden p-2 rounded-lg text-white hover:bg-white/10 transition-colors"
                 >
-                  <ShoppingCart className="w-4 h-4" />
-                  السلة
+                  {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                 </button>
-              ) : (
-                <Link
-                  href={`/book/${business.id}`}
-                  className="hidden sm:flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-[var(--theme-secondary)] to-[var(--theme-primary)] text-white text-sm font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-                >
-                  <Calendar className="w-4 h-4" />
-                  احجز موعد
-                </Link>
-              )}
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label={mobileMenuOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
-                className="lg:hidden p-2 rounded-lg text-white hover:bg-white/10 transition-colors"
-              >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {mobileMenuOpen && (
-          <div className="lg:hidden bg-[var(--theme-primary)] border-t border-white/10 overflow-hidden">
-            <div className="px-4 py-3 space-y-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className="block w-full text-right px-4 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors text-sm font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
+          {mobileMenuOpen && (
+            <div className="lg:hidden bg-[var(--theme-primary)] border-t border-white/10 overflow-hidden">
+              <div className="px-4 py-3 space-y-1">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className="block w-full text-right px-4 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors text-sm font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-      </header>
+          )}
+        </header>
+      )}
 
       {business.websiteType === 'STORE' && page.isHomePage ? (
         <StoreHome business={business} pageSlug={pageSlug} />
@@ -424,43 +429,45 @@ export default function BusinessCustomPage() {
         </main>
       )}
 
-      <footer className="bg-[var(--theme-primary)] text-white/80 py-12">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
-            <div>
-              <h4 className="text-white font-bold mb-4">{business.name}</h4>
-              <p className="text-sm text-white/70 leading-relaxed">
-                {business.description ? business.description.slice(0, 120) + '...' : ''}
-              </p>
-            </div>
-            <div>
-              <h4 className="text-white font-bold mb-4">روابط سريعة</h4>
-              <div className="space-y-2">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    className="block text-sm text-white/70 hover:text-white transition-colors"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+      {!useTemplateShell && (
+        <footer className="bg-[var(--theme-primary)] text-white/80 py-12">
+          <div className="max-w-5xl mx-auto px-4">
+            <div className="grid md:grid-cols-3 gap-8 mb-8">
+              <div>
+                <h4 className="text-white font-bold mb-4">{business.name}</h4>
+                <p className="text-sm text-white/70 leading-relaxed">
+                  {business.description ? business.description.slice(0, 120) + '...' : ''}
+                </p>
+              </div>
+              <div>
+                <h4 className="text-white font-bold mb-4">روابط سريعة</h4>
+                <div className="space-y-2">
+                  {navItems.map((item) => (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      className="block text-sm text-white/70 hover:text-white transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h4 className="text-white font-bold mb-4">تواصل معنا</h4>
+                <div className="space-y-2 text-sm">
+                  {business.phone && <p>{business.phone}</p>}
+                  {business.email && <p>{business.email}</p>}
+                  {business.city && <p>{business.city}</p>}
+                </div>
               </div>
             </div>
-            <div>
-              <h4 className="text-white font-bold mb-4">تواصل معنا</h4>
-              <div className="space-y-2 text-sm">
-                {business.phone && <p>{business.phone}</p>}
-                {business.email && <p>{business.email}</p>}
-                {business.city && <p>{business.city}</p>}
-              </div>
+            <div className="border-t border-white/10 pt-6 text-center text-sm text-white/50">
+              © {new Date().getFullYear()} {business.name}. جميع الحقوق محفوظة.
             </div>
           </div>
-          <div className="border-t border-white/10 pt-6 text-center text-sm text-white/50">
-            © {new Date().getFullYear()} {business.name}. جميع الحقوق محفوظة.
-          </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </BusinessThemeProvider>
   );
 }

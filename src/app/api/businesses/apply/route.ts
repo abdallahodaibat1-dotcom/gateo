@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 import { getThemePresetById, getDefaultSections, getStoreDefaultSections } from '@/lib/business-template-generator';
+import { getDesignById, resolveHomeTemplate, resolvePresetId } from '@/lib/business-design-library';
 
 const applySchema = z.object({
   name: z.string().min(2).max(100),
@@ -43,6 +44,16 @@ const applySchema = z.object({
   websiteType: z.enum(['INTRO', 'STORE']).optional(),
   themePresetId: z.string().optional(),
   homeTemplate: z.enum(['default', 'porto-shop1']).optional(),
+  designId: z.string().optional(),
+  useAutoColors: z.boolean().optional(),
+  themeColors: z.object({
+    primaryColor: z.string(),
+    secondaryColor: z.string(),
+    accentColor: z.string(),
+    backgroundColor: z.string(),
+    surfaceColor: z.string(),
+    textColor: z.string(),
+  }).optional(),
   images: z.array(z.object({
     url: z.string().min(1),
     type: z.string().optional(),
@@ -98,7 +109,7 @@ export async function POST(req: NextRequest) {
 
     if (existing) {
       // Update existing business with new data
-      const { services: _services, products: _products, themePresetId: _themePresetId, homeTemplate: _homeTemplate, fieldValues: _fieldValues, ...businessData } = data;
+      const { services: _services, products: _products, themePresetId: _themePresetId, homeTemplate: _homeTemplate, designId: _designId, themeColors: _themeColors, useAutoColors: _useAutoColors, fieldValues: _fieldValues, ...businessData } = data;
       
       // Check slug uniqueness only if slug changed
       if (data.slug !== existing.slug) {
@@ -158,9 +169,15 @@ export async function POST(req: NextRequest) {
       // Save dynamic field values
       await saveBusinessFieldValues(existing.id, data.categoryId, data.fieldValues);
 
-      // Apply selected theme preset if provided
-      if (data.themePresetId) {
-        await applyThemePreset(existing.id, data.themePresetId, data.websiteType, data.homeTemplate);
+      // Apply selected design if provided
+      if (data.designId || data.themePresetId) {
+        await applyThemePreset(existing.id, {
+          designId: data.designId,
+          themePresetId: data.themePresetId,
+          websiteType: data.websiteType,
+          homeTemplate: data.homeTemplate,
+          themeColors: data.themeColors,
+        });
       }
 
       // Create default pages if none exist
@@ -177,7 +194,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'الرابط مستخدم من قبل' }, { status: 400 });
     }
 
-    const { services: _services, products: _products, themePresetId: _themePresetId, homeTemplate: _homeTemplate, fieldValues: _fieldValues, ...businessData } = data;
+    const { services: _services, products: _products, themePresetId: _themePresetId, homeTemplate: _homeTemplate, designId: _designId, themeColors: _themeColors, useAutoColors: _useAutoColors, fieldValues: _fieldValues, ...businessData } = data;
     const business = await prisma.business.create({
       data: {
         ...businessData,
@@ -224,8 +241,14 @@ export async function POST(req: NextRequest) {
     // Save dynamic field values
     await saveBusinessFieldValues(business.id, data.categoryId, data.fieldValues);
 
-    // Apply theme preset (selected or default)
-    await applyThemePreset(business.id, data.themePresetId || 'default', data.websiteType, data.homeTemplate);
+    // Apply design (selected or default)
+    await applyThemePreset(business.id, {
+      designId: data.designId,
+      themePresetId: data.themePresetId,
+      websiteType: data.websiteType,
+      homeTemplate: data.homeTemplate,
+      themeColors: data.themeColors,
+    });
 
     // Create default pages
     await createDefaultPages(business.id, business.name, business.description);
@@ -257,13 +280,44 @@ export async function POST(req: NextRequest) {
   }
 }
 
+interface ApplyThemeOptions {
+  designId?: string;
+  themePresetId?: string;
+  websiteType?: 'INTRO' | 'STORE';
+  homeTemplate?: 'default' | 'porto-shop1';
+  themeColors?: {
+    primaryColor: string;
+    secondaryColor: string;
+    accentColor: string;
+    backgroundColor: string;
+    surfaceColor: string;
+    textColor: string;
+  };
+}
+
 async function applyThemePreset(
   businessId: string,
-  presetId: string,
-  websiteType: 'INTRO' | 'STORE' | undefined = 'INTRO',
-  homeTemplate: 'default' | 'porto-shop1' | undefined = 'default'
+  options: ApplyThemeOptions = {}
 ) {
-  const preset = getThemePresetById(presetId) || getThemePresetById('default');
+  const { designId, themePresetId, websiteType = 'INTRO', homeTemplate, themeColors } = options;
+
+  // Resolve design → preset + homeTemplate
+  let effectivePresetId = themePresetId;
+  let effectiveHomeTemplate = homeTemplate;
+
+  if (designId) {
+    const design = getDesignById(designId);
+    if (design) {
+      effectivePresetId = resolvePresetId(design);
+      effectiveHomeTemplate = resolveHomeTemplate(design, websiteType);
+    }
+  }
+
+  if (!designId && !effectivePresetId) {
+    effectivePresetId = 'default';
+  }
+
+  const preset = getThemePresetById(effectivePresetId || 'default') || getThemePresetById('default');
   if (!preset) return;
 
   const baseSections = websiteType === 'STORE' ? getStoreDefaultSections() : getDefaultSections();
@@ -272,34 +326,45 @@ async function applyThemePreset(
     enabled: section.id !== 'experience',
   }));
 
+  const colors = themeColors || {
+    primaryColor: preset.primaryColor,
+    secondaryColor: preset.secondaryColor,
+    accentColor: preset.accentColor,
+    backgroundColor: preset.backgroundColor,
+    surfaceColor: preset.surfaceColor,
+    textColor: preset.textColor,
+  };
+
   await prisma.businessTheme.upsert({
     where: { businessId },
     create: {
       businessId,
+      designId: designId || null,
       presetId: preset.presetId,
-      primaryColor: preset.primaryColor,
-      secondaryColor: preset.secondaryColor,
-      accentColor: preset.accentColor,
-      backgroundColor: preset.backgroundColor,
-      surfaceColor: preset.surfaceColor,
-      textColor: preset.textColor,
+      primaryColor: colors.primaryColor,
+      secondaryColor: colors.secondaryColor,
+      accentColor: colors.accentColor,
+      backgroundColor: colors.backgroundColor,
+      surfaceColor: colors.surfaceColor,
+      textColor: colors.textColor,
       fontFamily: preset.fontFamily,
       borderRadius: preset.borderRadius,
       buttonStyle: preset.buttonStyle,
       heroLayout: preset.heroLayout,
       navbarStyle: preset.navbarStyle,
-      homeTemplate,
+      homeTemplate: effectiveHomeTemplate || 'default',
       sections: JSON.stringify(sections) as any,
     },
     update: {
+      designId: designId || null,
       presetId: preset.presetId,
-      homeTemplate,
-      primaryColor: preset.primaryColor,
-      secondaryColor: preset.secondaryColor,
-      accentColor: preset.accentColor,
-      backgroundColor: preset.backgroundColor,
-      surfaceColor: preset.surfaceColor,
-      textColor: preset.textColor,
+      homeTemplate: effectiveHomeTemplate || 'default',
+      primaryColor: colors.primaryColor,
+      secondaryColor: colors.secondaryColor,
+      accentColor: colors.accentColor,
+      backgroundColor: colors.backgroundColor,
+      surfaceColor: colors.surfaceColor,
+      textColor: colors.textColor,
       fontFamily: preset.fontFamily,
       borderRadius: preset.borderRadius,
       buttonStyle: preset.buttonStyle,

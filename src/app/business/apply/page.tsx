@@ -20,9 +20,9 @@ import { useToast } from '@/components/ui/Toast';
 import { BusinessIntroBuilder } from '@/components/business-apply/BusinessIntroBuilder';
 import { BusinessStoreBuilder } from '@/components/business-apply/BusinessStoreBuilder';
 import type { BuilderStep } from '@/components/business-apply/BuilderStepSidebar';
-import { ThemeSelector } from '@/components/business-apply/ThemeSelector';
-import { HomeTemplateSelector } from '@/components/business-apply/HomeTemplateSelector';
+import { DesignLibrarySelector } from '@/components/business-apply/DesignLibrarySelector';
 import { SubcategoryCombobox } from '@/components/business-apply/SubcategoryCombobox';
+import { extractColorsFromImage, type ExtractedThemeColors } from '@/lib/color-extraction';
 import { useCurrency } from '@/hooks/useCurrency';
 import { compressImage } from '@/lib/media-compression';
 import { parseMapUrl } from '@/lib/location-utils';
@@ -83,8 +83,9 @@ export default function BusinessApplyPage() {
     customSubcategory: '',
     acceptedTerms: false,
     websiteType: '' as 'INTRO' | 'STORE' | '',
-    themePresetId: '',
-    homeTemplate: 'default' as 'default' | 'porto-shop1',
+    designId: '',
+    themeColors: null as ExtractedThemeColors | null,
+    useAutoColors: true,
     logo: '',
     cover: '',
     gallery: [] as string[],
@@ -196,6 +197,20 @@ export default function BusinessApplyPage() {
     return () => clearTimeout(timer);
   }, [form.slug]);
 
+  // Extract colors from logo automatically
+  useEffect(() => {
+    if (!form.logo || !form.useAutoColors) return;
+    let cancelled = false;
+    extractColorsFromImage(form.logo).then((colors) => {
+      if (!cancelled) {
+        setForm((prev) => ({ ...prev, themeColors: colors }));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [form.logo, form.useAutoColors]);
+
   const validateStep = (s: number): boolean => {
     const newErrors: Record<string, string> = {};
     if (s === 1) {
@@ -213,8 +228,8 @@ export default function BusinessApplyPage() {
       }
     }
     if (s === 2) {
-      if (!form.themePresetId) {
-        newErrors.themePresetId = 'اختر قالباً لتصميم موقعك';
+      if (!form.designId) {
+        newErrors.designId = 'اختر تصميماً لموقعك';
       }
     }
     if (s === 5) {
@@ -266,8 +281,8 @@ export default function BusinessApplyPage() {
           ...form,
           mapLink: undefined,
           websiteType: form.websiteType || undefined,
-          themePresetId: form.themePresetId || undefined,
-          homeTemplate: form.homeTemplate || undefined,
+          designId: form.designId || undefined,
+          themeColors: form.themeColors || undefined,
           workingHours: form.workingHours.filter((w) => w.open && w.close),
           customSubcategory: form.customSubcategory || undefined,
           latitude: form.latitude ? parseFloat(form.latitude) : undefined,
@@ -938,25 +953,26 @@ export default function BusinessApplyPage() {
                       </motion.div>
                     )}
 
-                    {/* Step 2: Theme */}
+                    {/* Step 2: Design */}
                     {step === 2 && (
                       <motion.div
-                        key="step2-theme"
+                        key="step2-design"
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
                         className="space-y-4"
                       >
-                        <ThemeSelector
-                          selectedPresetId={form.themePresetId}
-                          onSelect={(presetId) => {
-                            setForm((prev) => ({ ...prev, themePresetId: presetId }));
+                        <DesignLibrarySelector
+                          selectedDesignId={form.designId}
+                          onSelect={(designId) => {
+                            setForm((prev) => ({ ...prev, designId }));
                             setErrors((prev) => {
                               const next = { ...prev };
-                              delete next.themePresetId;
+                              delete next.designId;
                               return next;
                             });
                           }}
+                          websiteType={form.websiteType}
                           businessName={form.name}
                           categoryName={selectedCategory?.name}
                           subcategoryName={
@@ -964,18 +980,9 @@ export default function BusinessApplyPage() {
                             form.customSubcategory
                           }
                         />
-                        {errors.themePresetId && (
-                          <p className="text-red-500 text-xs">{errors.themePresetId}</p>
+                        {errors.designId && (
+                          <p className="text-red-500 text-xs">{errors.designId}</p>
                         )}
-
-                        <hr className="border-border" />
-
-                        <HomeTemplateSelector
-                          selectedTemplateId={form.homeTemplate}
-                          onSelect={(templateId) => {
-                            setForm((prev) => ({ ...prev, homeTemplate: templateId as 'default' | 'porto-shop1' }));
-                          }}
-                        />
                       </motion.div>
                     )}
 
@@ -1062,6 +1069,142 @@ export default function BusinessApplyPage() {
                             </div>
                             <p className="text-xs text-muted mt-1.5">يفضل 1200×400 بكسل — JPEG, PNG, WebP, GIF — يتم ضغط الصورة تلقائياً</p>
                           </div>
+                        </div>
+
+                        {/* Color customization */}
+                        <div className="rounded-lg border border-border bg-surface p-4 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                                <Palette className="w-4 h-4 text-primary" />
+                                ألوان التصميم
+                              </h3>
+                              <p className="text-xs text-muted mt-0.5">
+                                يتم توليد الألوان تلقائياً من شعارك، أو يمكنك تخصيصها يدوياً.
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-1">
+                              <button
+                                type="button"
+                                onClick={() => setForm((prev) => ({ ...prev, useAutoColors: true }))}
+                                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                                  form.useAutoColors
+                                    ? 'bg-white text-primary shadow-sm'
+                                    : 'text-muted hover:text-foreground'
+                                }`}
+                              >
+                                تلقائي من الشعار
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setForm((prev) => ({ ...prev, useAutoColors: false }))}
+                                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                                  !form.useAutoColors
+                                    ? 'bg-white text-primary shadow-sm'
+                                    : 'text-muted hover:text-foreground'
+                                }`}
+                              >
+                                تخصيص يدوي
+                              </button>
+                            </div>
+                          </div>
+
+                          {!form.useAutoColors && (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                              {(
+                                [
+                                  { key: 'primaryColor', label: 'اللون الرئيسي' },
+                                  { key: 'secondaryColor', label: 'اللون الثانوي' },
+                                  { key: 'accentColor', label: 'لون التمييز' },
+                                  { key: 'backgroundColor', label: 'خلفية الصفحة' },
+                                  { key: 'surfaceColor', label: 'لون البطاقات' },
+                                  { key: 'textColor', label: 'لون النص' },
+                                ] as const
+                              ).map(({ key, label }) => (
+                                <label key={key} className="space-y-1.5">
+                                  <span className="text-xs text-muted">{label}</span>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="color"
+                                      value={form.themeColors?.[key] || '#7c3aed'}
+                                      onChange={(e) =>
+                                        setForm((prev) => ({
+                                          ...prev,
+                                          themeColors: {
+                                            ...(prev.themeColors || {
+                                              primaryColor: '#7c3aed',
+                                              secondaryColor: '#ec4899',
+                                              accentColor: '#f59e0b',
+                                              backgroundColor: '#ffffff',
+                                              surfaceColor: '#ffffff',
+                                              textColor: '#1a1a2e',
+                                            }),
+                                            [key]: e.target.value,
+                                          },
+                                        }))
+                                      }
+                                      className="w-9 h-9 rounded-md border border-border cursor-pointer overflow-hidden"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={form.themeColors?.[key] || '#7c3aed'}
+                                      onChange={(e) =>
+                                        setForm((prev) => ({
+                                          ...prev,
+                                          themeColors: {
+                                            ...(prev.themeColors || {
+                                              primaryColor: '#7c3aed',
+                                              secondaryColor: '#ec4899',
+                                              accentColor: '#f59e0b',
+                                              backgroundColor: '#ffffff',
+                                              surfaceColor: '#ffffff',
+                                              textColor: '#1a1a2e',
+                                            }),
+                                            [key]: e.target.value,
+                                          },
+                                        }))
+                                      }
+                                      className="flex-1 min-w-0 px-2 py-1.5 rounded-md border border-border bg-surface text-xs text-foreground focus:border-primary outline-none"
+                                    />
+                                  </div>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+
+                          {form.useAutoColors && (
+                            <div className="flex flex-wrap gap-2">
+                              {form.themeColors ? (
+                                (
+                                  [
+                                    { key: 'primaryColor', label: 'رئيسي' },
+                                    { key: 'secondaryColor', label: 'ثانوي' },
+                                    { key: 'accentColor', label: 'تمييز' },
+                                    { key: 'backgroundColor', label: 'خلفية' },
+                                    { key: 'surfaceColor', label: 'بطاقات' },
+                                    { key: 'textColor', label: 'نص' },
+                                  ] as const
+                                ).map(({ key, label }) => (
+                                  <div
+                                    key={key}
+                                    className="flex items-center gap-2 px-2 py-1.5 rounded-md border border-border bg-slate-50"
+                                  >
+                                    <span
+                                      className="w-5 h-5 rounded-full border border-border"
+                                      style={{ backgroundColor: form.themeColors?.[key] }}
+                                    />
+                                    <span className="text-xs text-muted">{label}</span>
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-xs text-muted">
+                                  {form.logo
+                                    ? 'جاري استخراج الألوان من الشعار...'
+                                    : 'ارفع شعاراً أولاً لاستخراج الألوان تلقائياً.'}
+                                </p>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         {/* Gallery Upload */}
@@ -1809,7 +1952,8 @@ export default function BusinessApplyPage() {
         setStep={setStep}
         form={form}
         categories={categories}
-        themePresetId={form.themePresetId}
+        designId={form.designId}
+        themeColors={form.themeColors}
         onBack={() => setForm((prev) => ({ ...prev, websiteType: '' }))}
         onNext={handleNext}
         onSubmit={handleSubmit}
@@ -1828,7 +1972,8 @@ export default function BusinessApplyPage() {
         setStep={setStep}
         form={form}
         categories={categories}
-        themePresetId={form.themePresetId}
+        designId={form.designId}
+        themeColors={form.themeColors}
         onBack={() => setForm((prev) => ({ ...prev, websiteType: '' }))}
         onNext={handleNext}
         onSubmit={handleSubmit}
