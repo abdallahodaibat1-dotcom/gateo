@@ -26,6 +26,7 @@ interface ProductCardProps {
   variant?: 'grid' | 'list';
   showWishlist?: boolean;
   showAddToCart?: boolean;
+  showRatingValue?: boolean;
   onAddToCart?: (product: ProductCardProduct) => void;
 }
 
@@ -34,6 +35,7 @@ export function ProductCard({
   variant = 'grid',
   showWishlist = true,
   showAddToCart = true,
+  showRatingValue = false,
   onAddToCart,
 }: ProductCardProps) {
   const { format, convert } = useCurrency();
@@ -49,9 +51,9 @@ export function ProductCard({
   const badge = product.badge || (discount > 0 ? 'sale' : isNewProduct(product.createdAt) ? 'new' : 'hot');
 
   const badgeConfig = {
-    hot: { text: 'مميز', className: 'bg-rose-500' },
+    hot: { text: 'HOT', className: 'bg-emerald-500' },
     sale: { text: `خصم ${discount}%`, className: 'bg-amber-500' },
-    new: { text: 'جديد', className: 'bg-emerald-500' },
+    new: { text: 'NEW', className: 'bg-rose-500' },
   };
 
   if (variant === 'list') {
@@ -75,7 +77,7 @@ export function ProductCard({
             <span className="text-[11px] text-muted mb-1">{product.category}</span>
           )}
           <h3 className="font-bold text-foreground text-sm line-clamp-1 mb-1">{product.name}</h3>
-          <StarRating rating={product.rating || 0} size={12} showValue={false} />
+          <StarRating rating={product.rating || 0} size={12} showValue={showRatingValue} />
           <div className="mt-auto flex items-center gap-2">
             <span className="font-bold text-base" style={{ color: 'var(--theme-primary)' }}>
               {format(convert(price))}
@@ -155,7 +157,7 @@ export function ProductCard({
         <h3 className="font-bold text-foreground text-sm mb-1 line-clamp-2 min-h-[2.5rem]">
           {product.name}
         </h3>
-        <StarRating rating={product.rating || 0} size={12} />
+        <StarRating rating={product.rating || 0} size={12} showValue={showRatingValue} />
         <div className="mt-auto pt-3">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg font-bold" style={{ color: 'var(--theme-primary)' }}>
