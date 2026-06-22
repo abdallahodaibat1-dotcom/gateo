@@ -16,6 +16,7 @@ import Skeleton from '@/components/ui/Skeleton';
 import EmptyState from '@/components/ui/EmptyState';
 import Badge from '@/components/ui/Badge';
 import { useToast } from '@/components/ui/Toast';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Commission {
   id: string;
@@ -38,12 +39,6 @@ const statusOptions = [
   { value: 'PAID', label: 'مدفوعة' },
 ];
 
-function formatMoney(amount: number | string, currency?: string) {
-  const value = Number(amount || 0);
-  const symbol = currency === 'USD' || !currency ? '$' : currency === 'SAR' ? 'ر.س' : currency;
-  return `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${symbol}`;
-}
-
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('ar-SA', {
     year: 'numeric',
@@ -54,6 +49,7 @@ function formatDate(date: string) {
 
 export default function AdminPayoutsPage() {
   const { showToast } = useToast();
+  const { format, convert } = useCurrency();
   const [commissions, setCommissions] = useState<Commission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -144,7 +140,7 @@ export default function AdminPayoutsPage() {
           <motion.div key={s.status} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: i * 0.05 }}>
             <Card>
               <p className="text-sm text-muted">{statusOptions.find((o) => o.value === s.status)?.label || s.status}</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{formatMoney(s.total)}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{format(convert(s.total))}</p>
             </Card>
           </motion.div>
         ))}
@@ -184,7 +180,7 @@ export default function AdminPayoutsPage() {
                       <div className="text-foreground font-medium">{c.business?.name || c.user?.name || '—'}</div>
                       <div className="text-xs text-muted">{c.user?.email || '—'}</div>
                     </td>
-                    <td className="px-4 py-3 font-medium text-foreground">{formatMoney(c.amount, c.currency)}</td>
+                    <td className="px-4 py-3 font-medium text-foreground">{format(convert(c.amount))}</td>
                     <td className="px-4 py-3 text-muted">{c.rule.name}</td>
                     <td className="px-4 py-3 text-muted">{c.referenceType} • {c.referenceId.slice(0, 8)}</td>
                     <td className="px-4 py-3">

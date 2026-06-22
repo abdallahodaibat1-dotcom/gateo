@@ -22,6 +22,7 @@ import Modal from '@/components/ui/Modal';
 import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
 import { useToast } from '@/components/ui/Toast';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface FinancialAccount {
   id: string;
@@ -78,12 +79,6 @@ const statusVariant: Record<string, 'warning' | 'success' | 'danger' | 'muted'> 
   REVERSED: 'muted',
 };
 
-function formatMoney(amount: number | string | null | undefined, currency?: string) {
-  const value = Number(amount || 0);
-  const symbol = currency === 'USD' || !currency ? '$' : currency === 'SAR' ? 'ر.س' : currency;
-  return `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${symbol}`;
-}
-
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('ar-SA', {
     year: 'numeric',
@@ -98,6 +93,7 @@ export default function WalletPage() {
   const { status } = useSession();
   const router = useRouter();
   const { showToast } = useToast();
+  const { format, convert } = useCurrency();
   const [accounts, setAccounts] = useState<FinancialAccount[]>([]);
   const [transactions, setTransactions] = useState<FinancialTransaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -287,7 +283,7 @@ export default function WalletPage() {
                     </span>
                   </div>
                   <div className="text-2xl font-bold text-foreground">
-                    {formatMoney(account.balance, account.currency === 'USD' ? '$' : account.currency)}
+                    {format(convert(account.balance))}
                   </div>
                   <div className="text-sm text-muted mt-1">
                     {accountTypeLabels[account.type] || account.type} • {account.currency}
@@ -340,7 +336,7 @@ export default function WalletPage() {
                           </div>
                         </td>
                         <td className="px-4 py-3 font-medium text-foreground">
-                          {formatMoney(t.amount, t.currency === 'USD' ? '$' : t.currency)}
+                          {format(convert(t.amount))}
                         </td>
                         <td className="px-4 py-3">
                           <span

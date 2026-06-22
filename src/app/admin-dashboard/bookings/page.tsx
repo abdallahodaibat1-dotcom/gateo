@@ -16,6 +16,7 @@ import StatusBadge from '@/components/admin/StatusBadge';
 import ConfirmModal from '@/components/admin/ConfirmModal';
 import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Booking {
   id: string;
@@ -45,6 +46,8 @@ export default function AdminBookingsPage() {
   const [editStatus, setEditStatus] = useState('');
   const [editPayment, setEditPayment] = useState('');
   const [editLoading, setEditLoading] = useState(false);
+
+  const { format, convert } = useCurrency();
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
@@ -191,7 +194,7 @@ export default function AdminBookingsPage() {
                     <StatusBadge status={booking.paymentStatus} />
                   </td>
                   <td className="px-4 py-3 text-foreground font-medium">
-                    {booking.totalPrice?.toLocaleString('ar-SA')} ر.س
+                    {format(convert(booking.totalPrice))}
                   </td>
                   <td className="px-4 py-3 text-muted text-xs">{formatDate(booking.createdAt)}</td>
                   <td className="px-4 py-3">

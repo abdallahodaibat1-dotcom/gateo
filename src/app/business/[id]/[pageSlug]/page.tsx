@@ -4,15 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useCurrency } from '@/hooks/useCurrency';
 import {
   Loader2,
   ArrowRight,
   Home,
   Phone,
   MapPin,
-  Clock,
   Calendar,
-  Star,
   Menu,
   X,
   ShoppingBag,
@@ -20,6 +19,7 @@ import {
   ShoppingCart,
 } from 'lucide-react';
 import { BusinessThemeProvider } from '@/components/business-website/BusinessThemeProvider';
+import { PortoShop1Template } from '@/components/business-website/PortoShop1Template';
 
 interface Product {
   id: string;
@@ -56,10 +56,15 @@ interface Business {
     buttonStyle: string;
     heroLayout: string;
     navbarStyle: string;
+    homeTemplate?: string;
     isPublished: boolean;
   } | null;
   pages: { id: string; slug: string; title: string; isHomePage: boolean }[];
   products?: Product[];
+  posts?: { id: string; title: string; content?: string | null; image?: string | null; createdAt: string }[];
+  cover?: string | null;
+  address?: string | null;
+  workingHours?: Record<string, string> | string | null;
 }
 
 interface PageData {
@@ -71,8 +76,13 @@ interface PageData {
 }
 
 function StoreHome({ business, pageSlug }: { business: Business; pageSlug: string }) {
+  const { format, convert } = useCurrency();
   const products = business.products || [];
   const categories = Array.from(new Set(products.map((p) => p.category).filter(Boolean))) as string[];
+
+  if (business.theme?.homeTemplate === 'porto-shop1') {
+    return <PortoShop1Template business={business} />;
+  }
 
   return (
     <>
@@ -173,9 +183,9 @@ function StoreHome({ business, pageSlug }: { business: Business; pageSlug: strin
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {products.map((product) => {
-                  const discount = product.comparePrice
-                    ? Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)
-                    : 0;
+                  const price = Number(product.price) || 0;
+                  const comparePrice = product.comparePrice ? Number(product.comparePrice) : 0;
+                  const discount = comparePrice > 0 ? Math.round(((comparePrice - price) / comparePrice) * 100) : 0;
                   const image = product.images?.[0]?.url;
                   return (
                     <motion.div
@@ -184,7 +194,7 @@ function StoreHome({ business, pageSlug }: { business: Business; pageSlug: strin
                       className="bg-[var(--theme-surface)] rounded-xl border border-border shadow-sm overflow-hidden flex flex-col"
                       style={{ borderRadius: business.theme?.borderRadius || '1rem' }}
                     >
-                      <div className="aspect-square bg-slate-100 relative overflow-hidden">
+                      <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
                         {image ? (
                           <img src={image} alt={product.name} className="w-full h-full object-cover" />
                         ) : (
@@ -201,21 +211,23 @@ function StoreHome({ business, pageSlug }: { business: Business; pageSlug: strin
                           </span>
                         )}
                       </div>
-                      <div className="p-4 flex-1 flex flex-col">
+                      <div className="p-4 flex-1 flex flex-col min-h-[140px]">
                         {product.category && (
                           <span className="text-[10px] text-muted mb-1">{product.category}</span>
                         )}
                         <h3 className="font-bold text-foreground text-sm mb-1 line-clamp-2">{product.name}</h3>
-                        {product.description && (
-                          <p className="text-xs text-muted line-clamp-2 mb-3 flex-1">{product.description}</p>
+                        {product.description ? (
+                          <p className="text-xs text-muted line-clamp-2 mb-2 flex-1">{product.description}</p>
+                        ) : (
+                          <div className="flex-1" />
                         )}
                         <div className="flex items-center gap-2 mt-auto">
                           <span className="text-lg font-bold" style={{ color: 'var(--theme-primary)' }}>
-                            {Number(product.price).toFixed(2)} ر.س
+                            {format(convert(price))}
                           </span>
-                          {product.comparePrice && product.comparePrice > 0 && (
+                          {comparePrice > 0 && (
                             <span className="text-sm text-muted line-through">
-                              {Number(product.comparePrice).toFixed(2)} ر.س
+                              {format(convert(comparePrice))}
                             </span>
                           )}
                         </div>

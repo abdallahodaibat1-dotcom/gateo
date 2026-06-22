@@ -162,6 +162,9 @@ export async function POST(req: NextRequest) {
         await applyThemePreset(existing.id, data.themePresetId, data.websiteType);
       }
 
+      // Create default pages if none exist
+      await createDefaultPages(existing.id, updated.name, updated.description);
+
       return NextResponse.json({ business: updated, updated: true }, { status: 200 });
     }
 
@@ -222,6 +225,9 @@ export async function POST(req: NextRequest) {
 
     // Apply theme preset (selected or default)
     await applyThemePreset(business.id, data.themePresetId || 'default', data.websiteType);
+
+    // Create default pages
+    await createDefaultPages(business.id, business.name, business.description);
 
     // Update user account type based on business type
     const derivedAccountType = data.businessType === 'INDIVIDUAL' ? 'PROFESSIONAL' : 'COMPANY';
@@ -331,4 +337,45 @@ async function saveBusinessFieldValues(
         })
       )
   );
+}
+
+async function createDefaultPages(
+  businessId: string,
+  name: string,
+  description?: string | null
+) {
+  const existing = await prisma.businessPage.count({ where: { businessId } });
+  if (existing > 0) return;
+
+  await prisma.businessPage.createMany({
+    data: [
+      {
+        businessId,
+        slug: 'home',
+        title: 'الرئيسية',
+        isHomePage: true,
+        isVisible: true,
+        sortOrder: 0,
+      },
+      {
+        businessId,
+        slug: 'about',
+        title: 'من نحن',
+        isHomePage: false,
+        isVisible: true,
+        sortOrder: 10,
+        content: description
+          ? `تعرف على ${name}. ${description}`
+          : `تعرف على ${name}`,
+      },
+      {
+        businessId,
+        slug: 'contact',
+        title: 'تواصل معنا',
+        isHomePage: false,
+        isVisible: true,
+        sortOrder: 20,
+      },
+    ],
+  });
 }

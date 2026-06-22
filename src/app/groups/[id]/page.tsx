@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/hooks/useConfirm';
+import { compressImage, compressVideo } from '@/lib/media-compression';
 
 interface GroupDetail {
   id: string;
@@ -214,18 +215,20 @@ export default function GroupDetailPage() {
       showToast('يرجى اختيار صورة بصيغة JPEG, PNG, WebP, أو GIF', 'error');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('حجم الصورة يجب أن لا يتجاوز 5 ميجابايت', 'error');
-      return;
-    }
     if (postImages.length >= 5) {
       showToast('يمكنك رفع 5 صور كحد أقصى', 'error');
       return;
     }
     setUploadingImage(true);
     try {
+      const compressedFile = await compressImage(file, {
+        maxWidth: 1200,
+        maxHeight: 1200,
+        quality: 0.88,
+        maxSizeBytes: 4 * 1024 * 1024,
+      });
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok && data.url) {
@@ -247,8 +250,8 @@ export default function GroupDetailPage() {
       showToast('يرجى اختيار فيديو بصيغة MP4, MOV, WebM, أو AVI', 'error');
       return;
     }
-    if (file.size > 50 * 1024 * 1024) {
-      showToast('حجم الفيديو يجب أن لا يتجاوز 50 ميجابايت', 'error');
+    if (file.size > 100 * 1024 * 1024) {
+      showToast('حجم الفيديو يجب أن لا يتجاوز 100 ميجابايت', 'error');
       return;
     }
     if (postVideo) {
@@ -257,8 +260,13 @@ export default function GroupDetailPage() {
     }
     setUploadingVideo(true);
     try {
+      const compressedFile = await compressVideo(file, {
+        maxWidth: 1280,
+        maxHeight: 720,
+        maxRate: '2M',
+      });
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok && data.url) {

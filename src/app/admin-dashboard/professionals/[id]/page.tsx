@@ -27,6 +27,7 @@ import {
 import StatusBadge from '@/components/admin/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface ProfessionalDetail {
   id: string;
@@ -77,6 +78,7 @@ interface ProfessionalDetail {
 export default function ProfessionalReviewPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { format, convert } = useCurrency();
   const [professional, setProfessional] = useState<ProfessionalDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -411,7 +413,7 @@ export default function ProfessionalReviewPage() {
                   <div key={i} className="p-3 rounded-lg bg-slate-50 border border-border">
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-bold text-foreground text-sm">{svc.name}</h4>
-                      {svc.startingPrice ? <span className="text-primary font-bold text-sm">{svc.startingPrice} ر.س</span> : null}
+                      {svc.startingPrice ? <span className="text-primary font-bold text-sm">{format(convert(svc.startingPrice))}</span> : null}
                     </div>
                     {svc.description && <p className="text-xs text-muted mb-2">{svc.description}</p>}
                     {svc.duration && <p className="text-xs text-muted">المدة: {svc.duration}</p>}

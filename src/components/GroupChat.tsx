@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import EmptyState from '@/components/ui/EmptyState';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/hooks/useConfirm';
+import { compressImage, compressVideo } from '@/lib/media-compression';
 
 interface GroupMessage {
   id: string;
@@ -198,16 +199,31 @@ export default function GroupChat({ groupId, members, isAdmin }: GroupChatProps)
       showToast('صيغة الفيديو غير مدعومة', 'error');
       return;
     }
-    const maxSize = type === 'IMAGE' ? 5 : 50;
-    if (file.size > maxSize * 1024 * 1024) {
+    const maxSize = type === 'IMAGE' ? undefined : 100;
+    if (maxSize && file.size > maxSize * 1024 * 1024) {
       showToast(`الحد الأقصى ${maxSize} ميجابايت`, 'error');
       return;
     }
     setUploadingMedia(true);
     setSendError('');
     try {
+      let uploadFile = file;
+      if (type === 'IMAGE') {
+        uploadFile = await compressImage(file, {
+          maxWidth: 1200,
+          maxHeight: 1200,
+          quality: 0.85,
+          maxSizeBytes: 4 * 1024 * 1024,
+        });
+      } else if (type === 'VIDEO') {
+        uploadFile = await compressVideo(file, {
+          maxWidth: 1280,
+          maxHeight: 720,
+          maxRate: '2M',
+        });
+      }
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', uploadFile);
       const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
       const uploadData = await uploadRes.json();
       if (!uploadRes.ok || !uploadData.url) {

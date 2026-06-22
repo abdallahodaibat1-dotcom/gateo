@@ -12,6 +12,7 @@ import Input from '@/components/ui/Input';
 import { Loader2, ArrowRight, Camera, User, FileText, Save, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { compressImage } from '@/lib/media-compression';
 
 interface Country {
   id: string;
@@ -187,14 +188,17 @@ export default function EditProfilePage() {
       setMessage({ type: 'error', text: 'يرجى اختيار صورة بصيغة JPEG, PNG, WebP, أو GIF' });
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setMessage({ type: 'error', text: 'حجم الصورة يجب أن لا يتجاوز 5 ميجابايت' });
-      return;
-    }
     setUploadingAvatar(true);
     try {
+      const compressed = await compressImage(file, {
+        maxWidth: 400,
+        maxHeight: 400,
+        quality: 0.88,
+        maxSizeBytes: 4 * 1024 * 1024,
+      });
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressed);
+      formData.append('variant', 'avatar');
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok && data.url) {
@@ -386,7 +390,7 @@ export default function EditProfilePage() {
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-muted mt-1">JPEG, PNG, WebP, GIF — بحد أقصى 5 ميجابايت</p>
+                    <p className="text-xs text-muted mt-1">JPEG, PNG, WebP, GIF — يتم ضغط الصورة تلقائياً</p>
                   </div>
                 </div>
               </div>

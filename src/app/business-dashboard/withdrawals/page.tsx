@@ -18,6 +18,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import Modal from '@/components/ui/Modal';
 import Badge from '@/components/ui/Badge';
 import { useToast } from '@/components/ui/Toast';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Withdrawal {
   id: string;
@@ -43,12 +44,6 @@ const statusLabels: Record<string, string> = {
   REJECTED: 'مرفوض',
 };
 
-function formatMoney(amount: number | string, currency?: string) {
-  const value = Number(amount || 0);
-  const symbol = currency === 'USD' || !currency ? '$' : currency === 'SAR' ? 'ر.س' : currency;
-  return `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${symbol}`;
-}
-
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('ar-SA', {
     year: 'numeric',
@@ -61,6 +56,7 @@ function formatDate(date: string) {
 
 export default function BusinessWithdrawalsPage() {
   const { showToast } = useToast();
+  const { format, convert } = useCurrency();
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -193,7 +189,7 @@ export default function BusinessWithdrawalsPage() {
               <tbody className="divide-y divide-border">
                 {withdrawals.map((w) => (
                   <motion.tr key={w.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-foreground">{formatMoney(w.amount, w.currency)}</td>
+                    <td className="px-4 py-3 font-medium text-foreground">{format(convert(w.amount))}</td>
                     <td className="px-4 py-3 text-muted">{methodOptions.find((o) => o.value === w.method)?.label || w.method}</td>
                     <td className="px-4 py-3">
                       <Badge

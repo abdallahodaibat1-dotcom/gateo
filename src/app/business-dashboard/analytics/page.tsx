@@ -11,6 +11,7 @@ import {
 import { motion } from 'framer-motion';
 import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Business {
   id: string;
@@ -33,6 +34,7 @@ export default function BusinessAnalyticsPage() {
   const [business, setBusiness] = useState<Business | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const { format, convert } = useCurrency();
 
   useEffect(() => {
     fetchData();
@@ -150,8 +152,8 @@ export default function BusinessAnalyticsPage() {
             bg: 'bg-primary/10',
           },
           {
-            label: 'الإيرادات (ر.س)',
-            value: totalRevenue.toFixed(0),
+            label: 'الإيرادات',
+            value: format(convert(totalRevenue)),
             icon: TrendingUp,
             color: 'text-success',
             bg: 'bg-success/10',

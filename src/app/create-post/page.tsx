@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
+import { compressImage, compressVideo } from '@/lib/media-compression';
 import { Loader2, ImagePlus, MapPin, X, Video, Film } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/components/ui/Toast';
@@ -90,8 +91,25 @@ export default function CreatePostPage() {
       setFiles((prev) => [...prev, uploadFile]);
 
       try {
+        let processedFile: File = file;
+        if (type === 'image' && file.type.startsWith('image/')) {
+          processedFile = await compressImage(file, {
+            maxWidth: 1600,
+            maxHeight: 1600,
+            quality: 0.88,
+            maxSizeBytes: 4 * 1024 * 1024,
+          });
+        } else if (type === 'video' && file.type.startsWith('video/')) {
+          processedFile = await compressVideo(file, {
+            isReel: postType === 'REEL',
+            maxWidth: postType === 'REEL' ? 720 : 1280,
+            maxHeight: postType === 'REEL' ? 1280 : 720,
+            maxRate: postType === 'REEL' ? '4M' : '2M',
+          });
+        }
+
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', processedFile);
         formData.append('variant', postType === 'REEL' ? 'reel' : 'post');
 
         const res = await fetch('/api/upload', {

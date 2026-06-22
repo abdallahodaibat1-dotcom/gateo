@@ -173,6 +173,7 @@ model BusinessTheme {
   buttonStyle     String     @default("gradient")
   heroLayout      String     @default("center")
   navbarStyle     String     @default("fixed")
+  homeTemplate    String     @default("default")
   sections        String?    @db.LongText
   customCss       String?    @db.Text
   isPublished     Boolean    @default(true)
@@ -1063,6 +1064,7 @@ model Setting {
   id                String   @id @default(cuid())
   siteName          String   @default("Gateo")
   siteDescription   String?  @db.Text
+  platformCurrency  String   @default("USD")
   maintenanceMode   Boolean  @default(false)
   allowRegistration Boolean  @default(true)
   showAds           Boolean  @default(false)
@@ -1173,6 +1175,7 @@ model User {
   xp                                                     Int                         @default(0)
   isPrivate                                              Boolean                     @default(false)
   notificationSettings                                   String?                     @db.LongText
+  preferredCurrency                                      String                      @default("USD")
   username                                               String?                     @unique
   failedLoginAttempts                                    Int                         @default(0)
   lastFailedLoginAt                                      DateTime?

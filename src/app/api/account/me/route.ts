@@ -45,6 +45,7 @@ const updateProfileSchema = z.object({
   socialLinks: z.record(z.string(), z.string()).optional().nullable(),
   onboardingCompleted: z.boolean().optional(),
   onboardingSkipped: z.boolean().optional(),
+  preferredCurrency: z.string().length(3).optional(),
 });
 
 const changePasswordSchema = z.object({
@@ -136,6 +137,7 @@ export async function PUT(req: NextRequest) {
     if (data.phone !== undefined) userUpdate.phone = data.phone;
     if (data.isPrivate !== undefined) userUpdate.isPrivate = data.isPrivate;
     if (data.notificationSettings !== undefined) userUpdate.notificationSettings = data.notificationSettings;
+    if (data.preferredCurrency !== undefined) userUpdate.preferredCurrency = data.preferredCurrency;
 
     const profileUpdate: Record<string, unknown> = {};
     if (data.bio !== undefined) profileUpdate.bio = data.bio;

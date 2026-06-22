@@ -8,6 +8,7 @@ import { Loader2, Calendar, Clock, MapPin, Phone, Store, ChevronRight, Check, Cr
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Business {
   id: string;
@@ -32,6 +33,7 @@ export default function CreateBookingPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { showToast } = useToast();
+  const { format, convert } = useCurrency();
   const [business, setBusiness] = useState<Business | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
@@ -250,7 +252,7 @@ export default function CreateBookingPage() {
                         </div>
                         <div className="text-left flex-shrink-0">
                           {service.price && (
-                            <div className="text-sm font-bold text-primary">{Number(service.price).toFixed(0)} ر.س</div>
+                            <div className="text-sm font-bold text-primary">{format(convert(service.price))}</div>
                           )}
                           {service.duration && (
                             <div className="text-xs text-muted">{service.duration} دقيقة</div>
@@ -288,7 +290,7 @@ export default function CreateBookingPage() {
 
                 {/* Price */}
                 <div>
-                  <label htmlFor="booking-price" className="block text-sm font-medium text-foreground mb-1.5">السعر المتوقع (ر.س)</label>
+                  <label htmlFor="booking-price" className="block text-sm font-medium text-foreground mb-1.5">السعر المتوقع</label>
                   <div className="relative">
                     <CreditCard className="absolute right-3 top-3 w-5 h-5 text-muted" />
                     <input

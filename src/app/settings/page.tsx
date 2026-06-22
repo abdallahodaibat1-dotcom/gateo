@@ -5,13 +5,14 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import PlacesAutocomplete from '@/components/maps/PlacesAutocomplete';
+import { compressImage } from '@/lib/media-compression';
 import MapPicker from '@/components/maps/MapPicker';
 import GeolocationButton from '@/components/maps/GeolocationButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, MapPin, Heart, Lock, Shield, Bell, Trash2, Loader2,
   Camera, Globe, Mail, Phone, Calendar, Check, X, AlertTriangle,
-  Save, ChevronLeft, AtSign, Link as LinkIcon, Eye, EyeOff
+  Save, ChevronLeft, AtSign, Link as LinkIcon, Eye, EyeOff, DollarSign
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -29,6 +30,13 @@ interface Profile {
   socialLinks?: Record<string, string> | null;
 }
 
+interface CurrencyOption {
+  code: string;
+  name: string;
+  nameAr: string;
+  symbol: string;
+}
+
 interface UserData {
   id: string;
   name: string | null;
@@ -38,6 +46,7 @@ interface UserData {
   avatar: string | null;
   isPrivate: boolean;
   notificationSettings: Record<string, boolean> | null;
+  preferredCurrency: string;
   profile: Profile | null;
 }
 
@@ -48,6 +57,7 @@ type Section =
   | 'privacy'
   | 'security'
   | 'notifications'
+  | 'currency'
   | 'account';
 
 interface NavItem {
@@ -63,6 +73,7 @@ const navItems: NavItem[] = [
   { id: 'privacy', label: 'الخصوصية', icon: Lock },
   { id: 'security', label: 'الأمان', icon: Shield },
   { id: 'notifications', label: 'الإشعارات', icon: Bell },
+  { id: 'currency', label: 'العملة', icon: DollarSign },
   { id: 'account', label: 'الحساب', icon: Trash2 },
 ];
 
@@ -98,6 +109,7 @@ export default function SettingsPage() {
   const [form, setForm] = useState<Partial<UserData & Profile>>({});
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [interestInput, setInterestInput] = useState('');
+  const [currencies, setCurrencies] = useState<CurrencyOption[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Password change state
@@ -119,6 +131,15 @@ export default function SettingsPage() {
   useEffect(() => {
     if (status === 'authenticated') fetchUser();
   }, [status]);
+
+  useEffect(() => {
+    fetch('/api/finance/currencies')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.currencies) setCurrencies(data.currencies);
+      })
+      .catch(() => {});
+  }, []);
 
   const fetchUser = async () => {
     try {
@@ -185,6 +206,7 @@ export default function SettingsPage() {
         await updateSession({
           avatar: updatePayload.avatar ?? session?.user?.image ?? null,
           name: updatePayload.name ?? session?.user?.name ?? null,
+          preferredCurrency: updatePayload.preferredCurrency ?? session?.user?.preferredCurrency ?? 'USD',
         });
         showMessage('success', 'تم حفظ التغييرات بنجاح');
       } else {
@@ -233,7 +255,10 @@ export default function SettingsPage() {
     if (!file) return;
 
     const formData = new FormData();
-    formData.append('file', file);
+    const uploadFile = file.type.startsWith('image/')
+      ? await compressImage(file, { maxWidth: 400, maxHeight: 400, quality: 0.88, maxSizeBytes: 1 * 1024 * 1024 })
+      : file;
+    formData.append('file', uploadFile);
 
     try {
       const res = await fetch('/api/upload', {
@@ -666,6 +691,33 @@ export default function SettingsPage() {
                       />
                     ))}
                     <SaveButton onClick={() => handleSave({ notificationSettings: form.notificationSettings })} loading={saving} />
+                  </div>
+                </SectionCard>
+              )}
+
+              {activeSection === 'currency' && (
+                <SectionCard title="العملة" description="اختر العملة التي تفضل عرض الأسعار بها">
+                  <div className="space-y-5">
+                    <Select
+                      label="العملة المفضلة"
+                      value={form.preferredCurrency || 'USD'}
+                      onChange={(v) => setForm((prev) => ({ ...prev, preferredCurrency: v }))}
+                      options={currencies.length > 0
+                        ? currencies.map((c) => ({
+                            value: c.code,
+                            label: `${c.nameAr} (${c.code})`,
+                          }))
+                        : [{ value: 'USD', label: 'دولار أمريكي (USD)' }]
+                      }
+                    />
+                    <p className="text-xs text-muted">
+                      الأسعار تُعرض بالدولار الأمريكي (USD) بشكل افتراضي. عند اختيار عملة أخرى،
+                      سيتم تحويل السعر تلقائياً باستخدام آخر سعر صرف متاح.
+                    </p>
+                    <SaveButton
+                      onClick={() => handleSave({ preferredCurrency: form.preferredCurrency })}
+                      loading={saving}
+                    />
                   </div>
                 </SectionCard>
               )}

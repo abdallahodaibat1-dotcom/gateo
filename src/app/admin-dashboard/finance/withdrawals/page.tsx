@@ -18,6 +18,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import Modal from '@/components/ui/Modal';
 import Badge from '@/components/ui/Badge';
 import { useToast } from '@/components/ui/Toast';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Withdrawal {
   id: string;
@@ -47,12 +48,6 @@ const methodLabels: Record<string, string> = {
   PAYPAL: 'باي بال',
 };
 
-function formatMoney(amount: number | string, currency?: string) {
-  const value = Number(amount || 0);
-  const symbol = currency === 'USD' || !currency ? '$' : currency === 'SAR' ? 'ر.س' : currency;
-  return `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${symbol}`;
-}
-
 function formatDate(date?: string | null) {
   if (!date) return '—';
   return new Date(date).toLocaleDateString('ar-SA', {
@@ -66,6 +61,7 @@ function formatDate(date?: string | null) {
 
 export default function AdminWithdrawalsPage() {
   const { showToast } = useToast();
+  const { format, convert } = useCurrency();
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -199,7 +195,7 @@ export default function AdminWithdrawalsPage() {
                       <div className="text-foreground font-medium">{w.user.name || '—'}</div>
                       <div className="text-xs text-muted">{w.user.email || w.user.phone || '—'}</div>
                     </td>
-                    <td className="px-4 py-3 font-medium text-foreground">{formatMoney(w.amount, w.currency)}</td>
+                    <td className="px-4 py-3 font-medium text-foreground">{format(convert(w.amount))}</td>
                     <td className="px-4 py-3 text-muted">{methodLabels[w.method] || w.method}</td>
                     <td className="px-4 py-3">
                       <Badge
@@ -252,7 +248,7 @@ export default function AdminWithdrawalsPage() {
               </p>
               <p>
                 <span className="text-muted">المبلغ:</span>{' '}
-                <span className="font-medium">{formatMoney(selected.amount, selected.currency)}</span>
+                <span className="font-medium">{format(convert(selected.amount))}</span>
               </p>
               <p>
                 <span className="text-muted">الطريقة:</span>{' '}

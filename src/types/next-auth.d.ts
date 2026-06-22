@@ -5,6 +5,7 @@ declare module 'next-auth' {
     id: string;
     role: string;
     accountType: string;
+    preferredCurrency?: string;
   }
 
   interface Session {
@@ -15,6 +16,7 @@ declare module 'next-auth' {
       image?: string | null;
       role: string;
       accountType: string;
+      preferredCurrency?: string;
     };
   }
 }
@@ -26,5 +28,6 @@ declare module 'next-auth/jwt' {
     image?: string | null;
     role?: string;
     accountType?: string;
+    preferredCurrency?: string;
   }
 }

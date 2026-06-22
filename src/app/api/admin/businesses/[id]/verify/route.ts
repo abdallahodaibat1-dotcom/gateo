@@ -14,11 +14,21 @@ export async function PATCH(
 
   try {
     const { id } = await params;
-    const body = await req.json();
+    let body: any = {};
+    try {
+      const text = await req.text();
+      body = text ? JSON.parse(text) : {};
+    } catch {
+      body = {};
+    }
     const { isVerified, status } = body;
 
     const existing = await prisma.business.findUnique({ where: { id } });
     if (!existing) return notFound('Business not found');
+
+    if (isVerified === undefined && status === undefined) {
+      return badRequest('Missing isVerified or status');
+    }
 
     const updateData: any = {};
     if (isVerified !== undefined) updateData.isVerified = isVerified;

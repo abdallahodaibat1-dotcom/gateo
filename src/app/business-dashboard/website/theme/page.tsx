@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import {
   getThemePresetList,
+  getHomeTemplateList,
   WebsiteSection,
 } from '@/lib/business-template-generator';
 import Skeleton from '@/components/ui/Skeleton';
@@ -39,6 +40,7 @@ interface Theme {
   buttonStyle: string;
   heroLayout: string;
   navbarStyle: string;
+  homeTemplate: 'default' | 'porto-shop1';
   sections: WebsiteSection[];
   customCss: string | null;
   isPublished: boolean;
@@ -277,6 +279,30 @@ export default function ThemeEditorPage() {
                     />
                   </div>
                   <div className="font-medium text-foreground text-sm">{preset.nameAr}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Home Page Template */}
+          <div className="bg-surface rounded-lg border border-border shadow-sm p-6">
+            <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+              <Layout className="w-5 h-5 text-primary" />
+              قالب الصفحة الرئيسية
+            </h3>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {getHomeTemplateList().map((template) => (
+                <button
+                  key={template.id}
+                  onClick={() => updateTheme({ homeTemplate: template.id })}
+                  className={`p-4 rounded-lg border text-right transition-all ${
+                    theme.homeTemplate === template.id
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/30'
+                  }`}
+                >
+                  <div className="font-medium text-foreground text-sm mb-1">{template.nameAr}</div>
+                  <p className="text-xs text-muted leading-relaxed">{template.descriptionAr}</p>
                 </button>
               ))}
             </div>

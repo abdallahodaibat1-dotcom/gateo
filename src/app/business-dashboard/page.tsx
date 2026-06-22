@@ -15,6 +15,7 @@ import {
 import { motion } from 'framer-motion';
 import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Business {
   id: string;
@@ -68,6 +69,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function BusinessDashboardPage() {
+  const { format, convert } = useCurrency();
   const [business, setBusiness] = useState<Business | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -305,7 +307,7 @@ export default function BusinessDashboardPage() {
                   </div>
                   {booking.totalPrice ? (
                     <div className="text-sm font-bold text-primary">
-                      {Number(booking.totalPrice).toFixed(0)} ر.س
+                      {format(convert(booking.totalPrice))}
                     </div>
                   ) : null}
                 </div>

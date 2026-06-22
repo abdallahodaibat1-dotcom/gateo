@@ -15,6 +15,7 @@ export interface ThemePreset {
   buttonStyle: 'gradient' | 'solid' | 'outline';
   heroLayout: 'center' | 'split' | 'minimal';
   navbarStyle: 'fixed' | 'static' | 'transparent';
+  homeTemplate?: 'default' | 'porto-shop1';
   /** مصدر التصميم المجاني المُلهم */
   source?: string;
   /** تصنيفات تناسب هذا الثيم */
@@ -47,7 +48,7 @@ export interface WebsiteSection {
 }
 
 export interface GeneratedWebsite {
-  theme: Omit<ThemePreset, 'name' | 'nameAr' | 'description' | 'descriptionAr' | 'source' | 'categoryTags' | 'keywords' | 'style'> & { sections: WebsiteSection[] };
+  theme: Omit<ThemePreset, 'name' | 'nameAr' | 'description' | 'descriptionAr' | 'source' | 'categoryTags' | 'keywords' | 'style'> & { sections: WebsiteSection[]; homeTemplate: 'default' | 'porto-shop1'; };
   pages: {
     slug: string;
     title: string;
@@ -67,6 +68,7 @@ export interface BusinessThemeInput {
   textColor?: string | null;
   fontFamily?: string | null;
   borderRadius?: string | null;
+  homeTemplate?: string | null;
 }
 
 export function getThemeStyleVars(theme?: BusinessThemeInput | null): React.CSSProperties {
@@ -896,6 +898,7 @@ export function generateThemeForBusiness(
     buttonStyle: preset.buttonStyle,
     heroLayout: preset.heroLayout,
     navbarStyle: preset.navbarStyle,
+    homeTemplate: 'default' as const,
     sections,
   };
 
@@ -943,4 +946,29 @@ export function getDefaultSections(): WebsiteSection[] {
 
 export function getStoreDefaultSections(): WebsiteSection[] {
   return STORE_SECTIONS.map((s) => ({ ...s }));
+}
+
+export interface HomeTemplate {
+  id: 'default' | 'porto-shop1';
+  name: string;
+  nameAr: string;
+  descriptionAr: string;
+  previewImage?: string;
+}
+
+export function getHomeTemplateList(): HomeTemplate[] {
+  return [
+    {
+      id: 'default',
+      name: 'Default',
+      nameAr: 'افتراضي Gateo',
+      descriptionAr: 'التصميم الافتراضي الحالي للمتجر ببطاقات منتجات نظيفة.',
+    },
+    {
+      id: 'porto-shop1',
+      name: 'Porto Shop 1',
+      nameAr: 'بوتو شوب ١',
+      descriptionAr: 'قالب متجر احترافي مستوحى من Porto Shop1 مع سلايدر، عروض، تقييمات، وفوتر متعدد الأعمدة.',
+    },
+  ];
 }

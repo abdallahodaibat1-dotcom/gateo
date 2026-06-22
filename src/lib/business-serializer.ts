@@ -31,7 +31,10 @@ export function serializeBusiness(business: any): any {
     country: Country ?? business.country,
     user: User ?? business.user,
     services: Service ?? business.services,
-    products: Product ?? business.products,
+    products: (Product ?? business.products)?.map((product: any) => ({
+      ...product,
+      images: parseJson(product.images),
+    })),
     posts: Post ?? business.posts,
     theme: BusinessTheme
       ? { ...BusinessTheme, sections: parseJson(BusinessTheme.sections) }

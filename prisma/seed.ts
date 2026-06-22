@@ -641,6 +641,7 @@ async function main() {
             buttonStyle: 'gradient',
             heroLayout: 'center',
             navbarStyle: 'fixed',
+            homeTemplate: 'default',
             updatedAt: new Date(),
             sections: JSON.stringify([
               { id: 'hero', type: 'hero', enabled: true, order: 10 },

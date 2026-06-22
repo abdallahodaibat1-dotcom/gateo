@@ -7,6 +7,8 @@ import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/hooks/useConfirm';
+import { useCurrency } from '@/hooks/useCurrency';
+import { compressImage } from '@/lib/media-compression';
 
 interface Service {
   id: string;
@@ -41,6 +43,7 @@ export default function BusinessServicesPage() {
   });
   const { showToast } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
+  const { format, convert } = useCurrency();
 
   const nameId = useId();
   const descId = useId();
@@ -80,14 +83,16 @@ export default function BusinessServicesPage() {
       showToast('يرجى اختيار صورة بصيغة JPEG, PNG, WebP, أو GIF', 'error');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('حجم الصورة يجب أن لا يتجاوز 5 ميجابايت', 'error');
-      return;
-    }
     setUploadingImage(true);
     try {
+      const compressedFile = await compressImage(file, {
+        maxWidth: 1200,
+        maxHeight: 1200,
+        quality: 0.88,
+        maxSizeBytes: 4 * 1024 * 1024,
+      });
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok && data.url) {
@@ -277,7 +282,7 @@ export default function BusinessServicesPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label htmlFor={priceId} className="block text-sm font-medium text-foreground mb-1.5">
-                      السعر (ر.س)
+                      السعر
                     </label>
                     <input
                       id={priceId}
@@ -338,7 +343,7 @@ export default function BusinessServicesPage() {
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-muted mt-1">JPEG, PNG, WebP, GIF — بحد أقصى 5 ميجابايت</p>
+                  <p className="text-xs text-muted mt-1">JPEG, PNG, WebP, GIF — يتم ضغط الصورة تلقائياً</p>
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
                   <button
@@ -409,7 +414,7 @@ export default function BusinessServicesPage() {
                   )}
                   {service.price && (
                     <span className="font-medium text-primary">
-                      {Number(service.price).toFixed(0)} ر.س
+                      {format(convert(service.price))}
                     </span>
                   )}
                 </div>

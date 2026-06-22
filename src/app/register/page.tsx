@@ -61,6 +61,8 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [countries, setCountries] = useState<Country[]>([]);
   const [countriesLoading, setCountriesLoading] = useState(true);
+  const selectedCountry = countries.find((c) => c.id === form.countryId);
+  const phoneCode = selectedCountry?.phoneCode || '';
 
   // Persist draft on change (excluding password)
   useEffect(() => {
@@ -115,7 +117,8 @@ export default function RegisterPage() {
     if (!form.firstName.trim()) { setError('أدخل الاسم الأول'); return; }
     if (!form.lastName.trim()) { setError('أدخل الاسم الأخير'); return; }
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { setError('أدخل بريد صحيح'); return; }
-    if (!form.phone.trim() || form.phone.replace(/\D/g, '').length < 8) { setError('أدخل رقم هاتف صحيح'); return; }
+    const localPhoneDigits = form.phone.startsWith(phoneCode) ? form.phone.slice(phoneCode.length).replace(/\D/g, '') : form.phone.replace(/^\+\d+/, '').replace(/\D/g, '');
+    if (!form.phone.trim() || localPhoneDigits.length < 8) { setError('أدخل رقم هاتف صحيح'); return; }
     if (!form.countryId) { setError('اختيار الدولة مطلوب'); return; }
     const passError = validatePassword(form.password);
     if (passError) { setError(passError); return; }
@@ -172,7 +175,7 @@ export default function RegisterPage() {
       </header>
 
       {/* Main */}
-      <main className="flex-1 relative z-10 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 relative z-10 flex items-start justify-center px-4 sm:px-6 lg:px-8 py-4 overflow-y-auto">
         <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Welcome — hidden on small screens */}
           <div className="hidden lg:block text-right">
@@ -201,11 +204,11 @@ export default function RegisterPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="bg-surface rounded-xl shadow-lg border border-border p-5 sm:p-8 w-full max-w-[520px] mx-auto lg:max-w-none"
+            className="bg-surface rounded-xl shadow-lg border border-border p-4 sm:p-6 w-full max-w-[520px] mx-auto lg:max-w-none"
           >
-            <div className="text-center mb-5">
-              <h2 className="text-2xl font-bold text-foreground">إنشاء حساب</h2>
-              <p className="text-sm text-muted mt-1">انضم إلى مجتمع Gateo</p>
+            <div className="text-center mb-4">
+              <h2 className="text-xl font-bold text-foreground">إنشاء حساب</h2>
+              <p className="text-xs text-muted mt-1">انضم إلى مجتمع Gateo</p>
             </div>
 
             {error && <div className="mb-4 rounded-lg bg-red-50 border border-red-100 p-3 text-sm text-danger text-center" role="alert">{error}</div>}
@@ -220,50 +223,49 @@ export default function RegisterPage() {
               <div className="relative flex justify-center text-xs"><span className="bg-surface px-2 text-muted">أو</span></div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="register-firstName" className="block text-sm font-medium text-foreground mb-1.5">الاسم الأول</label>
                   <div className="relative">
                     <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                    <input id="register-firstName" name="firstName" type="text" value={form.firstName} onChange={handleChange} className="w-full rounded-md border border-border bg-surface pr-9 pl-3 py-2.5 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="محمد" />
+                    <input id="register-firstName" name="firstName" type="text" value={form.firstName} onChange={handleChange} className="w-full rounded-md border border-border bg-surface pr-9 pl-3 py-2 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="محمد" />
                   </div>
                 </div>
                 <div>
                   <label htmlFor="register-lastName" className="block text-sm font-medium text-foreground mb-1.5">الاسم الأخير</label>
                   <div className="relative">
                     <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                    <input id="register-lastName" name="lastName" type="text" value={form.lastName} onChange={handleChange} className="w-full rounded-md border border-border bg-surface pr-9 pl-3 py-2.5 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="أحمد" />
+                    <input id="register-lastName" name="lastName" type="text" value={form.lastName} onChange={handleChange} className="w-full rounded-md border border-border bg-surface pr-9 pl-3 py-2 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="أحمد" />
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div>
                   <label htmlFor="register-email" className="block text-sm font-medium text-foreground mb-1.5">البريد الإلكتروني</label>
                   <div className="relative">
                     <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                    <input id="register-email" name="email" type="email" value={form.email} onChange={handleChange} className="w-full rounded-md border border-border bg-surface pr-9 pl-3 py-2.5 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="example@gateo.com" dir="ltr" />
+                    <input id="register-email" name="email" type="email" value={form.email} onChange={handleChange} className="w-full rounded-md border border-border bg-surface pr-9 pl-3 py-2 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="example@gateo.com" dir="ltr" />
                   </div>
                 </div>
                 <div>
                   <label htmlFor="register-phone" className="block text-sm font-medium text-foreground mb-1.5">رقم الهاتف</label>
                   <div className="flex gap-2">
-                    <div className="shrink-0 w-12">
+                    <div className="shrink-0 w-24">
                       <CountrySelect
                         countries={countries}
                         value={form.countryId}
                         onChange={(id) => {
                           const selected = countries.find((c) => c.id === id);
                           setForm((prev) => {
-                            const phoneCode = selected?.phoneCode || '';
-                            const currentPhone = prev.phone || '';
-                            const existingCode = countries.find((c) => currentPhone.startsWith(c.phoneCode || ''))?.phoneCode;
-                            const strippedPhone = existingCode
-                              ? currentPhone.slice(existingCode.length)
-                              : currentPhone;
-                            const newPhone = phoneCode + strippedPhone;
-                            return { ...prev, countryId: id, phone: newPhone };
+                            const currentCountry = countries.find((c) => c.id === prev.countryId);
+                            const currentCode = currentCountry?.phoneCode || '';
+                            const newCode = selected?.phoneCode || '';
+                            const localPart = currentCode && prev.phone.startsWith(currentCode)
+                              ? prev.phone.slice(currentCode.length)
+                              : prev.phone.replace(/^\+\d+/, '');
+                            return { ...prev, countryId: id, phone: newCode + localPart };
                           });
                         }}
                         label=""
@@ -271,11 +273,25 @@ export default function RegisterPage() {
                         autoDetect={false}
                         loading={countriesLoading}
                         hideChevron
+                        showPhoneCode
                       />
                     </div>
                     <div className="relative flex-1">
                       <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                      <input id="register-phone" name="phone" type="tel" value={form.phone} onChange={handleChange} className="w-full rounded-md border border-border bg-surface pr-9 pl-3 py-2.5 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="+962 5xxxxxxxx" dir="ltr" />
+                      <input
+                        id="register-phone"
+                        name="phone"
+                        type="tel"
+                        value={form.phone.startsWith(selectedCountry?.phoneCode || '') ? form.phone.slice((selectedCountry?.phoneCode || '').length) : form.phone.replace(/^\+\d+/, '')}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, '');
+                          const code = selectedCountry?.phoneCode || '';
+                          setForm((prev) => ({ ...prev, phone: code + digits }));
+                        }}
+                        className="w-full rounded-md border border-border bg-surface pr-9 pl-3 py-2 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
+                        placeholder="77778870"
+                        dir="ltr"
+                      />
                     </div>
                   </div>
                 </div>
@@ -285,12 +301,12 @@ export default function RegisterPage() {
                 <label htmlFor="register-password" className="block text-sm font-medium text-foreground mb-1.5">كلمة المرور</label>
                 <div className="relative">
                   <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                  <input id="register-password" name="password" type={showPassword ? 'text' : 'password'} value={form.password} onChange={handleChange} className="w-full rounded-md border border-border bg-surface pr-9 pl-9 py-2.5 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="••••••••" dir="ltr" />
+                  <input id="register-password" name="password" type={showPassword ? 'text' : 'password'} value={form.password} onChange={handleChange} className="w-full rounded-md border border-border bg-surface pr-9 pl-9 py-2 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition" placeholder="••••••••" dir="ltr" />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground" aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}>
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1.5">
+                <div className="mt-1.5 flex flex-wrap gap-x-2 gap-y-1">
                   {passwordChecks.map((check) => (
                     <div key={check.label} className={`flex items-center gap-1 text-xs ${check.valid ? 'text-success' : 'text-slate-400'}`}>
                       <div className={`w-4 h-4 rounded-full flex items-center justify-center ${check.valid ? 'bg-success/10' : 'bg-slate-100'}`}>
@@ -309,7 +325,7 @@ export default function RegisterPage() {
                 </span>
               </label>
 
-              <button type="submit" disabled={loading || !form.countryId} className="w-full rounded-md bg-primary px-4 py-3 text-sm font-bold text-white hover:bg-primary-dark disabled:opacity-50 transition flex items-center justify-center gap-1.5">
+              <button type="submit" disabled={loading || !form.countryId} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold text-white hover:bg-primary-dark disabled:opacity-50 transition flex items-center justify-center gap-1.5">
                 {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري...</> : <>إنشاء <ArrowLeft className="w-4 h-4" /></>}
               </button>
             </form>

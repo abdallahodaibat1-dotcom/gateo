@@ -9,6 +9,7 @@ import { Loader2, Search, Users, FileText, Lock, Globe, Plus, X, MessageCircle, 
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
+import { compressImage } from '@/lib/media-compression';
 
 interface Group {
   id: string;
@@ -113,14 +114,16 @@ export default function GroupsPage() {
       showToast('يرجى اختيار صورة بصيغة JPEG, PNG, WebP, أو GIF', 'error');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('حجم الصورة يجب أن لا يتجاوز 5 ميجابايت', 'error');
-      return;
-    }
     setUploadingImage(true);
     try {
+      const compressedFile = await compressImage(file, {
+        maxWidth: 1600,
+        maxHeight: 900,
+        quality: 0.88,
+        maxSizeBytes: 4 * 1024 * 1024,
+      });
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok && data.url) {
@@ -390,7 +393,7 @@ export default function GroupsPage() {
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-muted mt-1">JPEG, PNG, WebP, GIF — بحد أقصى 5 ميجابايت</p>
+                  <p className="text-xs text-muted mt-1">JPEG, PNG, WebP, GIF — يتم ضغط الصورة تلقائياً</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <input

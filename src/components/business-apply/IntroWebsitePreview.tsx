@@ -2,6 +2,7 @@
 
 import { Store, MapPin, Phone, Eye, CheckCircle, Sparkles } from 'lucide-react';
 import { getThemePresetById } from '@/lib/business-template-generator';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Service {
   name: string;
@@ -38,6 +39,7 @@ interface IntroWebsitePreviewProps {
 }
 
 export function IntroWebsitePreview({ form, categories = [], themePresetId }: IntroWebsitePreviewProps) {
+  const { format } = useCurrency();
   const selectedCategory = categories.find((c) => c.id === form.categoryId);
   const gallery = form.gallery || [];
   const services = form.services || [];
@@ -157,7 +159,7 @@ export function IntroWebsitePreview({ form, categories = [], themePresetId }: In
                       <span className="text-xs text-foreground truncate flex-1">{service.name}</span>
                       {service.price && (
                         <span className="text-xs font-medium mr-2" style={{ color: 'var(--theme-primary)' }}>
-                          {service.price} ر.س
+                          {format(Number(service.price))}
                         </span>
                       )}
                     </div>

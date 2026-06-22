@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from 'clsx';
+import { formatCurrency } from '@/lib/finance/exchange';
 
 export function cn(...inputs: ClassValue[]) {
   return clsx(inputs);
@@ -11,8 +12,7 @@ export function formatNumber(num: number): string {
 }
 
 export function formatPrice(amount: number, currency = 'USD'): string {
-  const symbol = currency === 'USD' ? '$' : currency === 'SAR' ? 'ر.س' : currency;
-  return `${amount.toLocaleString('en-US')} ${symbol}`;
+  return formatCurrency(amount, currency);
 }
 
 export function truncate(str: string, length: number): string {

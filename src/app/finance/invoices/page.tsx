@@ -18,6 +18,7 @@ import Card from '@/components/ui/Card';
 import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
 import { useToast } from '@/components/ui/Toast';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface InvoiceLineItem {
   id: string;
@@ -71,12 +72,6 @@ const typeLabels: Record<string, string> = {
   FEE: 'رسوم',
 };
 
-function formatMoney(amount: number | string | null | undefined, currency?: string) {
-  const value = Number(amount || 0);
-  const symbol = currency === 'USD' || !currency ? '$' : currency === 'SAR' ? 'ر.س' : currency;
-  return `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${symbol}`;
-}
-
 function formatDate(date?: string | null) {
   if (!date) return '—';
   return new Date(date).toLocaleDateString('ar-SA', {
@@ -90,6 +85,7 @@ export default function InvoicesPage() {
   const { status } = useSession();
   const router = useRouter();
   const { showToast } = useToast();
+  const { format, convert } = useCurrency();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -168,18 +164,18 @@ export default function InvoicesPage() {
             <Card>
               <div className="text-sm text-muted">إجمالي الفواتير</div>
               <div className="text-2xl font-bold text-foreground mt-1">
-                {formatMoney(invoices.reduce((sum, inv) => sum + Number(inv.total), 0))}
+                {format(convert(invoices.reduce((sum, inv) => sum + Number(inv.total), 0)))}
               </div>
             </Card>
             <Card>
               <div className="text-sm text-muted">الفواتير المدفوعة</div>
               <div className="text-2xl font-bold text-success mt-1">
-                {formatMoney(invoices.filter((inv) => inv.status === 'PAID').reduce((sum, inv) => sum + Number(inv.total), 0))}
+                {format(convert(invoices.filter((inv) => inv.status === 'PAID').reduce((sum, inv) => sum + Number(inv.total), 0)))}
               </div>
             </Card>
             <Card>
               <div className="text-sm text-muted">المبالغ المستحقة</div>
-              <div className="text-2xl font-bold text-danger mt-1">{formatMoney(totalUnpaid)}</div>
+              <div className="text-2xl font-bold text-danger mt-1">{format(convert(totalUnpaid))}</div>
             </Card>
           </motion.div>
 
@@ -224,7 +220,7 @@ export default function InvoicesPage() {
                           <td className="px-4 py-3 font-medium text-foreground">{invoice.invoiceNumber}</td>
                           <td className="px-4 py-3 text-muted">{typeLabels[invoice.type] || invoice.type}</td>
                           <td className="px-4 py-3 text-foreground font-medium">
-                            {formatMoney(invoice.total, invoice.currency)}
+                            {format(convert(invoice.total))}
                           </td>
                           <td className="px-4 py-3">
                             <span

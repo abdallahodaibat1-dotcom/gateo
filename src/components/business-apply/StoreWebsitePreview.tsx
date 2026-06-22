@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { Store, MapPin, Phone, Eye, ShoppingCart, Tag, Search, Star } from 'lucide-react';
 import { getThemePresetById } from '@/lib/business-template-generator';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Product {
   id?: string;
@@ -42,6 +43,7 @@ interface StoreWebsitePreviewProps {
 }
 
 export function StoreWebsitePreview({ form, categories = [], themePresetId }: StoreWebsitePreviewProps) {
+  const { format } = useCurrency();
   const selectedCategory = categories.find((c) => c.id === form.categoryId);
   const gallery = form.gallery || [];
   const products = form.products || [];
@@ -217,10 +219,10 @@ export function StoreWebsitePreview({ form, categories = [], themePresetId }: St
                       <h5 className="text-[11px] font-bold text-foreground truncate">{product.name}</h5>
                       <div className="flex items-center gap-1 mt-0.5">
                         <span className="text-[10px] font-medium" style={{ color: 'var(--theme-primary)' }}>
-                          {product.price || 0} ر.س
+                          {format(Number(product.price || 0))}
                         </span>
                         {product.comparePrice && Number(product.comparePrice) > 0 && (
-                          <span className="text-[9px] text-muted line-through">{product.comparePrice} ر.س</span>
+                          <span className="text-[9px] text-muted line-through">{format(Number(product.comparePrice))}</span>
                         )}
                       </div>
                       <button

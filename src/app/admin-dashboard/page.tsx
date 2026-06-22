@@ -25,6 +25,7 @@ import {
 import StatusBadge from '@/components/admin/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface DashboardStats {
   totalUsers: number;
@@ -79,6 +80,7 @@ const quickActions = [
 ];
 
 export default function AdminDashboardPage() {
+  const { format, convert } = useCurrency();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -490,7 +492,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-foreground truncate">
-                      حجز بقيمة {booking.totalPrice?.toLocaleString('ar-SA') || 0} ر.س
+                      حجز بقيمة {format(convert(booking.totalPrice || 0))}
                     </div>
                     <StatusBadge status={booking.status || 'PENDING'} />
                   </div>

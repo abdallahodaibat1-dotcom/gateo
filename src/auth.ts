@@ -36,6 +36,12 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // refresh expiry after 24h of inactivity
+  },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -131,6 +137,7 @@ export const {
           image: user.avatar,
           role: user.role,
           accountType: user.accountType,
+          preferredCurrency: user.preferredCurrency,
         };
       },
     }),
@@ -189,6 +196,7 @@ export const {
           image: user.avatar,
           role: user.role,
           accountType: user.accountType,
+          preferredCurrency: user.preferredCurrency,
         };
       },
     }),
@@ -254,14 +262,11 @@ export const {
           image: user.avatar,
           role: user.role,
           accountType: user.accountType,
+          preferredCurrency: user.preferredCurrency,
         };
       },
     }),
   ],
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
   pages: {
     signIn: '/login',
     error: '/login',
@@ -288,6 +293,7 @@ export const {
           user.id = newUser.id;
           user.role = newUser.role;
           user.accountType = newUser.accountType;
+          user.preferredCurrency = newUser.preferredCurrency;
         } else if (existingUser.emailVerified) {
           // Only auto-link OAuth to an existing account if the email was verified.
           const updatedUser = await prisma.user.update({
@@ -302,6 +308,7 @@ export const {
           user.id = updatedUser.id;
           user.role = updatedUser.role;
           user.accountType = updatedUser.accountType;
+          user.preferredCurrency = updatedUser.preferredCurrency;
         } else {
           // Refuse to link OAuth to an unverified local account to prevent
           // account takeover / data cross-contamination.
@@ -318,6 +325,7 @@ export const {
         token.role = user.role;
         token.accountType = user.accountType;
         token.phone = user.phone;
+        token.preferredCurrency = (user as any).preferredCurrency || 'USD';
       }
       if (account?.provider === 'google' || account?.provider === 'apple') {
         token.provider = account.provider;
@@ -326,6 +334,9 @@ export const {
       if (trigger === 'update' && session) {
         if (session.avatar !== undefined) token.image = session.avatar;
         if (session.name !== undefined) token.name = session.name;
+        if ((session as any).preferredCurrency !== undefined) {
+          token.preferredCurrency = (session as any).preferredCurrency;
+        }
       }
       return token;
     },
@@ -337,6 +348,7 @@ export const {
         session.user.role = token.role as string;
         session.user.accountType = token.accountType as string;
         session.user.phone = token.phone as string | undefined;
+        session.user.preferredCurrency = (token.preferredCurrency as string) || 'USD';
       }
       return session;
     },

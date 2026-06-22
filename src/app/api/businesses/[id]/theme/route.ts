@@ -33,6 +33,7 @@ const defaultTheme = {
   buttonStyle: 'gradient',
   heroLayout: 'center',
   navbarStyle: 'fixed',
+  homeTemplate: 'default',
   sections: [
     { id: 'hero', type: 'hero', enabled: true, order: 10 },
     { id: 'about', type: 'about', enabled: true, order: 20 },
@@ -59,6 +60,7 @@ const updateSchema = z.object({
   buttonStyle: z.enum(['gradient', 'solid', 'outline']).optional(),
   heroLayout: z.enum(['center', 'split', 'minimal']).optional(),
   navbarStyle: z.enum(['fixed', 'static', 'transparent']).optional(),
+  homeTemplate: z.enum(['default', 'porto-shop1']).optional(),
   sections: z.array(z.object({
     id: z.string(),
     type: z.string(),

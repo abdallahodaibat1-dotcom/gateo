@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Listing {
   id: string;
@@ -56,6 +57,7 @@ function ProductCardSkeleton() {
 }
 
 export default function MarketplacePage() {
+  const { format, convert } = useCurrency();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -224,10 +226,10 @@ export default function MarketplacePage() {
                         <div className="text-xs text-muted mb-1">{listing.product.category || 'منتج'}</div>
                         <h3 className="font-bold text-foreground mb-2 line-clamp-2">{listing.product.name}</h3>
                         <div className="flex items-center gap-2 mb-3">
-                          <span className="text-primary font-bold">{Number(listing.product.price).toFixed(2)} ر.س</span>
+                          <span className="text-primary font-bold">{format(convert(listing.product.price))}</span>
                           {listing.product.comparePrice && (
                             <span className="text-muted text-sm line-through">
-                              {Number(listing.product.comparePrice).toFixed(2)} ر.س
+                              {format(convert(listing.product.comparePrice))}
                             </span>
                           )}
                         </div>

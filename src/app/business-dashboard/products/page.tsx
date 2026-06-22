@@ -20,6 +20,7 @@ import {
 import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
 import { useConfirm } from '@/hooks/useConfirm';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Business {
   id: string;
@@ -65,6 +66,7 @@ export default function ProductsDashboardPage() {
   const [success, setSuccess] = useState('');
   const searchId = useId();
   const { confirm, ConfirmDialog } = useConfirm();
+  const { format, convert } = useCurrency();
 
   useEffect(() => {
     fetchData();
@@ -262,9 +264,9 @@ export default function ProductsDashboardPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-3 mt-1 text-sm text-muted">
-                    <span className="font-medium text-primary">{Number(product.price).toFixed(2)} ر.س</span>
+                    <span className="font-medium text-primary">{format(convert(product.price))}</span>
                     {product.comparePrice && (
-                      <span className="line-through text-muted">{Number(product.comparePrice).toFixed(2)} ر.س</span>
+                      <span className="line-through text-muted">{format(convert(product.comparePrice))}</span>
                     )}
                     <span>•</span>
                     <span>الكمية: {product.quantity}</span>

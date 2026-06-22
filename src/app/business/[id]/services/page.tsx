@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { EmptyState } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/hooks/useConfirm';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Service {
   id: string;
@@ -39,6 +40,7 @@ export default function ManageServicesPage() {
   });
   const { showToast } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
+  const { format, convert } = useCurrency();
   const [imagePromptOpen, setImagePromptOpen] = useState(false);
   const [imagePromptValue, setImagePromptValue] = useState('');
   const imagePromptResolveRef = useRef<((value: string | null) => void) | null>(null);
@@ -199,7 +201,7 @@ export default function ManageServicesPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="service-price" className="block text-sm font-medium text-foreground mb-1">السعر (ر.س)</label>
+                      <label htmlFor="service-price" className="block text-sm font-medium text-foreground mb-1">السعر</label>
                       <input
                         id="service-price"
                         type="number"
@@ -290,7 +292,7 @@ export default function ManageServicesPage() {
                   <h3 className="font-semibold text-foreground">{service.name}</h3>
                   <p className="text-sm text-muted">{service.description}</p>
                   <div className="flex items-center gap-3 mt-1 text-xs text-muted">
-                    {service.price && <span className="text-primary font-medium">{Number(service.price).toFixed(0)} ر.س</span>}
+                    {service.price && <span className="text-primary font-medium">{format(convert(service.price))}</span>}
                     {service.duration && <span>{service.duration} دقيقة</span>}
                   </div>
                 </div>

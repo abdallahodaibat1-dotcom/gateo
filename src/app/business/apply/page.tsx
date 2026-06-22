@@ -22,6 +22,9 @@ import { BusinessStoreBuilder } from '@/components/business-apply/BusinessStoreB
 import type { BuilderStep } from '@/components/business-apply/BuilderStepSidebar';
 import { ThemeSelector } from '@/components/business-apply/ThemeSelector';
 import { SubcategoryCombobox } from '@/components/business-apply/SubcategoryCombobox';
+import { useCurrency } from '@/hooks/useCurrency';
+import { compressImage } from '@/lib/media-compression';
+import { parseMapUrl } from '@/lib/location-utils';
 
 const DAYS = [
   { day: 'السبت', open: '09:00', close: '21:00' },
@@ -58,6 +61,7 @@ const getSteps = (websiteType: 'INTRO' | 'STORE' | '') => [
 export default function BusinessApplyPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { format } = useCurrency();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -89,6 +93,7 @@ export default function BusinessApplyPage() {
     address: '',
     latitude: '',
     longitude: '',
+    mapLink: '',
     phone: '',
     email: '',
     workingHours: DAYS,
@@ -257,6 +262,7 @@ export default function BusinessApplyPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          mapLink: undefined,
           websiteType: form.websiteType || undefined,
           themePresetId: form.themePresetId || undefined,
           workingHours: form.workingHours.filter((w) => w.open && w.close),
@@ -316,6 +322,27 @@ export default function BusinessApplyPage() {
     });
   };
 
+  const handleMapLinkChange = (value: string) => {
+    const coords = parseMapUrl(value);
+    if (coords) {
+      setForm((prev) => ({
+        ...prev,
+        mapLink: value,
+        latitude: String(coords.lat),
+        longitude: String(coords.lng),
+      }));
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.latitude;
+        delete next.longitude;
+        delete next.mapLink;
+        return next;
+      });
+    } else {
+      setForm((prev) => ({ ...prev, mapLink: value }));
+    }
+  };
+
   const handleFileUpload = async (
     file: File,
     field: 'logo' | 'cover',
@@ -329,15 +356,15 @@ export default function BusinessApplyPage() {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('حجم الصورة يجب أن لا يتجاوز 5 ميجابايت', 'error');
-      return;
-    }
+    const compressionOptions = field === 'logo'
+      ? { maxWidth: 400, maxHeight: 400, quality: 0.88, maxSizeBytes: 4 * 1024 * 1024 }
+      : { maxWidth: 1600, maxHeight: 900, quality: 0.88, maxSizeBytes: 4 * 1024 * 1024 };
 
     setUploading(true);
     try {
+      const compressedFile = await compressImage(file, compressionOptions);
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile);
 
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -375,18 +402,15 @@ export default function BusinessApplyPage() {
       showToast('يرجى اختيار صورة بصيغة JPEG, PNG, WebP, أو GIF', 'error');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('حجم الصورة يجب أن لا يتجاوز 5 ميجابايت', 'error');
-      return;
-    }
     if (form.gallery.length >= 10) {
       showToast('يمكنك رفع 10 صور كحد أقصى للمعرض', 'error');
       return;
     }
     setUploadingGallery(true);
     try {
+      const compressedFile = await compressImage(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.88, maxSizeBytes: 4 * 1024 * 1024 });
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok && data.url) {
@@ -424,14 +448,11 @@ export default function BusinessApplyPage() {
       showToast('يرجى اختيار صورة بصيغة JPEG, PNG, WebP, أو GIF', 'error');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('حجم الصورة يجب أن لا يتجاوز 5 ميجابايت', 'error');
-      return;
-    }
     setUploadingServiceImage(true);
     try {
+      const compressedFile = await compressImage(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.88, maxSizeBytes: 4 * 1024 * 1024 });
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok && data.url) {
@@ -514,14 +535,11 @@ export default function BusinessApplyPage() {
       showToast('يرجى اختيار صورة بصيغة JPEG, PNG, WebP, أو GIF', 'error');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('حجم الصورة يجب أن لا يتجاوز 5 ميجابايت', 'error');
-      return;
-    }
     setUploadingProductImage(true);
     try {
+      const compressedFile = await compressImage(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.88, maxSizeBytes: 4 * 1024 * 1024 });
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok && data.url) {
@@ -991,7 +1009,7 @@ export default function BusinessApplyPage() {
                                   <span className="text-primary font-medium">اضغط لاختيار صورة</span>
                                 </div>
                               )}
-                              <p className="text-[10px] text-muted">JPEG, PNG, WebP, GIF — بحد أقصى 5 ميجابايت</p>
+                              <p className="text-[10px] text-muted">JPEG, PNG, WebP, GIF — يتم ضغط الصورة تلقائياً</p>
                             </div>
                           </div>
 
@@ -1030,7 +1048,7 @@ export default function BusinessApplyPage() {
                                 </div>
                               )}
                             </div>
-                            <p className="text-xs text-muted mt-1.5">يفضل 1200×400 بكسل — JPEG, PNG, WebP, GIF — بحد أقصى 5 ميجابايت</p>
+                            <p className="text-xs text-muted mt-1.5">يفضل 1200×400 بكسل — JPEG, PNG, WebP, GIF — يتم ضغط الصورة تلقائياً</p>
                           </div>
                         </div>
 
@@ -1092,7 +1110,7 @@ export default function BusinessApplyPage() {
                             )}
                           </div>
                           <p className="text-xs text-muted mt-1">
-                            {form.gallery.length}/10 صور — JPEG, PNG, WebP, GIF — بحد أقصى 5 ميجابايت لكل صورة
+                            {form.gallery.length}/10 صور — JPEG, PNG, WebP, GIF — يتم ضغط الصور تلقائياً
                           </p>
                         </div>
                       </motion.div>
@@ -1140,7 +1158,7 @@ export default function BusinessApplyPage() {
                             {/* Service Image Upload */}
                             <div>
                               <label htmlFor="service-image-upload" className="block text-sm font-medium text-foreground mb-1">صورة الخدمة</label>
-                              <div className="relative h-[calc(100%-1.75rem)] min-h-[6.5rem] rounded-md border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all cursor-pointer text-center flex flex-col items-center justify-center gap-2 overflow-hidden">
+                              <div className="relative h-40 rounded-md border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all cursor-pointer text-center flex flex-col items-center justify-center gap-2 overflow-hidden">
                                 <input
                                   id="service-image-upload"
                                   type="file"
@@ -1149,7 +1167,7 @@ export default function BusinessApplyPage() {
                                     const file = e.target.files?.[0];
                                     if (file) handleServiceImageUpload(file);
                                   }}
-                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30"
                                 />
                                 {serviceForm.image ? (
                                   <img src={serviceForm.image} alt={serviceForm.name || 'صورة الخدمة'} className="absolute inset-0 w-full h-full object-cover" />
@@ -1160,7 +1178,7 @@ export default function BusinessApplyPage() {
                                     <span className="text-sm">جاري الرفع...</span>
                                   </div>
                                 ) : (
-                                  <div className="text-sm text-muted relative z-20 px-2">
+                                  <div className="text-sm text-muted relative z-20 px-2 pointer-events-none">
                                     <Camera className="w-6 h-6 mx-auto mb-1 text-slate-300" />
                                     <span className="text-primary font-medium text-xs">اضغط لاختيار صورة</span>
                                   </div>
@@ -1171,7 +1189,7 @@ export default function BusinessApplyPage() {
 
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <label htmlFor="service-price" className="block text-sm font-medium text-foreground mb-1">السعر (ر.س)</label>
+                              <label htmlFor="service-price" className="block text-sm font-medium text-foreground mb-1">السعر</label>
                               <input
                                 id="service-price"
                                 type="number"
@@ -1256,7 +1274,7 @@ export default function BusinessApplyPage() {
                                     )}
                                     <div className="flex items-center gap-2 mt-0.5 text-xs text-muted">
                                       {service.duration && <span>{service.duration} دقيقة</span>}
-                                      {service.price && <span className="text-primary font-medium">{service.price} ر.س</span>}
+                                      {service.price && <span className="text-primary font-medium">{format(Number(service.price))}</span>}
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-1">
@@ -1326,7 +1344,7 @@ export default function BusinessApplyPage() {
                             {/* Product Image Upload */}
                             <div>
                               <label htmlFor="product-image-upload" className="block text-sm font-medium text-foreground mb-1">صورة المنتج</label>
-                              <div className="relative h-[calc(100%-1.75rem)] min-h-[6.5rem] rounded-md border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all cursor-pointer text-center flex flex-col items-center justify-center gap-2 overflow-hidden">
+                              <div className="relative h-40 rounded-md border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all cursor-pointer text-center flex flex-col items-center justify-center gap-2 overflow-hidden">
                                 <input
                                   id="product-image-upload"
                                   type="file"
@@ -1335,7 +1353,7 @@ export default function BusinessApplyPage() {
                                     const file = e.target.files?.[0];
                                     if (file) handleProductImageUpload(file);
                                   }}
-                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30"
                                 />
                                 {productForm.image ? (
                                   <img src={productForm.image} alt={productForm.name || 'صورة المنتج'} className="absolute inset-0 w-full h-full object-cover" />
@@ -1346,7 +1364,7 @@ export default function BusinessApplyPage() {
                                     <span className="text-sm">جاري الرفع...</span>
                                   </div>
                                 ) : (
-                                  <div className="text-sm text-muted relative z-20 px-2">
+                                  <div className="text-sm text-muted relative z-20 px-2 pointer-events-none">
                                     <Camera className="w-6 h-6 mx-auto mb-1 text-slate-300" />
                                     <span className="text-primary font-medium text-xs">اضغط لاختيار صورة</span>
                                   </div>
@@ -1357,7 +1375,7 @@ export default function BusinessApplyPage() {
 
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
-                              <label htmlFor="product-price" className="block text-sm font-medium text-foreground mb-1">السعر (ر.س) *</label>
+                              <label htmlFor="product-price" className="block text-sm font-medium text-foreground mb-1">السعر *</label>
                               <input
                                 id="product-price"
                                 type="number"
@@ -1464,9 +1482,9 @@ export default function BusinessApplyPage() {
                                     <div className="flex items-center gap-2 mt-0.5 text-xs text-muted">
                                       {product.category && <span className="bg-slate-100 px-1.5 py-0.5 rounded">{product.category}</span>}
                                       {product.quantity && <span>الكمية: {product.quantity}</span>}
-                                      <span className="text-primary font-medium">{product.price || 0} ر.س</span>
+                                      <span className="text-primary font-medium">{format(Number(product.price || 0))}</span>
                                       {product.comparePrice && Number(product.comparePrice) > 0 && (
-                                        <span className="line-through">{product.comparePrice} ر.س</span>
+                                        <span className="line-through">{format(Number(product.comparePrice))}</span>
                                       )}
                                     </div>
                                   </div>
@@ -1609,14 +1627,30 @@ export default function BusinessApplyPage() {
                           </div>
                         </div>
 
+                        <div>
+                          <label htmlFor="business-map-link" className="block text-sm font-medium text-foreground mb-1.5">رابط موقع Google Maps</label>
+                          <div className="relative">
+                            <LinkIcon className="absolute right-3 top-3 w-4 h-4 text-muted" />
+                            <input
+                              id="business-map-link"
+                              value={form.mapLink}
+                              onChange={(e) => handleMapLinkChange(e.target.value)}
+                              className="w-full pr-10 px-4 py-2.5 rounded-md border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-left dir-ltr"
+                              dir="ltr"
+                              placeholder="https://maps.app.goo.gl/... أو https://www.google.com/maps/..."
+                            />
+                          </div>
+                          <p className="text-xs text-muted mt-1.5">الصق رابط الموقع مباشرة وسيتم استخراج خط العرض والطول تلقائياً.</p>
+                        </div>
+
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label htmlFor="business-latitude" className="block text-sm font-medium text-foreground mb-1.5">خط العرض</label>
                             <input
                               id="business-latitude"
                               value={form.latitude}
-                              onChange={(e) => updateForm('latitude', e.target.value)}
-                              className="w-full px-4 py-2.5 rounded-md border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-left dir-ltr"
+                              readOnly
+                              className="w-full px-4 py-2.5 rounded-md border border-border bg-slate-50 text-sm text-muted text-left dir-ltr"
                               dir="ltr"
                               placeholder="24.7136"
                             />
@@ -1626,8 +1660,8 @@ export default function BusinessApplyPage() {
                             <input
                               id="business-longitude"
                               value={form.longitude}
-                              onChange={(e) => updateForm('longitude', e.target.value)}
-                              className="w-full px-4 py-2.5 rounded-md border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-left dir-ltr"
+                              readOnly
+                              className="w-full px-4 py-2.5 rounded-md border border-border bg-slate-50 text-sm text-muted text-left dir-ltr"
                               dir="ltr"
                               placeholder="46.6753"
                             />
@@ -1995,7 +2029,7 @@ export default function BusinessApplyPage() {
                               <div key={i} className="flex items-center justify-between bg-slate-50 rounded-md px-2 py-1.5">
                                 <span className="text-xs text-foreground truncate flex-1">{service.name}</span>
                                 {service.price && (
-                                  <span className="text-xs text-primary font-medium mr-2">{service.price} ر.س</span>
+                                  <span className="text-xs text-primary font-medium mr-2">{format(Number(service.price || 0))}</span>
                                 )}
                               </div>
                             ))}

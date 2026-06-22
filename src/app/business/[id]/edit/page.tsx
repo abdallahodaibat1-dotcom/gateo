@@ -5,10 +5,10 @@ import { useSession } from 'next-auth/react';
 import { useParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import { SubcategoryCombobox } from '@/components/business-apply/SubcategoryCombobox';
-import PlacesAutocomplete from '@/components/maps/PlacesAutocomplete';
 import MapPicker from '@/components/maps/MapPicker';
-import GeolocationButton from '@/components/maps/GeolocationButton';
 import CountrySelect from '@/components/CountrySelect';
+import { compressImage } from '@/lib/media-compression';
+import { parseMapUrl, buildMapUrl } from '@/lib/location-utils';
 import { Loader2, Save, MapPin, Phone, Globe, Clock, ImagePlus, X, Check, ChevronLeft, Building2, Store, FileText, Images, Eye, Briefcase, CalendarDays, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -82,6 +82,7 @@ export default function EditBusinessPage() {
 
   const [form, setForm] = useState<any>({});
   const [countryId, setCountryId] = useState<string>('');
+  const [mapLink, setMapLink] = useState<string>('');
 
   useEffect(() => {
     if (!id) return;
@@ -103,6 +104,15 @@ export default function EditBusinessPage() {
       })
       .catch(() => setCities([]));
   }, [countryId]);
+
+  // Sync map link with coordinates when business data loads
+  useEffect(() => {
+    if (form.latitude != null && form.longitude != null) {
+      setMapLink(buildMapUrl(Number(form.latitude), Number(form.longitude)));
+    } else {
+      setMapLink('');
+    }
+  }, [form.latitude, form.longitude]);
 
   const fetchBusiness = async () => {
     try {
@@ -211,33 +221,35 @@ export default function EditBusinessPage() {
     }
   };
 
-  const handlePlaceSelect = useCallback((place: { name: string; address: string; lat: number; lng: number; city?: string; country?: string }) => {
-    setForm((prev: any) => ({
-      ...prev,
-      address: place.address || place.name,
-      latitude: place.lat,
-      longitude: place.lng,
-      city: place.city || prev.city,
-    }));
-  }, []);
-
   const handleMapChange = useCallback((lat: number, lng: number) => {
     setForm((prev: any) => ({ ...prev, latitude: lat, longitude: lng }));
   }, []);
 
-  const handleUpload = async (file: File): Promise<string | null> => {
+  const handleMapLinkChange = useCallback((value: string) => {
+    setMapLink(value);
+    const coords = parseMapUrl(value);
+    if (coords) {
+      setForm((prev: any) => ({
+        ...prev,
+        latitude: coords.lat,
+        longitude: coords.lng,
+      }));
+    }
+  }, []);
+
+  const handleUpload = async (
+    file: File,
+    compressionOptions?: { maxWidth?: number; maxHeight?: number; quality?: number; maxSizeBytes?: number; outputType?: 'image/webp' | 'image/jpeg' | 'image/png' }
+  ): Promise<string | null> => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
       showMessage('error', 'يرجى اختيار صورة بصيغة JPEG, PNG, WebP, أو GIF');
       return null;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      showMessage('error', 'حجم الصورة يجب أن لا يتجاوز 5 ميجابايت');
-      return null;
-    }
     try {
+      const compressedFile = await compressImage(file, compressionOptions);
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok && data.url) return data.url;
@@ -250,12 +262,12 @@ export default function EditBusinessPage() {
   };
 
   const handleLogoUpload = async (file: File) => {
-    const url = await handleUpload(file);
+    const url = await handleUpload(file, { maxWidth: 400, maxHeight: 400, quality: 0.88, maxSizeBytes: 4 * 1024 * 1024 });
     if (url) setForm((prev: any) => ({ ...prev, logo: url }));
   };
 
   const handleCoverUpload = async (file: File) => {
-    const url = await handleUpload(file);
+    const url = await handleUpload(file, { maxWidth: 1600, maxHeight: 900, quality: 0.88, maxSizeBytes: 4 * 1024 * 1024 });
     if (url) setForm((prev: any) => ({ ...prev, cover: url }));
   };
 
@@ -265,7 +277,7 @@ export default function EditBusinessPage() {
       showMessage('error', 'يمكنك رفع 10 صور كحد أقصى');
       return;
     }
-    const url = await handleUpload(file);
+    const url = await handleUpload(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.88, maxSizeBytes: 4 * 1024 * 1024 });
     if (url) setForm((prev: any) => ({ ...prev, images: [...images, { url, type: 'gallery', caption: '' }] }));
   };
 
@@ -277,7 +289,7 @@ export default function EditBusinessPage() {
   };
 
   const handleDocumentUpload = async (file: File) => {
-    const url = await handleUpload(file);
+    const url = await handleUpload(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.88, maxSizeBytes: 4 * 1024 * 1024 });
     if (url) {
       setForm((prev: any) => ({
         ...prev,
@@ -556,15 +568,31 @@ export default function EditBusinessPage() {
                     </div>
                     <div>
                       <label htmlFor="business-address" className="block text-sm font-medium text-foreground mb-1">العنوان التفصيلي</label>
-                      <PlacesAutocomplete
-                        value={form.address || ''}
-                        onSelect={handlePlaceSelect}
-                        label=""
-                        placeholder="ابحث عن عنوان..."
-                      />
+                      <div className="relative">
+                        <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                        <input
+                          id="business-address"
+                          value={form.address || ''}
+                          onChange={(e) => setForm({ ...form, address: e.target.value })}
+                          className="w-full pr-10 pl-4 py-2.5 rounded-md border border-border bg-surface text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
+                          placeholder="الحي، الشارع، رقم المبنى"
+                        />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <GeolocationButton onLocate={(lat, lng) => setForm((prev: any) => ({ ...prev, latitude: lat, longitude: lng }))} />
+                    <div>
+                      <label htmlFor="business-map-link" className="block text-sm font-medium text-foreground mb-1">رابط موقع Google Maps</label>
+                      <div className="relative">
+                        <Globe className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                        <input
+                          id="business-map-link"
+                          value={mapLink}
+                          onChange={(e) => handleMapLinkChange(e.target.value)}
+                          className="w-full pr-10 pl-4 py-2.5 rounded-md border border-border bg-surface text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition text-left dir-ltr"
+                          dir="ltr"
+                          placeholder="https://maps.app.goo.gl/... أو https://www.google.com/maps/..."
+                        />
+                      </div>
+                      <p className="text-xs text-muted mt-1.5">الصق رابط الموقع مباشرة وسيتم استخراج خط العرض والطول تلقائياً.</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>

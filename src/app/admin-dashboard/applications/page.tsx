@@ -45,7 +45,7 @@ interface BusinessApplication {
     email: string;
     phone: string | null;
     avatar: string | null;
-  };
+  } | null;
   category: { id: string; name: string } | null;
   subcategory: { id: string; name: string } | null;
   customSubcategory: string | null;
@@ -90,6 +90,8 @@ export default function ApplicationsPage() {
           isVerified: action === 'approve',
         }),
       });
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(result.error || 'فشل في تنفيذ الإجراء');
       if (!res.ok) throw new Error('فشل في تنفيذ الإجراء');
       await fetchApplications();
     } catch (e) {
@@ -119,8 +121,8 @@ export default function ApplicationsPage() {
     if (!term) return true;
     return (
       a.name?.toLowerCase().includes(term) ||
-      a.user.name?.toLowerCase().includes(term) ||
-      a.user.email?.toLowerCase().includes(term) ||
+      a.user?.name?.toLowerCase().includes(term) ||
+      a.user?.email?.toLowerCase().includes(term) ||
       a.city?.toLowerCase().includes(term) ||
       a.category?.name?.toLowerCase().includes(term)
     );
@@ -307,14 +309,14 @@ export default function ApplicationsPage() {
                     <p className="text-xs font-bold text-muted mb-3 uppercase tracking-wide">صاحب الطلب</p>
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-bold">
-                        {app.user.name?.charAt(0) || app.user.email?.charAt(0) || '؟'}
+                        {app.user?.name?.charAt(0) || app.user?.email?.charAt(0) || '؟'}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-foreground truncate">{app.user.name || 'مستخدم'}</p>
-                        <p className="text-xs text-muted truncate">{app.user.email}</p>
+                        <p className="text-sm font-bold text-foreground truncate">{app.user?.name || 'مستخدم'}</p>
+                        <p className="text-xs text-muted truncate">{app.user?.email || 'لا يوجد بريد'}</p>
                       </div>
                     </div>
-                    {app.user.phone && (
+                    {app.user?.phone && (
                       <p className="text-xs text-muted mt-2 flex items-center gap-1" dir="ltr">
                         <Phone className="w-3 h-3" />
                         {app.user.phone}

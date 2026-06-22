@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface ServiceItem {
   name: string;
@@ -122,6 +123,7 @@ export default function ProfilePage() {
   const [followLoading, setFollowLoading] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const { format, convert } = useCurrency();
   const isOwnProfile = session?.user?.id === id;
   const prof = user?.professionalProfile;
   const isProfessional = user?.accountType === 'PROFESSIONAL' || !!prof;
@@ -728,7 +730,7 @@ export default function ProfilePage() {
                       <div className="flex items-center justify-between mb-1">
                         <h4 className="font-bold text-foreground text-sm">{svc.name}</h4>
                         {svc.startingPrice ? (
-                          <span className="text-primary font-bold text-sm">{svc.startingPrice} ر.س</span>
+                          <span className="text-primary font-bold text-sm">{format(convert(svc.startingPrice))}</span>
                         ) : null}
                       </div>
                       {svc.description && <p className="text-xs text-muted mb-2">{svc.description}</p>}

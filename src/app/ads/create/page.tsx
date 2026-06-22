@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
+import { compressImage } from '@/lib/media-compression';
 import {
   Loader2, Megaphone, Image as ImageIcon, Link as LinkIcon, Upload, CheckCircle,
   AlertCircle, Calendar, Type, AlignRight, MousePointerClick
@@ -70,7 +71,10 @@ export default function CreateAdPage() {
     setUploading(true);
     setError('');
     try {
-      const url = await uploadFile(file);
+      const compressedFile = file.type.startsWith('image/')
+        ? await compressImage(file, { maxWidth: 1600, maxHeight: 1600, quality: 0.88, maxSizeBytes: 4 * 1024 * 1024 })
+        : file;
+      const url = await uploadFile(compressedFile);
       setForm((prev) => ({ ...prev, image: url }));
     } catch (err) {
       setError('فشل في رفع الصورة');
@@ -85,7 +89,10 @@ export default function CreateAdPage() {
     setUploading(true);
     setError('');
     try {
-      const url = await uploadFile(file);
+      const compressedFile = file.type.startsWith('image/')
+        ? await compressImage(file, { maxWidth: 400, maxHeight: 400, quality: 0.88, maxSizeBytes: 1 * 1024 * 1024 })
+        : file;
+      const url = await uploadFile(compressedFile);
       setForm((prev) => ({ ...prev, advertiserLogo: url }));
     } catch (err) {
       setError('فشل في رفع الشعار');

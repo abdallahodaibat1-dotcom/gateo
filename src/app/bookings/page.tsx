@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/hooks/useConfirm';
+import { useCurrency } from '@/hooks/useCurrency';
 
 type BookingStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED_BY_USER' | 'CANCELLED_BY_BUSINESS' | 'NO_SHOW';
 
@@ -86,6 +87,7 @@ export default function BookingsPage() {
   const [error, setError] = useState<string | null>(null);
   const { showToast } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
+  const { format, convert } = useCurrency();
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -285,7 +287,7 @@ export default function BookingsPage() {
                           {booking.service?.duration ? `${booking.service.duration} دقيقة` : '\u00A0'}
                         </span>
                         <span className="text-lg font-bold text-primary">
-                          {Number(booking.totalPrice ?? booking.service?.price ?? 0).toFixed(0)} ر.س
+                          {format(convert(booking.totalPrice ?? booking.service?.price ?? 0))}
                         </span>
                       </div>
                     )}

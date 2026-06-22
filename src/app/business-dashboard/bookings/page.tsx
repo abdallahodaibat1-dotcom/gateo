@@ -15,6 +15,7 @@ import { motion } from 'framer-motion';
 import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
 import { useToast } from '@/components/ui/Toast';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Booking {
   id: string;
@@ -66,6 +67,7 @@ export default function BusinessBookingsPage() {
   const [hasMore, setHasMore] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const { showToast } = useToast();
+  const { format, convert } = useCurrency();
 
   useEffect(() => {
     fetchBusinessId();
@@ -233,7 +235,7 @@ export default function BusinessBookingsPage() {
                 )}
                 <div className="flex items-center gap-2 text-sm font-bold text-primary">
                   {booking.totalPrice || booking.service?.price
-                    ? `${Number(booking.totalPrice ?? booking.service?.price ?? 0).toFixed(0)} ر.س`
+                    ? format(convert(booking.totalPrice ?? booking.service?.price ?? 0))
                     : '—'}
                 </div>
               </div>

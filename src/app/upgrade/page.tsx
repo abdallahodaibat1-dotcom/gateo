@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import CountrySelect from '@/components/CountrySelect';
+import { compressImage } from '@/lib/media-compression';
 import {
   Loader2,
   Plus,
@@ -270,7 +271,16 @@ function UpgradePage() {
     setUploading((prev) => ({ ...prev, [field]: true }));
     setError('');
     try {
-      const url = await uploadFile(file, variant);
+      const isLogo = field === 'logo';
+      const compressedFile = file.type.startsWith('image/')
+        ? await compressImage(file, {
+            maxWidth: isLogo ? 400 : 1200,
+            maxHeight: isLogo ? 400 : 1200,
+            quality: 0.88,
+            maxSizeBytes: isLogo ? 1 * 1024 * 1024 : 4 * 1024 * 1024,
+          })
+        : file;
+      const url = await uploadFile(compressedFile, variant);
       if (field === 'avatar') {
         updatePersonal('avatar', url);
       } else {

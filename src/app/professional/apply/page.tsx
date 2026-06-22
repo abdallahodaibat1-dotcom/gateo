@@ -5,12 +5,14 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useCurrency } from '@/hooks/useCurrency';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import CountrySelect from '@/components/CountrySelect';
 import { DynamicFieldForm } from '@/components/dynamic-fields/DynamicFieldForm';
 import type { DynamicField } from '@/components/dynamic-fields/DynamicFieldForm';
 import { EmptyState, Skeleton } from '@/components/ui';
+import { compressImage, compressVideo } from '@/lib/media-compression';
 import {
   Loader2,
   User,
@@ -309,6 +311,7 @@ function mergeDraft(base: FormState, draft: unknown): FormState {
 export default function ProfessionalApplyPage() {
   const { status } = useSession();
   const router = useRouter();
+  const { format, convert } = useCurrency();
 
   const [form, setForm] = useState<FormState>(initialFormState);
   const [step, setStep] = useState(0);
@@ -543,7 +546,10 @@ export default function ProfessionalApplyPage() {
     setUploading((prev) => ({ ...prev, logo: true }));
     setError('');
     try {
-      const url = await uploadFile(file, 'avatar');
+      const compressedFile = file.type.startsWith('image/')
+        ? await compressImage(file, { maxWidth: 400, maxHeight: 400, quality: 0.88, maxSizeBytes: 1 * 1024 * 1024 })
+        : file;
+      const url = await uploadFile(compressedFile, 'avatar');
       updateField('personalLogo', url);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'فشل في رفع الشعار');
@@ -661,7 +667,22 @@ export default function ProfessionalApplyPage() {
       try {
         // Use 'post' variant for portfolio media. The server currently processes
         // images and videos. Documents may be rejected; we surface that error.
-        const url = await uploadFile(file, 'post');
+        let uploadFileCandidate: File = file;
+        if (type === 'images' && file.type.startsWith('image/')) {
+          uploadFileCandidate = await compressImage(file, {
+            maxWidth: 1600,
+            maxHeight: 1600,
+            quality: 0.88,
+            maxSizeBytes: 4 * 1024 * 1024,
+          });
+        } else if (type === 'videos' && file.type.startsWith('video/')) {
+          uploadFileCandidate = await compressVideo(file, {
+            maxWidth: 1280,
+            maxHeight: 720,
+            maxRate: '2M',
+          });
+        }
+        const url = await uploadFile(uploadFileCandidate, 'post');
         uploaded.push(url);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'فشل في رفع أحد الملفات');
@@ -1786,7 +1807,7 @@ export default function ProfessionalApplyPage() {
                           {form.services.map((s, i) => (
                             <li key={i} className="bg-surface rounded-lg px-3 py-2 border border-border">
                               {s.name}
-                              {s.startingPrice ? ` — ${s.startingPrice} ر.س` : ''}
+                              {s.startingPrice ? ` — ${format(convert(s.startingPrice))}` : ''}
                             </li>
                           ))}
                         </ul>

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Listing {
   id: string;
@@ -75,6 +76,7 @@ function ProductDetailSkeleton() {
 export default function MarketplaceProductPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { format, convert } = useCurrency();
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -193,10 +195,10 @@ export default function MarketplaceProductPage() {
               <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4">{product.name}</h1>
 
               <div className="flex items-center gap-3 mb-6">
-                <span className="text-3xl font-bold text-primary">{Number(product.price).toFixed(2)} ر.س</span>
+                <span className="text-3xl font-bold text-primary">{format(convert(product.price))}</span>
                 {product.comparePrice && (
                   <>
-                    <span className="text-xl text-muted line-through">{Number(product.comparePrice).toFixed(2)} ر.س</span>
+                    <span className="text-xl text-muted line-through">{format(convert(product.comparePrice))}</span>
                     <span className="bg-danger/10 text-danger text-sm font-bold px-2 py-1 rounded-full">
                       وفر {discount}%
                     </span>

@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import EmptyState from '@/components/ui/EmptyState';
 import { useToast } from '@/components/ui/Toast';
+import { useCurrency } from '@/hooks/useCurrency';
 import { CreditCard, Wallet, Banknote, ArrowRight, CheckCircle, Loader2, FileX } from 'lucide-react';
 
 interface Booking {
@@ -27,6 +28,7 @@ export default function PayPage() {
   const [success, setSuccess] = useState(false);
   const [method, setMethod] = useState<'CARD' | 'APPLE_PAY' | 'GOOGLE_PAY' | 'CASH'>('CARD');
   const { showToast } = useToast();
+  const { format, convert } = useCurrency();
 
   useEffect(() => {
     if (!bookingId) return;
@@ -121,7 +123,7 @@ export default function PayPage() {
           )}
           <div className="mt-4 p-4 bg-primary/10 rounded-lg text-center">
             <p className="text-sm text-muted">المبلغ المستحق</p>
-            <p className="text-3xl font-bold text-primary">{amount.toFixed(2)} ر.س</p>
+            <p className="text-3xl font-bold text-primary">{format(convert(amount))}</p>
           </div>
         </div>
 
@@ -164,7 +166,7 @@ export default function PayPage() {
           ) : (
             <>
               <CreditCard className="w-5 h-5" />
-              دفع {amount.toFixed(2)} ر.س
+              دفع {format(convert(amount))}
             </>
           )}
         </button>

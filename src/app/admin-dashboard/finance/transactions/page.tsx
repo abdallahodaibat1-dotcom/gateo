@@ -18,6 +18,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import Modal from '@/components/ui/Modal';
 import Badge from '@/components/ui/Badge';
 import { useToast } from '@/components/ui/Toast';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Transaction {
   id: string;
@@ -58,12 +59,6 @@ const statusOptions = [
   { value: 'REVERSED', label: 'مستعاد' },
 ];
 
-function formatMoney(amount: number | string, currency?: string) {
-  const value = Number(amount || 0);
-  const symbol = currency === 'USD' || !currency ? '$' : currency === 'SAR' ? 'ر.س' : currency;
-  return `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${symbol}`;
-}
-
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('ar-SA', {
     year: 'numeric',
@@ -76,6 +71,7 @@ function formatDate(date: string) {
 
 export default function AdminTransactionsPage() {
   const { showToast } = useToast();
+  const { format, convert } = useCurrency();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -239,7 +235,7 @@ export default function AdminTransactionsPage() {
                         <span>{transactionTypes.find((x) => x.value === t.type)?.label || t.type}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 font-medium text-foreground">{formatMoney(t.amount, t.currency)}</td>
+                    <td className="px-4 py-3 font-medium text-foreground">{format(convert(t.amount))}</td>
                     <td className="px-4 py-3">
                       <Badge variant={t.status === 'COMPLETED' ? 'success' : t.status === 'FAILED' ? 'danger' : t.status === 'PENDING' ? 'warning' : 'muted'}>
                         {statusOptions.find((x) => x.value === t.status)?.label || t.status}
