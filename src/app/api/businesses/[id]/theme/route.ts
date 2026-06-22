@@ -63,7 +63,7 @@ const updateSchema = z.object({
   buttonStyle: z.enum(['gradient', 'solid', 'outline']).optional(),
   heroLayout: z.enum(['center', 'split', 'minimal']).optional(),
   navbarStyle: z.enum(['fixed', 'static', 'transparent']).optional(),
-  homeTemplate: z.enum(['default', 'porto-shop1']).optional(),
+  homeTemplate: z.enum(['default', 'porto-shop1', 'flatsome', 'elessi', 'grand-restaurant', 'houzez', 'jacqueline', 'ohio']).optional(),
   sections: z.array(z.object({
     id: z.string(),
     type: z.string(),

@@ -1,3 +1,13 @@
+export type HomeTemplateId =
+  | 'default'
+  | 'porto-shop1'
+  | 'flatsome'
+  | 'elessi'
+  | 'grand-restaurant'
+  | 'houzez'
+  | 'jacqueline'
+  | 'ohio';
+
 export interface ThemePreset {
   presetId: string;
   name: string;
@@ -15,7 +25,7 @@ export interface ThemePreset {
   buttonStyle: 'gradient' | 'solid' | 'outline';
   heroLayout: 'center' | 'split' | 'minimal';
   navbarStyle: 'fixed' | 'static' | 'transparent';
-  homeTemplate?: 'default' | 'porto-shop1';
+  homeTemplate?: HomeTemplateId;
   /** مصدر التصميم المجاني المُلهم */
   source?: string;
   /** تصنيفات تناسب هذا الثيم */
@@ -48,7 +58,7 @@ export interface WebsiteSection {
 }
 
 export interface GeneratedWebsite {
-  theme: Omit<ThemePreset, 'name' | 'nameAr' | 'description' | 'descriptionAr' | 'source' | 'categoryTags' | 'keywords' | 'style'> & { sections: WebsiteSection[]; homeTemplate: 'default' | 'porto-shop1'; };
+  theme: Omit<ThemePreset, 'name' | 'nameAr' | 'description' | 'descriptionAr' | 'source' | 'categoryTags' | 'keywords' | 'style'> & { sections: WebsiteSection[]; homeTemplate: HomeTemplateId; };
   pages: {
     slug: string;
     title: string;
@@ -737,6 +747,146 @@ const PRESETS: Record<string, ThemePreset> = {
     heroLayout: 'split',
     navbarStyle: 'fixed',
   },
+
+  // ThemeForest-inspired presets
+  flatsome: {
+    presetId: 'flatsome',
+    name: 'Flatsome',
+    nameAr: 'فلاتسوم',
+    description: 'Modern clean ecommerce theme inspired by Flatsome with wide product cards and sidebar filters.',
+    descriptionAr: 'ثيم متجر عصري ونظيف مستوحى من Flatsome، يتميز ببطاقات منتجات واسعة وتصفية جانبية.',
+    source: 'ThemeForest',
+    style: 'modern',
+    categoryTags: ['متجر', 'تجارة', 'عام'],
+    keywords: ['flatsome', 'shop', 'ecommerce', 'store', 'multipurpose', 'clean'],
+    primaryColor: '#2563eb',
+    secondaryColor: '#06b6d4',
+    accentColor: '#f97316',
+    backgroundColor: '#ffffff',
+    surfaceColor: '#f8fafc',
+    textColor: '#0f172a',
+    fontFamily: 'Cairo',
+    borderRadius: '0.75rem',
+    buttonStyle: 'solid',
+    heroLayout: 'center',
+    navbarStyle: 'fixed',
+    homeTemplate: 'flatsome',
+  },
+  elessi: {
+    presetId: 'elessi',
+    name: 'Elessi',
+    nameAr: 'إليسي',
+    description: 'Fashion and beauty theme inspired by Elessi with large product showcases and elegant layout.',
+    descriptionAr: 'ثيم أزياء وجمال مستوحى من Elessi، بعرض منتجات كبير وتخطيط أنيق.',
+    source: 'ThemeForest',
+    style: 'elegant',
+    categoryTags: ['أزياء', 'موضة', 'جمال', 'متجر'],
+    keywords: ['elessi', 'fashion', 'beauty', 'boutique', 'clothing', 'accessories'],
+    primaryColor: '#ec4899',
+    secondaryColor: '#a855f7',
+    accentColor: '#f59e0b',
+    backgroundColor: '#ffffff',
+    surfaceColor: '#fff1f2',
+    textColor: '#1a1a2e',
+    fontFamily: 'Cairo',
+    borderRadius: '1rem',
+    buttonStyle: 'outline',
+    heroLayout: 'split',
+    navbarStyle: 'fixed',
+    homeTemplate: 'elessi',
+  },
+  grandRestaurant: {
+    presetId: 'grandRestaurant',
+    name: 'Grand Restaurant',
+    nameAr: 'جراند ريستورانت',
+    description: 'Elegant restaurant and cafe theme inspired by Grand Restaurant with dark atmosphere and warm gold accents.',
+    descriptionAr: 'ثيم مطاعم ومقاهي فاخر مستوحى من Grand Restaurant، بأجواء داكنة وألوان ذهبية دافئة.',
+    source: 'ThemeForest',
+    style: 'elegant',
+    categoryTags: ['مطعم', 'كافيه', 'طعام', 'فاخر'],
+    keywords: ['grand restaurant', 'restaurant', 'cafe', 'food', 'dining', 'menu', 'reservation'],
+    primaryColor: '#1a1a2e',
+    secondaryColor: '#d4af37',
+    accentColor: '#b45309',
+    backgroundColor: '#0f172a',
+    surfaceColor: '#1e293b',
+    textColor: '#f8fafc',
+    fontFamily: 'Cairo',
+    borderRadius: '0.5rem',
+    buttonStyle: 'outline',
+    heroLayout: 'center',
+    navbarStyle: 'transparent',
+    homeTemplate: 'grand-restaurant',
+  },
+  houzez: {
+    presetId: 'houzez',
+    name: 'Houzez',
+    nameAr: 'هوزيز',
+    description: 'Professional real estate theme inspired by Houzez with advanced search and clear property cards.',
+    descriptionAr: 'ثيم عقارات احترافي مستوحى من Houzez، ببحث متقدم وبطاقات عقارية واضحة.',
+    source: 'ThemeForest',
+    style: 'corporate',
+    categoryTags: ['عقارات', 'تطوير عقاري', 'استثمار', 'خدمات'],
+    keywords: ['houzez', 'real estate', 'property', 'realtor', 'apartment', 'villa', 'rent'],
+    primaryColor: '#0f766e',
+    secondaryColor: '#15803d',
+    accentColor: '#d97706',
+    backgroundColor: '#ffffff',
+    surfaceColor: '#f0fdf4',
+    textColor: '#14532d',
+    fontFamily: 'Cairo',
+    borderRadius: '1rem',
+    buttonStyle: 'solid',
+    heroLayout: 'split',
+    navbarStyle: 'fixed',
+    homeTemplate: 'houzez',
+  },
+  jacqueline: {
+    presetId: 'jacqueline',
+    name: 'Jacqueline',
+    nameAr: 'جاكلين',
+    description: 'Spa and beauty salon theme inspired by Jacqueline with soft pastel colors and relaxing services.',
+    descriptionAr: 'ثيم سبا وصالونات تجميل مستوحى من Jacqueline، بألوان باستيل ناعمة وخدمات استرخاء.',
+    source: 'ThemeForest',
+    style: 'elegant',
+    categoryTags: ['سبا', 'صالون', 'تجميل', 'عناية', 'صحة'],
+    keywords: ['jacqueline', 'spa', 'salon', 'beauty', 'massage', 'wellness', 'care'],
+    primaryColor: '#db2777',
+    secondaryColor: '#f472b6',
+    accentColor: '#84cc16',
+    backgroundColor: '#fdf2f8',
+    surfaceColor: '#ffffff',
+    textColor: '#831843',
+    fontFamily: 'Cairo',
+    borderRadius: '1.5rem',
+    buttonStyle: 'gradient',
+    heroLayout: 'center',
+    navbarStyle: 'fixed',
+    homeTemplate: 'jacqueline',
+  },
+  ohio: {
+    presetId: 'ohio',
+    name: 'Ohio',
+    nameAr: 'أوهايو',
+    description: 'Portfolio and creative agency theme inspired by Ohio with a minimal bold design and generous whitespace.',
+    descriptionAr: 'ثيم معرض أعمال ووكالة إبداعية مستوحى من Ohio، بتصميم بسيط وجريء ومساحات بيضاء واسعة.',
+    source: 'ThemeForest',
+    style: 'minimal',
+    categoryTags: ['وكالة', 'معرض أعمال', 'إبداعي', 'خدمات'],
+    keywords: ['ohio', 'portfolio', 'agency', 'creative', 'freelancer', 'design'],
+    primaryColor: '#171717',
+    secondaryColor: '#525252',
+    accentColor: '#e5e5e5',
+    backgroundColor: '#ffffff',
+    surfaceColor: '#f8fafc',
+    textColor: '#0a0a0a',
+    fontFamily: 'Cairo',
+    borderRadius: '0.25rem',
+    buttonStyle: 'solid',
+    heroLayout: 'minimal',
+    navbarStyle: 'static',
+    homeTemplate: 'ohio',
+  },
 };
 
 const DEFAULT_SECTIONS: WebsiteSection[] = [
@@ -855,6 +1005,30 @@ function resolvePreset(business: BusinessLike): ThemePreset {
       keywords: ['automotive', 'car', 'garage', 'repair', 'maintenance', 'auto'],
       preset: PRESETS.automotive,
     },
+    {
+      keywords: ['flatsome', 'multipurpose', 'general store'],
+      preset: PRESETS.flatsome,
+    },
+    {
+      keywords: ['elessi', 'fashion store', 'beauty store'],
+      preset: PRESETS.elessi,
+    },
+    {
+      keywords: ['grand restaurant', 'fine dining', 'luxury restaurant'],
+      preset: PRESETS.grandRestaurant,
+    },
+    {
+      keywords: ['houzez', 'real estate pro', 'property listing'],
+      preset: PRESETS.houzez,
+    },
+    {
+      keywords: ['jacqueline', 'spa', 'massage', 'wellness center'],
+      preset: PRESETS.jacqueline,
+    },
+    {
+      keywords: ['ohio', 'creative agency', 'portfolio studio'],
+      preset: PRESETS.ohio,
+    },
   ];
 
   for (const token of tokens) {
@@ -898,7 +1072,7 @@ export function generateThemeForBusiness(
     buttonStyle: preset.buttonStyle,
     heroLayout: preset.heroLayout,
     navbarStyle: preset.navbarStyle,
-    homeTemplate: 'default' as const,
+    homeTemplate: (websiteType === 'STORE' ? preset.homeTemplate || 'default' : 'default') as HomeTemplateId,
     sections,
   };
 
@@ -949,7 +1123,7 @@ export function getStoreDefaultSections(): WebsiteSection[] {
 }
 
 export interface HomeTemplate {
-  id: 'default' | 'porto-shop1';
+  id: HomeTemplateId;
   name: string;
   nameAr: string;
   descriptionAr: string;
@@ -969,6 +1143,42 @@ export function getHomeTemplateList(): HomeTemplate[] {
       name: 'Porto Shop 1',
       nameAr: 'بوتو شوب ١',
       descriptionAr: 'قالب متجر احترافي مستوحى من Porto Shop1 مع سلايدر، عروض، تقييمات، وفوتر متعدد الأعمدة.',
+    },
+    {
+      id: 'flatsome',
+      name: 'Flatsome',
+      nameAr: 'فلاتسوم',
+      descriptionAr: 'قالب متجر عصري ونظيف مستوحى من Flatsome مع تصفية جانبية وبطاقات منتجات واسعة.',
+    },
+    {
+      id: 'elessi',
+      name: 'Elessi',
+      nameAr: 'إليسي',
+      descriptionAr: 'قالب أزياء وجمال مستوحى من Elessi بعرض منتجات كبير وتخطيط أنيق.',
+    },
+    {
+      id: 'grand-restaurant',
+      name: 'Grand Restaurant',
+      nameAr: 'جراند ريستورانت',
+      descriptionAr: 'قالب مطاعم فاخر مستوحى من Grand Restaurant بأجواء داكنة وقائمة طعام وحجز.',
+    },
+    {
+      id: 'houzez',
+      name: 'Houzez',
+      nameAr: 'هوزيز',
+      descriptionAr: 'قالب عقارات احترافي مستوحى من Houzez مع بحث وبطاقات عقارية.',
+    },
+    {
+      id: 'jacqueline',
+      name: 'Jacqueline',
+      nameAr: 'جاكلين',
+      descriptionAr: 'قالب سبا وصالونات تجميل مستوحى من Jacqueline بألوان باستيل وخدمات استرخاء.',
+    },
+    {
+      id: 'ohio',
+      name: 'Ohio',
+      nameAr: 'أوهايو',
+      descriptionAr: 'قالب معرض أعمال ووكالة إبداعية مستوحى من Ohio بتصميم بسيط وجريء.',
     },
   ];
 }

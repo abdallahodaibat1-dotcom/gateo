@@ -20,6 +20,12 @@ import {
 } from 'lucide-react';
 import { BusinessThemeProvider } from '@/components/business-website/BusinessThemeProvider';
 import { PortoShop1Template } from '@/components/business-website/PortoShop1Template';
+import { FlatsomeTemplate } from '@/components/business-website/FlatsomeTemplate';
+import { ElessiTemplate } from '@/components/business-website/ElessiTemplate';
+import { GrandRestaurantTemplate } from '@/components/business-website/GrandRestaurantTemplate';
+import { HouzezTemplate } from '@/components/business-website/HouzezTemplate';
+import { JacquelineTemplate } from '@/components/business-website/JacquelineTemplate';
+import { OhioTemplate } from '@/components/business-website/OhioTemplate';
 
 interface Product {
   id: string;
@@ -80,8 +86,23 @@ function StoreHome({ business, pageSlug }: { business: Business; pageSlug: strin
   const products = business.products || [];
   const categories = Array.from(new Set(products.map((p) => p.category).filter(Boolean))) as string[];
 
-  if (business.theme?.homeTemplate === 'porto-shop1') {
-    return <PortoShop1Template business={business} />;
+  switch (business.theme?.homeTemplate) {
+    case 'porto-shop1':
+      return <PortoShop1Template business={business} />;
+    case 'flatsome':
+      return <FlatsomeTemplate business={business} />;
+    case 'elessi':
+      return <ElessiTemplate business={business} />;
+    case 'grand-restaurant':
+      return <GrandRestaurantTemplate business={business} />;
+    case 'houzez':
+      return <HouzezTemplate business={business} />;
+    case 'jacqueline':
+      return <JacquelineTemplate business={business} />;
+    case 'ohio':
+      return <OhioTemplate business={business} />;
+    default:
+      break;
   }
 
   return (
@@ -311,8 +332,11 @@ export default function BusinessCustomPage() {
       })),
   ];
 
-  const isPortoShop1 = business.theme?.homeTemplate === 'porto-shop1';
-  const useTemplateShell = isPortoShop1 && business.websiteType === 'STORE' && page.isHomePage;
+  const fullPageTemplates = ['porto-shop1', 'flatsome', 'elessi', 'grand-restaurant', 'houzez', 'jacqueline', 'ohio'];
+  const useTemplateShell =
+    fullPageTemplates.includes(business.theme?.homeTemplate || '') &&
+    business.websiteType === 'STORE' &&
+    page.isHomePage;
 
   return (
     <BusinessThemeProvider theme={business.theme}>

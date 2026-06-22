@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
-import { getThemePresetById, getDefaultSections, getStoreDefaultSections } from '@/lib/business-template-generator';
+import { getThemePresetById, getDefaultSections, getStoreDefaultSections, type HomeTemplateId } from '@/lib/business-template-generator';
 import { getDesignById, resolveHomeTemplate, resolvePresetId } from '@/lib/business-design-library';
 
 const applySchema = z.object({
@@ -43,7 +43,7 @@ const applySchema = z.object({
   businessType: z.enum(['INDIVIDUAL', 'COMPANY']).optional(),
   websiteType: z.enum(['INTRO', 'STORE']).optional(),
   themePresetId: z.string().optional(),
-  homeTemplate: z.enum(['default', 'porto-shop1']).optional(),
+  homeTemplate: z.enum(['default', 'porto-shop1', 'flatsome', 'elessi', 'grand-restaurant', 'houzez', 'jacqueline', 'ohio']).optional(),
   designId: z.string().optional(),
   useAutoColors: z.boolean().optional(),
   themeColors: z.object({
@@ -284,7 +284,7 @@ interface ApplyThemeOptions {
   designId?: string;
   themePresetId?: string;
   websiteType?: 'INTRO' | 'STORE';
-  homeTemplate?: 'default' | 'porto-shop1';
+  homeTemplate?: HomeTemplateId;
   themeColors?: {
     primaryColor: string;
     secondaryColor: string;

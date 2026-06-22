@@ -18,6 +18,7 @@ import {
 import {
   getThemePresetById,
   WebsiteSection,
+  type HomeTemplateId,
 } from '@/lib/business-template-generator';
 import { DesignLibrarySelector } from '@/components/business-apply/DesignLibrarySelector';
 import { getDesignById, resolvePresetId, resolveHomeTemplate } from '@/lib/business-design-library';
@@ -45,7 +46,7 @@ interface Theme {
   buttonStyle: string;
   heroLayout: string;
   navbarStyle: string;
-  homeTemplate: 'default' | 'porto-shop1';
+  homeTemplate: HomeTemplateId;
   sections: WebsiteSection[];
   customCss: string | null;
   isPublished: boolean;
