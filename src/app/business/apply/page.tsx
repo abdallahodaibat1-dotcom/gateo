@@ -21,6 +21,7 @@ import { BusinessIntroBuilder } from '@/components/business-apply/BusinessIntroB
 import { BusinessStoreBuilder } from '@/components/business-apply/BusinessStoreBuilder';
 import type { BuilderStep } from '@/components/business-apply/BuilderStepSidebar';
 import { ThemeSelector } from '@/components/business-apply/ThemeSelector';
+import { HomeTemplateSelector } from '@/components/business-apply/HomeTemplateSelector';
 import { SubcategoryCombobox } from '@/components/business-apply/SubcategoryCombobox';
 import { useCurrency } from '@/hooks/useCurrency';
 import { compressImage } from '@/lib/media-compression';
@@ -83,6 +84,7 @@ export default function BusinessApplyPage() {
     acceptedTerms: false,
     websiteType: '' as 'INTRO' | 'STORE' | '',
     themePresetId: '',
+    homeTemplate: 'default' as 'default' | 'porto-shop1',
     logo: '',
     cover: '',
     gallery: [] as string[],
@@ -265,6 +267,7 @@ export default function BusinessApplyPage() {
           mapLink: undefined,
           websiteType: form.websiteType || undefined,
           themePresetId: form.themePresetId || undefined,
+          homeTemplate: form.homeTemplate || undefined,
           workingHours: form.workingHours.filter((w) => w.open && w.close),
           customSubcategory: form.customSubcategory || undefined,
           latitude: form.latitude ? parseFloat(form.latitude) : undefined,
@@ -964,6 +967,15 @@ export default function BusinessApplyPage() {
                         {errors.themePresetId && (
                           <p className="text-red-500 text-xs">{errors.themePresetId}</p>
                         )}
+
+                        <hr className="border-border" />
+
+                        <HomeTemplateSelector
+                          selectedTemplateId={form.homeTemplate}
+                          onSelect={(templateId) => {
+                            setForm((prev) => ({ ...prev, homeTemplate: templateId as 'default' | 'porto-shop1' }));
+                          }}
+                        />
                       </motion.div>
                     )}
 

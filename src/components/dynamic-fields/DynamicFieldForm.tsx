@@ -51,6 +51,27 @@ interface DynamicFieldInputProps {
   disabled?: boolean;
 }
 
+function normalizeOptions(options: unknown): { value: string; label: string }[] {
+  if (!options) return [];
+  if (Array.isArray(options)) {
+    return options
+      .filter((opt) => opt != null)
+      .map((opt: any) => ({
+        value: String(opt.value ?? ''),
+        label: String(opt.label ?? opt.value ?? ''),
+      }));
+  }
+  if (typeof options === 'string') {
+    try {
+      const parsed = JSON.parse(options);
+      return normalizeOptions(parsed);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 function DynamicFieldInput({ field, value, onChange, disabled }: DynamicFieldInputProps) {
   const fieldId = `field-${field.id}`;
   const baseClass =
@@ -196,7 +217,7 @@ function DynamicFieldInput({ field, value, onChange, disabled }: DynamicFieldInp
             className={baseClass}
           >
             <option value="">اختر...</option>
-            {(field.options || []).map((opt) => (
+            {normalizeOptions(field.options).map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
@@ -214,7 +235,7 @@ function DynamicFieldInput({ field, value, onChange, disabled }: DynamicFieldInp
           </label>
           {field.description && <p className="text-xs text-muted mb-1">{field.description}</p>}
           <div className="flex flex-wrap gap-2 p-3 rounded-md border border-border bg-slate-50/50">
-            {(field.options || []).map((opt) => {
+            {normalizeOptions(field.options).map((opt) => {
               const selected = (value || '').split(',').filter(Boolean).includes(opt.value);
               return (
                 <label

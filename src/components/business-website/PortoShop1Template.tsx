@@ -157,15 +157,19 @@ export function PortoShop1Template({ business }: PortoShop1TemplateProps) {
 
   const workingHoursText = useMemo(() => {
     if (!business.workingHours) return null;
+    let parsed: any = business.workingHours;
     if (typeof business.workingHours === 'string') {
       try {
-        const parsed = JSON.parse(business.workingHours);
-        return parsed;
+        parsed = JSON.parse(business.workingHours);
       } catch {
         return null;
       }
     }
-    return business.workingHours;
+    if (!Array.isArray(parsed)) return null;
+    return parsed
+      .filter((item: any) => item.open && item.close)
+      .map((item: any) => `${item.day}: ${item.open} - ${item.close}`)
+      .join(' | ');
   }, [business.workingHours]);
 
   const nextSlide = () => setCurrentSlide((s) => (s + 1) % heroSlides.length);
@@ -765,7 +769,7 @@ export function PortoShop1Template({ business }: PortoShop1TemplateProps) {
                 {workingHoursText && (
                   <li className="flex items-start gap-2">
                     <Clock className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <span>أيام العمل: {JSON.stringify(workingHoursText)}</span>
+                    <span>أيام العمل: {workingHoursText}</span>
                   </li>
                 )}
               </ul>

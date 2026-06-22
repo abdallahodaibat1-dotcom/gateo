@@ -20,7 +20,7 @@ export async function GET(
       return NextResponse.json({ error: 'التصنيف غير موجود' }, { status: 404 });
     }
 
-    const fields = await prisma.dynamicFieldDefinition.findMany({
+    const rawFields = await prisma.dynamicFieldDefinition.findMany({
       where: {
         isActive: true,
         OR: [
@@ -30,6 +30,24 @@ export async function GET(
         appliesTo: { in: [appliesTo as any, 'BOTH'] },
       },
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
+    });
+
+    const fields = rawFields.map((field) => {
+      let parsedOptions: { value: string; label: string }[] | null = null;
+      if (field.options) {
+        try {
+          const parsed = JSON.parse(field.options);
+          if (Array.isArray(parsed)) {
+            parsedOptions = parsed.map((opt: any) => ({
+              value: String(opt.value ?? ''),
+              label: String(opt.label ?? opt.value ?? ''),
+            }));
+          }
+        } catch {
+          parsedOptions = null;
+        }
+      }
+      return { ...field, options: parsedOptions };
     });
 
     return NextResponse.json({ fields });

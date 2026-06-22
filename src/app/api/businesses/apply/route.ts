@@ -42,6 +42,7 @@ const applySchema = z.object({
   businessType: z.enum(['INDIVIDUAL', 'COMPANY']).optional(),
   websiteType: z.enum(['INTRO', 'STORE']).optional(),
   themePresetId: z.string().optional(),
+  homeTemplate: z.enum(['default', 'porto-shop1']).optional(),
   images: z.array(z.object({
     url: z.string().min(1),
     type: z.string().optional(),
@@ -97,7 +98,7 @@ export async function POST(req: NextRequest) {
 
     if (existing) {
       // Update existing business with new data
-      const { services: _services, products: _products, themePresetId: _themePresetId, fieldValues: _fieldValues, ...businessData } = data;
+      const { services: _services, products: _products, themePresetId: _themePresetId, homeTemplate: _homeTemplate, fieldValues: _fieldValues, ...businessData } = data;
       
       // Check slug uniqueness only if slug changed
       if (data.slug !== existing.slug) {
@@ -159,7 +160,7 @@ export async function POST(req: NextRequest) {
 
       // Apply selected theme preset if provided
       if (data.themePresetId) {
-        await applyThemePreset(existing.id, data.themePresetId, data.websiteType);
+        await applyThemePreset(existing.id, data.themePresetId, data.websiteType, data.homeTemplate);
       }
 
       // Create default pages if none exist
@@ -176,7 +177,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'الرابط مستخدم من قبل' }, { status: 400 });
     }
 
-    const { services: _services, products: _products, themePresetId: _themePresetId, fieldValues: _fieldValues, ...businessData } = data;
+    const { services: _services, products: _products, themePresetId: _themePresetId, homeTemplate: _homeTemplate, fieldValues: _fieldValues, ...businessData } = data;
     const business = await prisma.business.create({
       data: {
         ...businessData,
@@ -224,7 +225,7 @@ export async function POST(req: NextRequest) {
     await saveBusinessFieldValues(business.id, data.categoryId, data.fieldValues);
 
     // Apply theme preset (selected or default)
-    await applyThemePreset(business.id, data.themePresetId || 'default', data.websiteType);
+    await applyThemePreset(business.id, data.themePresetId || 'default', data.websiteType, data.homeTemplate);
 
     // Create default pages
     await createDefaultPages(business.id, business.name, business.description);
@@ -259,7 +260,8 @@ export async function POST(req: NextRequest) {
 async function applyThemePreset(
   businessId: string,
   presetId: string,
-  websiteType: 'INTRO' | 'STORE' | undefined = 'INTRO'
+  websiteType: 'INTRO' | 'STORE' | undefined = 'INTRO',
+  homeTemplate: 'default' | 'porto-shop1' | undefined = 'default'
 ) {
   const preset = getThemePresetById(presetId) || getThemePresetById('default');
   if (!preset) return;
@@ -286,10 +288,12 @@ async function applyThemePreset(
       buttonStyle: preset.buttonStyle,
       heroLayout: preset.heroLayout,
       navbarStyle: preset.navbarStyle,
+      homeTemplate,
       sections: JSON.stringify(sections) as any,
     },
     update: {
       presetId: preset.presetId,
+      homeTemplate,
       primaryColor: preset.primaryColor,
       secondaryColor: preset.secondaryColor,
       accentColor: preset.accentColor,
