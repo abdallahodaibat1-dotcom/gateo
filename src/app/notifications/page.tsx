@@ -202,7 +202,8 @@ export default function NotificationsPage() {
               <div className="divide-y divide-border">
                 {notifications.map((notification) => {
                   const data = notification.data || {};
-                  const link = data.link || getNotificationLink(notification.type, data);
+                  const rawLink = typeof data.link === 'string' ? data.link : getNotificationLink(notification.type, data);
+                  const link = typeof rawLink === 'string' ? rawLink : null;
                   const isClickable = link && link !== '#';
 
                   const handleClick = async (e: React.MouseEvent) => {
