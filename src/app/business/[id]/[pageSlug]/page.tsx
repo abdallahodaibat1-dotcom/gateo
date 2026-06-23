@@ -588,6 +588,12 @@ export default function BusinessCustomPage() {
     }
   }, [business, page]);
 
+  useEffect(() => {
+    const openCart = () => setCartOpen(true);
+    window.addEventListener('open-cart-drawer', openCart);
+    return () => window.removeEventListener('open-cart-drawer', openCart);
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--theme-background)]">

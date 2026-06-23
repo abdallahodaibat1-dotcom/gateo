@@ -28,6 +28,9 @@ import {
 } from 'lucide-react';
 import { ProductCard, ProductCardProduct } from './ProductCard';
 import { StarRating } from './StarRating';
+import { useCart } from '@/components/CartProvider';
+import { useWishlist } from '@/components/WishlistProvider';
+import { useToast } from '@/components/ui/Toast';
 
 interface BusinessPage {
   id: string;
@@ -122,26 +125,48 @@ const paymentIcons = ['VISA', 'MasterCard', 'PayPal', 'Stripe'];
 
 const popularTags = ['حقيبة', 'أسود', 'أزرق', 'ملابس', 'أزياء', 'سماعات', 'جينز', 'قميص', 'تنورة', 'رياضة', 'سترة', 'شتاء'];
 
-const heroSlides = [
-  {
-    pretitle: 'Find the Boundaries. Push Through!',
-    title: 'Summer Sale',
-    discount: '70%',
-    suffix: 'OFF',
-    price: '199.99',
-    cta: 'تسوقي الآن',
-    image: DEMO_IMAGES.heroModel,
-  },
-  {
-    pretitle: 'New Season Collection',
-    title: 'Fashion Week',
-    discount: '50%',
-    suffix: 'OFF',
-    price: '149.99',
-    cta: 'اكتشفي المزيد',
-    image: DEMO_IMAGES.heroSlide2,
-  },
-];
+function buildHeroSlides(business: PortoShop1Business) {
+  const cover = business.cover;
+  if (cover) {
+    return [
+      {
+        pretitle: 'مرحباً بك في',
+        title: business.name,
+        description: business.description || '',
+        discount: '',
+        suffix: '',
+        price: '',
+        cta: 'تسوقي الآن',
+        image: cover,
+        mode: 'cover' as const,
+      },
+    ];
+  }
+  return [
+    {
+      pretitle: 'Find the Boundaries. Push Through!',
+      title: 'Summer Sale',
+      description: '',
+      discount: '70%',
+      suffix: 'OFF',
+      price: '199.99',
+      cta: 'تسوقي الآن',
+      image: DEMO_IMAGES.heroModel,
+      mode: 'demo' as const,
+    },
+    {
+      pretitle: 'New Season Collection',
+      title: 'Fashion Week',
+      description: '',
+      discount: '50%',
+      suffix: 'OFF',
+      price: '149.99',
+      cta: 'اكتشفي المزيد',
+      image: DEMO_IMAGES.heroSlide2,
+      mode: 'demo' as const,
+    },
+  ];
+}
 
 const promoBanners = [
   {
@@ -198,8 +223,14 @@ export function PortoShop1Template({ business }: PortoShop1TemplateProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [cartCount] = useState(0);
   const [email, setEmail] = useState('');
+  const { items: cartItems, addItem: addToCart } = useCart();
+  const { isInWishlist, toggleItem: toggleWishlist } = useWishlist();
+  const { showToast } = useToast();
+  const cartCount = cartItems.filter((i) => i.businessId === business.id).reduce((sum, i) => sum + i.quantity, 0);
+  const wishlistCount = 0; // optional count could be added later
+
+  const heroSlides = useMemo(() => buildHeroSlides(business), [business]);
 
   const homeHref = `/business/${business.slug || business.id}`;
 
@@ -303,10 +334,17 @@ export function PortoShop1Template({ business }: PortoShop1TemplateProps) {
               <button type="button" className="relative p-2 text-foreground hover:text-primary transition-colors">
                 <User className="w-6 h-6" />
               </button>
-              <button type="button" className="relative p-2 text-foreground hover:text-primary transition-colors">
+              <Link href={`${homeHref}/wishlist`} className="relative p-2 text-foreground hover:text-primary transition-colors">
                 <Heart className="w-6 h-6" />
-              </button>
-              <button type="button" className="relative p-2 text-foreground hover:text-primary transition-colors">
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  // open cart drawer by dispatching a custom event handled by the page shell
+                  window.dispatchEvent(new CustomEvent('open-cart-drawer'));
+                }}
+                className="relative p-2 text-foreground hover:text-primary transition-colors"
+              >
                 <ShoppingCart className="w-6 h-6" />
                 {cartCount > 0 && (
                   <span
@@ -500,55 +538,110 @@ export function PortoShop1Template({ business }: PortoShop1TemplateProps) {
                     transition={{ duration: 0.5 }}
                     className="absolute inset-0 flex"
                   >
-                    <div className="flex-1 flex items-center px-8 md:px-14">
-                      <div className="max-w-md">
-                        <motion.p
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2 }}
-                          dir="ltr"
-                          className="text-sm md:text-base text-slate-600 mb-2 text-left"
-                        >
-                          {heroSlides[currentSlide].pretitle}
-                        </motion.p>
-                        <motion.h2
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.3 }}
-                          className="text-4xl md:text-6xl font-bold text-slate-900 mb-2 italic"
-                        >
-                          {heroSlides[currentSlide].title}
-                        </motion.h2>
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.4 }}
-                          className="flex items-center gap-3 mb-6"
-                        >
-                          <span className="text-5xl md:text-7xl font-extrabold text-slate-900">{heroSlides[currentSlide].discount}</span>
-                          <span className="text-xl md:text-2xl font-bold text-slate-900">{heroSlides[currentSlide].suffix}</span>
-                        </motion.div>
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5 }}
-                          className="flex items-center gap-3 dir-ltr"
-                        >
-                          <span className="text-xs text-slate-600 uppercase tracking-wide">Starting At</span>
-                          <span className="px-2 py-1 bg-rose-500 text-white font-bold text-sm">${heroSlides[currentSlide].price}</span>
-                          <button type="button" className="px-6 py-2.5 bg-slate-900 text-white text-sm font-bold uppercase hover:bg-slate-800 transition-colors">
-                            {heroSlides[currentSlide].cta}
-                          </button>
-                        </motion.div>
-                      </div>
-                    </div>
-                    <div className="hidden md:flex w-[45%] items-end justify-center pe-8">
-                      <img
-                        src={heroSlides[currentSlide].image}
-                        alt="Hero"
-                        className="h-[90%] w-auto object-contain"
-                      />
-                    </div>
+                    {heroSlides[currentSlide].mode === 'cover' ? (
+                      <>
+                        <img
+                          src={heroSlides[currentSlide].image}
+                          alt={heroSlides[currentSlide].title}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+                        <div className="relative flex-1 flex items-center px-8 md:px-14">
+                          <div className="max-w-lg text-white">
+                            <motion.p
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.2 }}
+                              className="text-sm md:text-base text-white/80 mb-2"
+                            >
+                              {heroSlides[currentSlide].pretitle}
+                            </motion.p>
+                            <motion.h2
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.3 }}
+                              className="text-4xl md:text-5xl font-bold mb-4"
+                            >
+                              {heroSlides[currentSlide].title}
+                            </motion.h2>
+                            {heroSlides[currentSlide].description && (
+                              <motion.p
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4 }}
+                                className="text-base text-white/90 mb-6 line-clamp-3"
+                              >
+                                {heroSlides[currentSlide].description}
+                              </motion.p>
+                            )}
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.5 }}
+                            >
+                              <Link
+                                href={`${homeHref}/shop`}
+                                className="inline-block px-6 py-2.5 bg-white text-slate-900 text-sm font-bold uppercase rounded hover:bg-white/90 transition-colors"
+                              >
+                                {heroSlides[currentSlide].cta}
+                              </Link>
+                            </motion.div>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex-1 flex items-center px-8 md:px-14">
+                          <div className="max-w-md">
+                            <motion.p
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.2 }}
+                              dir="ltr"
+                              className="text-sm md:text-base text-slate-600 mb-2 text-left"
+                            >
+                              {heroSlides[currentSlide].pretitle}
+                            </motion.p>
+                            <motion.h2
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.3 }}
+                              className="text-4xl md:text-6xl font-bold text-slate-900 mb-2 italic"
+                            >
+                              {heroSlides[currentSlide].title}
+                            </motion.h2>
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.4 }}
+                              className="flex items-center gap-3 mb-6"
+                            >
+                              <span className="text-5xl md:text-7xl font-extrabold text-slate-900">{heroSlides[currentSlide].discount}</span>
+                              <span className="text-xl md:text-2xl font-bold text-slate-900">{heroSlides[currentSlide].suffix}</span>
+                            </motion.div>
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.5 }}
+                              className="flex items-center gap-3 dir-ltr"
+                            >
+                              <span className="text-xs text-slate-600 uppercase tracking-wide">Starting At</span>
+                              <span className="px-2 py-1 bg-rose-500 text-white font-bold text-sm">${heroSlides[currentSlide].price}</span>
+                              <button type="button" className="px-6 py-2.5 bg-slate-900 text-white text-sm font-bold uppercase hover:bg-slate-800 transition-colors">
+                                {heroSlides[currentSlide].cta}
+                              </button>
+                            </motion.div>
+                          </div>
+                        </div>
+                        <div className="hidden md:flex w-[45%] items-end justify-center pe-8">
+                          <img
+                            src={heroSlides[currentSlide].image}
+                            alt="Hero"
+                            className="h-[90%] w-auto object-contain"
+                          />
+                        </div>
+                      </>
+                    )}
                   </motion.div>
                 </AnimatePresence>
 
@@ -600,7 +693,9 @@ export function PortoShop1Template({ business }: PortoShop1TemplateProps) {
                           {promo.cta}
                         </button>
                       </div>
-                      <img src={promo.image} alt={promo.title} className="absolute left-0 bottom-0 h-full w-1/2 object-cover opacity-80" />
+                      {promo.image && promo.image !== 'demo' && (
+                        <img src={promo.image} alt={promo.title} className="absolute left-0 bottom-0 h-full w-1/2 object-cover opacity-80" />
+                      )}
                     </motion.div>
                   ))}
                 </div>

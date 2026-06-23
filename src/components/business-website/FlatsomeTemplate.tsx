@@ -21,6 +21,8 @@ import {
 import { useCurrency } from '@/hooks/useCurrency';
 import { ProductCard } from './ProductCard';
 import { StarRating } from './StarRating';
+import { useCart } from '@/components/CartProvider';
+import { useToast } from '@/components/ui/Toast';
 import type { TemplateBusiness, TemplateProduct } from './template-types';
 
 interface FlatsomeTemplateProps {
@@ -47,8 +49,23 @@ export function FlatsomeTemplate({ business }: FlatsomeTemplateProps) {
   );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [cartCount] = useState(0);
   const [activeCategory, setActiveCategory] = useState<string>('الكل');
+  const cart = useCart();
+  const { showToast } = useToast();
+  const cartCount = cart.items.filter((i) => i.businessId === business.id).reduce((sum, i) => sum + i.quantity, 0);
+
+  const handleAddToCart = (product: TemplateProduct) => {
+    cart.addItem({
+      productId: product.id,
+      businessId: business.id,
+      businessName: business.name,
+      businessSlug: business.slug,
+      name: product.name,
+      price: Number(product.price),
+      image: product.images?.[0]?.url || null,
+    });
+    showToast('تمت إضافة المنتج للسلة', 'success');
+  };
 
   const filteredProducts = useMemo(() => {
     let list = products;
@@ -329,7 +346,14 @@ export function FlatsomeTemplate({ business }: FlatsomeTemplateProps) {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 {featuredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product as TemplateProduct} />
+                  <ProductCard
+                    key={product.id}
+                    product={product as TemplateProduct}
+                    businessId={business.id}
+                    businessName={business.name}
+                    businessSlug={business.slug}
+                    onAddToCart={handleAddToCart}
+                  />
                 ))}
               </div>
             )}
@@ -366,7 +390,14 @@ export function FlatsomeTemplate({ business }: FlatsomeTemplateProps) {
             <h2 className="text-xl font-bold text-[var(--theme-text)] mb-6">وصل حديثاً</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
               {newArrivals.map((product) => (
-                <ProductCard key={`new-${product.id}`} product={product as TemplateProduct} />
+                <ProductCard
+                  key={`new-${product.id}`}
+                  product={product as TemplateProduct}
+                  businessId={business.id}
+                  businessName={business.name}
+                  businessSlug={business.slug}
+                  onAddToCart={handleAddToCart}
+                />
               ))}
             </div>
           </div>

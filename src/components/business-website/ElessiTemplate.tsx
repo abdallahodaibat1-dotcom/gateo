@@ -19,6 +19,8 @@ import {
 import { useCurrency } from '@/hooks/useCurrency';
 import { ProductCard } from './ProductCard';
 import { StarRating } from './StarRating';
+import { useCart } from '@/components/CartProvider';
+import { useToast } from '@/components/ui/Toast';
 import type { TemplateBusiness, TemplateProduct } from './template-types';
 
 interface ElessiTemplateProps {
@@ -35,9 +37,24 @@ export function ElessiTemplate({ business }: ElessiTemplateProps) {
     [products]
   );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [cartCount] = useState(0);
   const [activeCategory, setActiveCategory] = useState<string>('الكل');
   const [email, setEmail] = useState('');
+  const cart = useCart();
+  const { showToast } = useToast();
+  const cartCount = cart.items.filter((i) => i.businessId === business.id).reduce((sum, i) => sum + i.quantity, 0);
+
+  const handleAddToCart = (product: TemplateProduct) => {
+    cart.addItem({
+      productId: product.id,
+      businessId: business.id,
+      businessName: business.name,
+      businessSlug: business.slug,
+      name: product.name,
+      price: Number(product.price),
+      image: product.images?.[0]?.url || null,
+    });
+    showToast('تمت إضافة المنتج للسلة', 'success');
+  };
 
   const filteredProducts = useMemo(() => {
     if (activeCategory === 'الكل') return products;
@@ -211,7 +228,14 @@ export function ElessiTemplate({ business }: ElessiTemplateProps) {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {featured.map((product) => (
-                  <ProductCard key={product.id} product={product as TemplateProduct} />
+                  <ProductCard
+                    key={product.id}
+                    product={product as TemplateProduct}
+                    businessId={business.id}
+                    businessName={business.name}
+                    businessSlug={business.slug}
+                    onAddToCart={handleAddToCart}
+                  />
                 ))}
               </div>
             )}

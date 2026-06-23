@@ -5,6 +5,8 @@ import { Heart, ShoppingCart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useWishlist } from '@/components/WishlistProvider';
+import { useCart } from '@/components/CartProvider';
+import { useToast } from '@/components/ui/Toast';
 import { StarRating } from './StarRating';
 
 export interface ProductCardProduct {
@@ -47,6 +49,8 @@ export function ProductCard({
 }: ProductCardProps) {
   const { format, convert } = useCurrency();
   const { isInWishlist, toggleItem } = useWishlist();
+  const cart = useCart();
+  const { showToast } = useToast();
   const [isHovered, setIsHovered] = useState(false);
   const wishlisted = isInWishlist(product.id);
 
@@ -57,6 +61,27 @@ export function ProductCard({
   const hoverImage = product.images?.[1]?.url || primaryImage;
 
   const badge = product.badge || (discount > 0 ? 'sale' : isNewProduct(product.createdAt) ? 'new' : 'hot');
+
+  const handleAddToCart = () => {
+    if (onAddToCart) {
+      onAddToCart(product);
+      return;
+    }
+    if (!cart) {
+      showToast('سلة التسوق غير متوفرة', 'error');
+      return;
+    }
+    cart.addItem({
+      productId: product.id,
+      businessId: businessId || '',
+      businessName: businessName || '',
+      businessSlug: businessSlug || '',
+      name: product.name,
+      price,
+      image: primaryImage || null,
+    });
+    showToast('تمت إضافة المنتج للسلة', 'success');
+  };
 
   const badgeConfig = {
     hot: { text: 'HOT', className: 'bg-emerald-500' },
@@ -186,7 +211,7 @@ export function ProductCard({
           {showAddToCart && (
             <button
               type="button"
-              onClick={() => onAddToCart?.(product)}
+              onClick={handleAddToCart}
               className="w-full py-2 rounded-lg text-white text-sm font-bold flex items-center justify-center gap-2 transition-transform active:scale-95"
               style={{ backgroundColor: 'var(--theme-primary)' }}
             >
