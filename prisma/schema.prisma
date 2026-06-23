@@ -117,19 +117,38 @@ model BusinessFieldValue {
   @@map("business_field_values")
 }
 
+enum BusinessPageTemplate {
+  HOME
+  SHOP
+  ABOUT
+  CONTACT
+  FAQ
+  TERMS
+  PRIVACY
+  OFFERS
+  CUSTOM
+  CART
+  WISHLIST
+  ACCOUNT
+  CHECKOUT
+
+  @@map("business_page_templates")
+}
+
 model BusinessPage {
-  id         String     @id @default(cuid())
-  businessId String
-  slug       String
-  title      String
-  content    String?    @db.Text
-  sections   String?    @db.LongText
-  sortOrder  Int        @default(0)
-  isVisible  Boolean    @default(true)
-  isHomePage Boolean    @default(false)
-  createdAt  DateTime   @default(now())
-  updatedAt     DateTime         @updatedAt
-  Business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  id           String              @id @default(cuid())
+  businessId   String
+  slug         String
+  title        String
+  pageTemplate BusinessPageTemplate @default(CUSTOM)
+  content      String?             @db.Text
+  sections     String?             @db.LongText
+  sortOrder    Int                 @default(0)
+  isVisible    Boolean             @default(true)
+  isHomePage   Boolean             @default(false)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  Business     Business            @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   @@unique([businessId, slug])
   @@index([businessId, isVisible, sortOrder])

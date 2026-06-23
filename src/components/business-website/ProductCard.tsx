@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Heart, ShoppingCart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useWishlist } from '@/components/WishlistProvider';
 import { StarRating } from './StarRating';
 
 export interface ProductCardProduct {
@@ -27,6 +28,9 @@ interface ProductCardProps {
   showWishlist?: boolean;
   showAddToCart?: boolean;
   showRatingValue?: boolean;
+  businessId?: string;
+  businessName?: string;
+  businessSlug?: string;
   onAddToCart?: (product: ProductCardProduct) => void;
 }
 
@@ -36,11 +40,15 @@ export function ProductCard({
   showWishlist = true,
   showAddToCart = true,
   showRatingValue = false,
+  businessId,
+  businessName,
+  businessSlug,
   onAddToCart,
 }: ProductCardProps) {
   const { format, convert } = useCurrency();
+  const { isInWishlist, toggleItem } = useWishlist();
   const [isHovered, setIsHovered] = useState(false);
-  const [wishlisted, setWishlisted] = useState(false);
+  const wishlisted = isInWishlist(product.id);
 
   const price = Number(product.price) || 0;
   const comparePrice = product.comparePrice ? Number(product.comparePrice) : 0;
@@ -136,7 +144,15 @@ export function ProductCard({
             type="button"
             onClick={(e) => {
               e.preventDefault();
-              setWishlisted((v) => !v);
+              toggleItem({
+                productId: product.id,
+                businessId: businessId || '',
+                businessName: businessName || '',
+                businessSlug: businessSlug || '',
+                name: product.name,
+                price,
+                image: primaryImage || null,
+              });
             }}
             className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
               wishlisted

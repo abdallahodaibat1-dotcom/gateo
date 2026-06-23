@@ -29,11 +29,28 @@ interface BusinessPage {
   id: string;
   slug: string;
   title: string;
+  pageTemplate: string;
   isHomePage: boolean;
   isVisible: boolean;
   sortOrder: number;
   createdAt: string;
 }
+
+const PAGE_TEMPLATES = [
+  { value: 'CUSTOM', label: 'محتوى مخصص' },
+  { value: 'HOME', label: 'الرئيسية' },
+  { value: 'SHOP', label: 'المتجر' },
+  { value: 'ABOUT', label: 'من نحن' },
+  { value: 'CONTACT', label: 'تواصل معنا' },
+  { value: 'FAQ', label: 'الأسئلة الشائعة' },
+  { value: 'TERMS', label: 'الشروط والأحكام' },
+  { value: 'PRIVACY', label: 'سياسة الخصوصية' },
+  { value: 'OFFERS', label: 'العروض' },
+  { value: 'CART', label: 'السلة' },
+  { value: 'WISHLIST', label: 'المفضلة' },
+  { value: 'ACCOUNT', label: 'حسابي' },
+  { value: 'CHECKOUT', label: 'إتمام الطلب' },
+];
 
 export default function PagesListPage() {
   const router = useRouter();
@@ -43,7 +60,7 @@ export default function PagesListPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [newPage, setNewPage] = useState({ slug: '', title: '' });
+  const [newPage, setNewPage] = useState({ slug: '', title: '', pageTemplate: 'CUSTOM' });
   const [creating, setCreating] = useState(false);
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -88,11 +105,12 @@ export default function PagesListPage() {
         body: JSON.stringify({
           slug: newPage.slug,
           title: newPage.title,
+          pageTemplate: newPage.pageTemplate,
           sortOrder: pages.length * 10,
         }),
       });
       if (!res.ok) throw new Error('فشل في إنشاء الصفحة');
-      setNewPage({ slug: '', title: '' });
+      setNewPage({ slug: '', title: '', pageTemplate: 'CUSTOM' });
       setSuccess('تم إنشاء الصفحة بنجاح');
       await fetchData();
     } catch (e) {
@@ -201,7 +219,7 @@ export default function PagesListPage() {
         className="bg-surface rounded-lg border border-border shadow-sm p-6"
       >
         <h3 className="font-bold text-foreground mb-4">إضافة صفحة جديدة</h3>
-        <form onSubmit={handleCreate} className="grid md:grid-cols-3 gap-4">
+        <form onSubmit={handleCreate} className="grid md:grid-cols-4 gap-4">
           <input
             type="text"
             placeholder="العنوان (مثال: من نحن)"
@@ -216,6 +234,15 @@ export default function PagesListPage() {
             onChange={(e) => setNewPage({ ...newPage, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
             className="px-4 py-2.5 rounded-md border border-border bg-surface text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors dir-ltr"
           />
+          <select
+            value={newPage.pageTemplate}
+            onChange={(e) => setNewPage({ ...newPage, pageTemplate: e.target.value })}
+            className="px-4 py-2.5 rounded-md border border-border bg-surface text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-colors"
+          >
+            {PAGE_TEMPLATES.map((t) => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
           <button
             type="submit"
             disabled={creating || !newPage.title || !newPage.slug}
@@ -256,7 +283,12 @@ export default function PagesListPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-foreground">{page.title}</div>
-                  <div className="text-xs text-muted dir-ltr">/{page.slug}</div>
+                  <div className="text-xs text-muted dir-ltr flex items-center gap-2">
+                    <span>/{page.slug}</span>
+                    <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded">
+                      {PAGE_TEMPLATES.find((t) => t.value === page.pageTemplate)?.label || page.pageTemplate}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {page.isHomePage ? (

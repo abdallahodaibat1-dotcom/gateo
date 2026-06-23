@@ -7,7 +7,6 @@ import { motion } from 'framer-motion';
 import { useCurrency } from '@/hooks/useCurrency';
 import {
   Loader2,
-  ArrowRight,
   Home,
   Phone,
   MapPin,
@@ -17,8 +16,14 @@ import {
   ShoppingBag,
   Tag,
   ShoppingCart,
+  Mail,
+  Clock,
+  Images,
 } from 'lucide-react';
 import { BusinessThemeProvider } from '@/components/business-website/BusinessThemeProvider';
+import { CartDrawer } from '@/components/business-website/CartDrawer';
+import { useCart } from '@/components/CartProvider';
+import { useToast } from '@/components/ui/Toast';
 import { PortoShop1Template } from '@/components/business-website/PortoShop1Template';
 import { FlatsomeTemplate } from '@/components/business-website/FlatsomeTemplate';
 import { ElessiTemplate } from '@/components/business-website/ElessiTemplate';
@@ -26,6 +31,20 @@ import { GrandRestaurantTemplate } from '@/components/business-website/GrandRest
 import { HouzezTemplate } from '@/components/business-website/HouzezTemplate';
 import { JacquelineTemplate } from '@/components/business-website/JacquelineTemplate';
 import { OhioTemplate } from '@/components/business-website/OhioTemplate';
+import {
+  AboutPageTemplate,
+  ContactPageTemplate,
+  FaqPageTemplate,
+  TermsPageTemplate,
+  PrivacyPageTemplate,
+  CustomPageTemplate,
+  ShopPageTemplate,
+  OffersPageTemplate,
+  CartPageTemplate,
+  WishlistPageTemplate,
+  AccountPageTemplate,
+  CheckoutPageTemplate,
+} from '@/components/business-website/pages';
 
 interface Product {
   id: string;
@@ -65,24 +84,79 @@ interface Business {
     homeTemplate?: string;
     isPublished: boolean;
   } | null;
-  pages: { id: string; slug: string; title: string; isHomePage: boolean }[];
+  pages: { id: string; slug: string; title: string; isHomePage: boolean; pageTemplate: string }[];
   products?: Product[];
   posts?: { id: string; title: string; content?: string | null; image?: string | null; createdAt: string }[];
   cover?: string | null;
   address?: string | null;
-  workingHours?: Record<string, string> | string | null;
+  images?: { url: string; type?: string; caption?: string }[] | null;
+  workingHours?: { day: string; open: string; close: string }[] | Record<string, string> | string | null;
 }
 
 interface PageData {
   id: string;
   slug: string;
   title: string;
+  pageTemplate: string;
   content: string | null;
+  sections?: any;
   isHomePage: boolean;
+}
+
+function normalizeWorkingHours(value: Business['workingHours']) {
+  if (!value) return [] as { day: string; open: string; close: string }[];
+  if (Array.isArray(value)) return value as { day: string; open: string; close: string }[];
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? (parsed as { day: string; open: string; close: string }[]) : [];
+    } catch {
+      return [] as { day: string; open: string; close: string }[];
+    }
+  }
+  return [] as { day: string; open: string; close: string }[];
+}
+
+function renderPageTemplate({ business, page }: { business: Business; page: PageData }) {
+  const templateProps = {
+    business,
+    page: { ...page, sections: typeof page.sections === 'string' ? JSON.parse(page.sections) : page.sections },
+    products: business.products || [],
+  };
+
+  switch (page.pageTemplate) {
+    case 'SHOP':
+      return <ShopPageTemplate {...templateProps} />;
+    case 'OFFERS':
+      return <OffersPageTemplate {...templateProps} />;
+    case 'ABOUT':
+      return <AboutPageTemplate business={business} page={templateProps.page} />;
+    case 'CONTACT':
+      return <ContactPageTemplate business={business} page={templateProps.page} />;
+    case 'FAQ':
+      return <FaqPageTemplate business={business} page={templateProps.page} />;
+    case 'TERMS':
+      return <TermsPageTemplate business={business} page={templateProps.page} />;
+    case 'PRIVACY':
+      return <PrivacyPageTemplate business={business} page={templateProps.page} />;
+    case 'CART':
+      return <CartPageTemplate business={business} page={templateProps.page} />;
+    case 'WISHLIST':
+      return <WishlistPageTemplate {...templateProps} />;
+    case 'ACCOUNT':
+      return <AccountPageTemplate business={business} page={templateProps.page} />;
+    case 'CHECKOUT':
+      return <CheckoutPageTemplate business={business} page={templateProps.page} />;
+    case 'CUSTOM':
+    default:
+      return <CustomPageTemplate business={business} page={templateProps.page} />;
+  }
 }
 
 function StoreHome({ business, pageSlug }: { business: Business; pageSlug: string }) {
   const { format, convert } = useCurrency();
+  const { addItem } = useCart();
+  const { showToast } = useToast();
   const products = business.products || [];
   const categories = Array.from(new Set(products.map((p) => p.category).filter(Boolean))) as string[];
 
@@ -105,16 +179,45 @@ function StoreHome({ business, pageSlug }: { business: Business; pageSlug: strin
       break;
   }
 
+  const workingHours = normalizeWorkingHours(business.workingHours);
+  const galleryImages =
+    business.images?.filter((img) => !img.type || img.type === 'gallery').map((img) => img.url) || [];
+
   return (
     <>
       {/* Hero */}
       <section
-        className="relative py-16 md:py-24 px-4 sm:px-6"
-        style={{
-          background: `linear-gradient(135deg, ${business.theme?.primaryColor || '#7c3aed'}, ${business.theme?.secondaryColor || '#ec4899'})`,
-        }}
+        className="relative py-16 md:py-24 px-4 sm:px-6 overflow-hidden"
+        style={
+          business.cover
+            ? {
+                backgroundImage: `url(${business.cover})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }
+            : {
+                background: `linear-gradient(135deg, ${business.theme?.primaryColor || '#7c3aed'}, ${business.theme?.secondaryColor || '#ec4899'})`,
+              }
+        }
       >
-        <div className="max-w-5xl mx-auto text-center">
+        <div
+          className="absolute inset-0"
+          style={{
+            background: business.cover
+              ? `linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.35))`
+              : undefined,
+          }}
+        />
+        <div className="relative max-w-5xl mx-auto text-center">
+          {business.logo && (
+            <motion.img
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              src={business.logo}
+              alt={business.name}
+              className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-white/30 shadow-lg mx-auto mb-4"
+            />
+          )}
           <motion.h1
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -127,7 +230,7 @@ function StoreHome({ business, pageSlug }: { business: Business; pageSlug: strin
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-white/80 text-base md:text-lg max-w-2xl mx-auto mb-6"
+              className="text-white/90 text-base md:text-lg max-w-2xl mx-auto mb-6"
             >
               {business.description}
             </motion.p>
@@ -138,9 +241,9 @@ function StoreHome({ business, pageSlug }: { business: Business; pageSlug: strin
             transition={{ delay: 0.2 }}
             className="flex items-center justify-center gap-3 flex-wrap"
           >
-            {business.city && (
+            {(business.city || business.address) && (
               <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/20 text-white text-sm">
-                <MapPin className="w-4 h-4" /> {business.city}
+                <MapPin className="w-4 h-4" /> {[business.city, business.address].filter(Boolean).join(' - ')}
               </span>
             )}
             {business.phone && (
@@ -152,17 +255,143 @@ function StoreHome({ business, pageSlug }: { business: Business; pageSlug: strin
               </a>
             )}
           </motion.div>
+
+          {business.websiteType === 'STORE' && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex items-center justify-center gap-3 flex-wrap mt-6"
+            >
+              <Link
+                href={`/business/${business.slug || business.id}/shop`}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-foreground font-bold text-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                تسوق الآن
+              </Link>
+              <Link
+                href={`/business/${business.slug || business.id}/offers`}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 text-white font-bold text-sm hover:bg-white/30 transition-colors"
+              >
+                <Tag className="w-4 h-4" />
+                العروض
+              </Link>
+            </motion.div>
+          )}
         </div>
       </section>
 
       <main className="py-12 min-h-screen bg-[var(--theme-background)]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12">
+          {/* Contact & Working Hours */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          >
+            {business.phone && (
+              <a
+                href={`tel:${business.phone.replace(/[^0-9+]/g, '')}`}
+                className="flex items-center gap-3 p-4 rounded-xl bg-[var(--theme-surface)] border border-border shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0"
+                  style={{ backgroundColor: 'var(--theme-primary)' }}
+                >
+                  <Phone className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted">الهاتف</p>
+                  <p className="text-sm font-bold text-foreground truncate">{business.phone}</p>
+                </div>
+              </a>
+            )}
+            {business.email && (
+              <a
+                href={`mailto:${business.email}`}
+                className="flex items-center gap-3 p-4 rounded-xl bg-[var(--theme-surface)] border border-border shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0"
+                  style={{ backgroundColor: 'var(--theme-secondary)' }}
+                >
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted">البريد الإلكتروني</p>
+                  <p className="text-sm font-bold text-foreground truncate">{business.email}</p>
+                </div>
+              </a>
+            )}
+            {(business.city || business.address) && (
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-[var(--theme-surface)] border border-border shadow-sm">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0"
+                  style={{ backgroundColor: 'var(--theme-accent)' }}
+                >
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted">العنوان</p>
+                  <p className="text-sm font-bold text-foreground truncate">
+                    {[business.city, business.address].filter(Boolean).join(' - ')}
+                  </p>
+                </div>
+              </div>
+            )}
+            {workingHours.length > 0 && (
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-[var(--theme-surface)] border border-border shadow-sm">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0"
+                  style={{ backgroundColor: 'var(--theme-primary)' }}
+                >
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted">أوقات العمل</p>
+                  <p className="text-sm font-bold text-foreground truncate">
+                    {workingHours[0].day}: {workingHours[0].open} - {workingHours[0].close}
+                  </p>
+                </div>
+              </div>
+            )}
+          </motion.div>
+
+          {/* Working Hours Table */}
+          {workingHours.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="bg-[var(--theme-surface)] rounded-xl border border-border shadow-sm p-6"
+            >
+              <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-primary" />
+                أوقات العمل
+              </h2>
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {workingHours.map((wh) => (
+                  <div
+                    key={wh.day}
+                    className="flex items-center justify-between p-3 rounded-lg bg-[var(--theme-background)] border border-border"
+                  >
+                    <span className="font-medium text-foreground">{wh.day}</span>
+                    <span className="text-sm text-muted">
+                      {wh.open} - {wh.close}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
           {/* Categories */}
           {categories.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-10"
+              transition={{ delay: 0.1 }}
             >
               <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
                 <Tag className="w-5 h-5 text-primary" />
@@ -189,7 +418,7 @@ function StoreHome({ business, pageSlug }: { business: Business; pageSlug: strin
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: 0.15 }}
           >
             <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
               <ShoppingBag className="w-5 h-5 text-primary" />
@@ -206,8 +435,9 @@ function StoreHome({ business, pageSlug }: { business: Business; pageSlug: strin
                 {products.map((product) => {
                   const price = Number(product.price) || 0;
                   const comparePrice = product.comparePrice ? Number(product.comparePrice) : 0;
-                  const discount = comparePrice > 0 ? Math.round(((comparePrice - price) / comparePrice) * 100) : 0;
+                  const discount = comparePrice > price ? Math.round(((comparePrice - price) / comparePrice) * 100) : 0;
                   const image = product.images?.[0]?.url;
+                  const businessSlug = business.slug || business.id;
                   return (
                     <motion.div
                       key={product.id}
@@ -215,7 +445,7 @@ function StoreHome({ business, pageSlug }: { business: Business; pageSlug: strin
                       className="bg-[var(--theme-surface)] rounded-xl border border-border shadow-sm overflow-hidden flex flex-col"
                       style={{ borderRadius: business.theme?.borderRadius || '1rem' }}
                     >
-                      <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
+                      <Link href={`/business/${businessSlug}/product/${product.id}`} className="block aspect-[4/3] bg-slate-100 relative overflow-hidden">
                         {image ? (
                           <img src={image} alt={product.name} className="w-full h-full object-cover" />
                         ) : (
@@ -231,12 +461,14 @@ function StoreHome({ business, pageSlug }: { business: Business; pageSlug: strin
                             خصم {discount}%
                           </span>
                         )}
-                      </div>
+                      </Link>
                       <div className="p-4 flex-1 flex flex-col min-h-[140px]">
                         {product.category && (
                           <span className="text-[10px] text-muted mb-1">{product.category}</span>
                         )}
-                        <h3 className="font-bold text-foreground text-sm mb-1 line-clamp-2">{product.name}</h3>
+                        <Link href={`/business/${businessSlug}/product/${product.id}`}>
+                          <h3 className="font-bold text-foreground text-sm mb-1 line-clamp-2 hover:text-primary transition-colors">{product.name}</h3>
+                        </Link>
                         {product.description ? (
                           <p className="text-xs text-muted line-clamp-2 mb-2 flex-1">{product.description}</p>
                         ) : (
@@ -246,14 +478,26 @@ function StoreHome({ business, pageSlug }: { business: Business; pageSlug: strin
                           <span className="text-lg font-bold" style={{ color: 'var(--theme-primary)' }}>
                             {format(convert(price))}
                           </span>
-                          {comparePrice > 0 && (
+                          {comparePrice > price && (
                             <span className="text-sm text-muted line-through">
                               {format(convert(comparePrice))}
                             </span>
                           )}
                         </div>
                         <button
-                          className="mt-3 w-full py-2 rounded-lg text-white text-sm font-bold flex items-center justify-center gap-2"
+                          onClick={() => {
+                            addItem({
+                              productId: product.id,
+                              businessId: business.id,
+                              businessName: business.name,
+                              businessSlug: business.slug,
+                              name: product.name,
+                              price,
+                              image: image || null,
+                            });
+                            showToast('تمت إضافة المنتج للسلة', 'success');
+                          }}
+                          className="mt-3 w-full py-2 rounded-lg text-white text-sm font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
                           style={{ backgroundColor: 'var(--theme-primary)' }}
                         >
                           <ShoppingCart className="w-4 h-4" />
@@ -266,6 +510,32 @@ function StoreHome({ business, pageSlug }: { business: Business; pageSlug: strin
               </div>
             )}
           </motion.div>
+
+          {/* Gallery */}
+          {galleryImages.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+                <Images className="w-5 h-5 text-primary" />
+                معرض الصور
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {galleryImages.map((url, idx) => (
+                  <motion.div
+                    key={`${url}-${idx}`}
+                    whileHover={{ scale: 1.02 }}
+                    className="aspect-square rounded-xl overflow-hidden border border-border shadow-sm bg-slate-100"
+                    style={{ borderRadius: business.theme?.borderRadius || '1rem' }}
+                  >
+                    <img src={url} alt={`صورة ${idx + 1}`} className="w-full h-full object-cover" />
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
         </div>
       </main>
     </>
@@ -279,6 +549,8 @@ export default function BusinessCustomPage() {
   const [page, setPage] = useState<PageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const { totalCount } = useCart();
 
   const fetchData = useCallback(async () => {
     try {
@@ -309,6 +581,12 @@ export default function BusinessCustomPage() {
     if (!id || !pageSlug) return;
     fetchData();
   }, [id, pageSlug, fetchData]);
+
+  useEffect(() => {
+    if (business && page) {
+      document.title = `${business.name} | ${page.title}`;
+    }
+  }, [business, page]);
 
   if (loading) {
     return (
@@ -381,10 +659,16 @@ export default function BusinessCustomPage() {
                 {business.websiteType === 'STORE' ? (
                   <button
                     type="button"
-                    className="hidden sm:flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-[var(--theme-secondary)] to-[var(--theme-primary)] text-white text-sm font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                    onClick={() => setCartOpen(true)}
+                    className="relative hidden sm:flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-[var(--theme-secondary)] to-[var(--theme-primary)] text-white text-sm font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all"
                   >
                     <ShoppingCart className="w-4 h-4" />
                     السلة
+                    {totalCount > 0 && (
+                      <span className="absolute -top-1.5 -left-1.5 min-w-[1.25rem] h-5 px-1 rounded-full bg-[var(--theme-accent)] text-white text-[10px] font-bold flex items-center justify-center border-2 border-[var(--theme-primary)]">
+                        {totalCount}
+                      </span>
+                    )}
                   </button>
                 ) : (
                   <Link
@@ -430,25 +714,8 @@ export default function BusinessCustomPage() {
         <StoreHome business={business} pageSlug={pageSlug} />
       ) : (
         <main className="pt-24 pb-16 min-h-screen bg-[var(--theme-background)]">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-[var(--theme-surface)] rounded-lg border border-border shadow-sm p-8 md:p-12"
-              style={{ borderRadius: business.theme?.borderRadius || '1rem' }}
-            >
-              <Link
-                href={`/business/${business.slug || business.id}`}
-                className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark mb-6"
-              >
-                <ArrowRight className="w-4 h-4" />
-                العودة للرئيسية
-              </Link>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">{page.title}</h1>
-              <div className="prose prose-lg max-w-none text-foreground whitespace-pre-wrap leading-relaxed">
-                {page.content || 'لا يوجد محتوى لهذه الصفحة بعد.'}
-              </div>
-            </motion.div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            {renderPageTemplate({ business, page })}
           </div>
         </main>
       )}
@@ -492,6 +759,7 @@ export default function BusinessCustomPage() {
           </div>
         </footer>
       )}
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </BusinessThemeProvider>
   );
 }

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
+import { BusinessPageTemplate } from '@prisma/client';
+
+const PAGE_TEMPLATE_VALUES: string[] = Object.values(BusinessPageTemplate);
 
 function parsePageSections(page: any) {
   if (!page || typeof page.sections !== 'string') return page;
@@ -15,8 +18,9 @@ function parsePageSections(page: any) {
 const pageSchema = z.object({
   slug: z.string().min(1).max(50).regex(/^[a-z0-9-]+$/),
   title: z.string().min(1).max(200),
+  pageTemplate: z.enum(PAGE_TEMPLATE_VALUES as [string, ...string[]]).default('CUSTOM'),
   content: z.string().max(20000).optional().nullable(),
-  sections: z.array(z.record(z.string(), z.unknown())).optional().nullable(),
+  sections: z.union([z.array(z.record(z.string(), z.unknown())), z.record(z.string(), z.unknown())]).optional().nullable(),
   sortOrder: z.number().default(0),
   isVisible: z.boolean().default(true),
   isHomePage: z.boolean().default(false),
@@ -97,6 +101,7 @@ export async function POST(
       data: {
         businessId: business.id,
         ...data,
+        pageTemplate: data.pageTemplate as BusinessPageTemplate,
         sections: data.sections ? JSON.stringify(data.sections) : null,
       },
     });

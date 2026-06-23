@@ -1,0 +1,12 @@
+export { AboutPageTemplate } from './AboutPageTemplate';
+export { ContactPageTemplate } from './ContactPageTemplate';
+export { FaqPageTemplate } from './FaqPageTemplate';
+export { TermsPageTemplate } from './TermsPageTemplate';
+export { PrivacyPageTemplate } from './PrivacyPageTemplate';
+export { CustomPageTemplate } from './CustomPageTemplate';
+export { ShopPageTemplate } from './ShopPageTemplate';
+export { OffersPageTemplate } from './OffersPageTemplate';
+export { CartPageTemplate } from './CartPageTemplate';
+export { WishlistPageTemplate } from './WishlistPageTemplate';
+export { AccountPageTemplate } from './AccountPageTemplate';
+export { CheckoutPageTemplate } from './CheckoutPageTemplate';

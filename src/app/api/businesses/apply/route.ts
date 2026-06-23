@@ -181,7 +181,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Create default pages if none exist
-      await createDefaultPages(existing.id, updated.name, updated.description);
+      await createDefaultPages(existing.id, updated.name, updated.description, updated.websiteType || undefined);
 
       return NextResponse.json({ business: updated, updated: true }, { status: 200 });
     }
@@ -251,7 +251,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Create default pages
-    await createDefaultPages(business.id, business.name, business.description);
+    await createDefaultPages(business.id, business.name, business.description, business.websiteType || undefined);
 
     // Update user account type based on business type
     const derivedAccountType = data.businessType === 'INDIVIDUAL' ? 'PROFESSIONAL' : 'COMPANY';
@@ -411,40 +411,130 @@ async function saveBusinessFieldValues(
 async function createDefaultPages(
   businessId: string,
   name: string,
-  description?: string | null
+  description?: string | null,
+  websiteType?: 'INTRO' | 'STORE'
 ) {
   const existing = await prisma.businessPage.count({ where: { businessId } });
   if (existing > 0) return;
 
+  const basePages = [
+    {
+      businessId,
+      slug: 'home',
+      title: 'الرئيسية',
+      pageTemplate: 'HOME' as const,
+      isHomePage: true,
+      isVisible: true,
+      sortOrder: 0,
+    },
+    {
+      businessId,
+      slug: 'about',
+      title: 'من نحن',
+      pageTemplate: 'ABOUT' as const,
+      isHomePage: false,
+      isVisible: true,
+      sortOrder: 10,
+      content: description
+        ? `تعرف على ${name}. ${description}`
+        : `تعرف على ${name}`,
+    },
+    {
+      businessId,
+      slug: 'contact',
+      title: 'تواصل معنا',
+      pageTemplate: 'CONTACT' as const,
+      isHomePage: false,
+      isVisible: true,
+      sortOrder: 20,
+    },
+    {
+      businessId,
+      slug: 'faq',
+      title: 'الأسئلة الشائعة',
+      pageTemplate: 'FAQ' as const,
+      isHomePage: false,
+      isVisible: true,
+      sortOrder: 30,
+    },
+    {
+      businessId,
+      slug: 'privacy',
+      title: 'سياسة الخصوصية',
+      pageTemplate: 'PRIVACY' as const,
+      isHomePage: false,
+      isVisible: true,
+      sortOrder: 40,
+    },
+    {
+      businessId,
+      slug: 'terms',
+      title: 'الشروط والأحكام',
+      pageTemplate: 'TERMS' as const,
+      isHomePage: false,
+      isVisible: true,
+      sortOrder: 50,
+    },
+  ];
+
+  const storePages = websiteType === 'STORE' ? [
+    {
+      businessId,
+      slug: 'shop',
+      title: 'المتجر',
+      pageTemplate: 'SHOP' as const,
+      isHomePage: false,
+      isVisible: true,
+      sortOrder: 5,
+    },
+    {
+      businessId,
+      slug: 'offers',
+      title: 'العروض',
+      pageTemplate: 'OFFERS' as const,
+      isHomePage: false,
+      isVisible: true,
+      sortOrder: 15,
+    },
+    {
+      businessId,
+      slug: 'cart',
+      title: 'السلة',
+      pageTemplate: 'CART' as const,
+      isHomePage: false,
+      isVisible: true,
+      sortOrder: 60,
+    },
+    {
+      businessId,
+      slug: 'wishlist',
+      title: 'المفضلة',
+      pageTemplate: 'WISHLIST' as const,
+      isHomePage: false,
+      isVisible: true,
+      sortOrder: 70,
+    },
+    {
+      businessId,
+      slug: 'account',
+      title: 'حسابي',
+      pageTemplate: 'ACCOUNT' as const,
+      isHomePage: false,
+      isVisible: true,
+      sortOrder: 80,
+    },
+    {
+      businessId,
+      slug: 'checkout',
+      title: 'إتمام الطلب',
+      pageTemplate: 'CHECKOUT' as const,
+      isHomePage: false,
+      isVisible: true,
+      sortOrder: 90,
+    },
+  ] : [];
+
   await prisma.businessPage.createMany({
-    data: [
-      {
-        businessId,
-        slug: 'home',
-        title: 'الرئيسية',
-        isHomePage: true,
-        isVisible: true,
-        sortOrder: 0,
-      },
-      {
-        businessId,
-        slug: 'about',
-        title: 'من نحن',
-        isHomePage: false,
-        isVisible: true,
-        sortOrder: 10,
-        content: description
-          ? `تعرف على ${name}. ${description}`
-          : `تعرف على ${name}`,
-      },
-      {
-        businessId,
-        slug: 'contact',
-        title: 'تواصل معنا',
-        isHomePage: false,
-        isVisible: true,
-        sortOrder: 20,
-      },
-    ],
+    data: [...basePages, ...storePages],
   });
 }

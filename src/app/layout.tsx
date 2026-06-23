@@ -4,6 +4,8 @@ import "./globals.css";
 import Providers from "@/components/Providers";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import { ToastProvider } from "@/components/ui/Toast";
+import { CartProvider } from "@/components/CartProvider";
+import { WishlistProvider } from "@/components/WishlistProvider";
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -31,10 +33,14 @@ export default function RootLayout({
     <html lang="ar" dir="rtl" className={`${cairo.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans">
         <Providers>
-          <ToastProvider>
-            {children}
-            <FloatingChatButton />
-          </ToastProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <ToastProvider>
+                {children}
+                <FloatingChatButton />
+              </ToastProvider>
+            </WishlistProvider>
+          </CartProvider>
         </Providers>
       </body>
     </html>

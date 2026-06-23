@@ -71,7 +71,7 @@ export async function GET(
         BusinessPage: {
           where: { isVisible: true },
           orderBy: [{ isHomePage: 'desc' }, { sortOrder: 'asc' }],
-          select: { id: true, slug: true, title: true, isHomePage: true },
+          select: { id: true, slug: true, title: true, isHomePage: true, pageTemplate: true },
         },
         BusinessFieldValue: {
           include: { DynamicFieldDefinition: true },

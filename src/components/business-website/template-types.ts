@@ -46,7 +46,7 @@ export interface TemplateBusiness {
   email: string | null;
   city: string | null;
   address?: string | null;
-  workingHours?: Record<string, string> | string | null;
+  workingHours?: { day: string; open: string; close: string }[] | Record<string, string> | string | null;
   avgRating: number;
   reviewCount: number;
   theme: {
@@ -67,7 +67,9 @@ export interface TemplateBusiness {
   reviews?: TemplateReview[];
 }
 
-export function formatWorkingHours(workingHours?: Record<string, string> | string | null): string | null {
+export function formatWorkingHours(
+  workingHours?: { day: string; open: string; close: string }[] | Record<string, string> | string | null
+): string | null {
   if (!workingHours) return null;
   let parsed: any = workingHours;
   if (typeof workingHours === 'string') {
