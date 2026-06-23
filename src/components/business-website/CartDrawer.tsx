@@ -145,15 +145,20 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     {format(convert(totalPrice))}
                   </span>
                 </div>
-                <Link
-                  href={`/business/${items[0]?.businessSlug || ''}/checkout`}
-                  onClick={onClose}
-                  className="w-full py-3 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2"
-                  style={{ backgroundColor: 'var(--theme-primary)' }}
-                >
-                  <CreditCard className="w-4 h-4" />
-                  إتمام الطلب
-                </Link>
+                {(() => {
+                  const checkoutSlug = items[0]?.businessSlug || items[0]?.businessId;
+                  return checkoutSlug ? (
+                    <Link
+                      href={`/business/${checkoutSlug}/checkout`}
+                      onClick={onClose}
+                      className="w-full py-3 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2"
+                      style={{ backgroundColor: 'var(--theme-primary)' }}
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      إتمام الطلب
+                    </Link>
+                  ) : null;
+                })()}
                 <button
                   type="button"
                   onClick={clearCart}

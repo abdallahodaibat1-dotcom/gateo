@@ -230,6 +230,19 @@ export function PortoShop1Template({ business }: PortoShop1TemplateProps) {
   const cartCount = cartItems.filter((i) => i.businessId === business.id).reduce((sum, i) => sum + i.quantity, 0);
   const wishlistCount = 0; // optional count could be added later
 
+  const handleAddToCart = (product: ProductCardProduct) => {
+    addToCart({
+      productId: product.id,
+      businessId: business.id,
+      businessName: business.name,
+      businessSlug: business.slug || business.id,
+      name: product.name,
+      price: Number(product.price),
+      image: product.images?.[0]?.url || null,
+    });
+    showToast('تمت إضافة المنتج للسلة', 'success');
+  };
+
   const heroSlides = useMemo(() => buildHeroSlides(business), [business]);
 
   const homeHref = `/business/${business.slug || business.id}`;
@@ -712,7 +725,14 @@ export function PortoShop1Template({ business }: PortoShop1TemplateProps) {
                   </div>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     {featuredProducts.map((product) => (
-                      <ProductCard key={product.id} product={product} />
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        businessId={business.id}
+                        businessName={business.name}
+                        businessSlug={business.slug || business.id}
+                        onAddToCart={handleAddToCart}
+                      />
                     ))}
                   </div>
                 </section>
@@ -728,7 +748,17 @@ export function PortoShop1Template({ business }: PortoShop1TemplateProps) {
                     </h3>
                     <div className="space-y-3">
                       {topRated.length > 0 ? (
-                        topRated.map((product) => <ProductCard key={product.id} product={product} variant="list" />)
+                        topRated.map((product) => (
+                          <ProductCard
+                            key={product.id}
+                            product={product}
+                            variant="list"
+                            businessId={business.id}
+                            businessName={business.name}
+                            businessSlug={business.slug || business.id}
+                            onAddToCart={handleAddToCart}
+                          />
+                        ))
                       ) : (
                         <p className="text-xs text-muted">لا توجد منتجات مصنفة بعد</p>
                       )}
@@ -742,7 +772,17 @@ export function PortoShop1Template({ business }: PortoShop1TemplateProps) {
                     </h3>
                     <div className="space-y-3">
                       {bestSelling.length > 0 ? (
-                        bestSelling.map((product) => <ProductCard key={product.id} product={product} variant="list" />)
+                        bestSelling.map((product) => (
+                          <ProductCard
+                            key={product.id}
+                            product={product}
+                            variant="list"
+                            businessId={business.id}
+                            businessName={business.name}
+                            businessSlug={business.slug || business.id}
+                            onAddToCart={handleAddToCart}
+                          />
+                        ))
                       ) : (
                         <p className="text-xs text-muted">لا توجد منتجات مبيعاً بعد</p>
                       )}
@@ -756,7 +796,17 @@ export function PortoShop1Template({ business }: PortoShop1TemplateProps) {
                     </h3>
                     <div className="space-y-3">
                       {latestProducts.length > 0 ? (
-                        latestProducts.slice(0, 3).map((product) => <ProductCard key={product.id} product={product} variant="list" />)
+                        latestProducts.slice(0, 3).map((product) => (
+                          <ProductCard
+                            key={product.id}
+                            product={product}
+                            variant="list"
+                            businessId={business.id}
+                            businessName={business.name}
+                            businessSlug={business.slug || business.id}
+                            onAddToCart={handleAddToCart}
+                          />
+                        ))
                       ) : (
                         <p className="text-xs text-muted">لا توجد منتجات جديدة</p>
                       )}
