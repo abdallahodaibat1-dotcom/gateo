@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Sparkles, Check, Palette, Wand2, X, Eye, Filter, LayoutTemplate, Store, Globe } from 'lucide-react';
 import {
@@ -84,11 +84,17 @@ export function DesignLibrarySelector({
   onPreview,
 }: DesignLibrarySelectorProps) {
   const [query, setQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<'ALL' | WebsiteType>('ALL');
+  const [typeFilter, setTypeFilter] = useState<'ALL' | WebsiteType>(websiteType || 'ALL');
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [styleFilter, setStyleFilter] = useState<string | null>(null);
   const [sourceFilter, setSourceFilter] = useState<string | null>(null);
   const [aiSuggesting, setAiSuggesting] = useState(false);
+
+  useEffect(() => {
+    if (websiteType === 'INTRO' || websiteType === 'STORE') {
+      setTypeFilter(websiteType);
+    }
+  }, [websiteType]);
 
   const styles = useMemo(
     () => Array.from(new Set(ALL_DESIGNS.map((d) => d.style).filter(Boolean))) as string[],

@@ -20,8 +20,8 @@ import { useToast } from '@/components/ui/Toast';
 import { BusinessIntroBuilder } from '@/components/business-apply/BusinessIntroBuilder';
 import { BusinessStoreBuilder } from '@/components/business-apply/BusinessStoreBuilder';
 import type { BuilderStep } from '@/components/business-apply/BuilderStepSidebar';
-import { DesignLibrarySelector } from '@/components/business-apply/DesignLibrarySelector';
-import { SubcategoryCombobox } from '@/components/business-apply/SubcategoryCombobox';
+import { PlanSelector, type PlanOption, getPlanWebsiteType } from '@/components/business-apply/PlanSelector';
+import { DesignSetupSelector } from '@/components/business-apply/DesignSetupSelector';
 import { extractColorsFromImage, type ExtractedThemeColors } from '@/lib/color-extraction';
 import { useCurrency } from '@/hooks/useCurrency';
 import { compressImage } from '@/lib/media-compression';
@@ -51,19 +51,23 @@ interface Category {
 
 const getSteps = (websiteType: 'INTRO' | 'STORE' | '') => [
   { id: 1, title: 'المعلومات الأساسية', icon: Store },
-  { id: 2, title: 'التصميم والثيم', icon: Palette },
-  { id: 3, title: 'الصور والهوية', icon: Image },
-  { id: 4, title: websiteType === 'STORE' ? 'المنتجات' : 'الخدمات', icon: ShoppingBag },
-  { id: 5, title: 'تفاصيل إضافية', icon: List },
-  { id: 6, title: 'الموقع والتواصل', icon: MapPin },
-  { id: 7, title: 'ساعات العمل', icon: Clock },
-  { id: 8, title: 'المراجعة والإرسال', icon: CheckCircle },
+  { id: 2, title: 'الصور والهوية', icon: Image },
+  { id: 3, title: websiteType === 'STORE' ? 'المنتجات' : 'الخدمات', icon: ShoppingBag },
+  { id: 4, title: 'تفاصيل إضافية', icon: List },
+  { id: 5, title: 'الموقع والتواصل', icon: MapPin },
+  { id: 6, title: 'ساعات العمل', icon: Clock },
+  { id: 7, title: 'المراجعة والإرسال', icon: CheckCircle },
 ];
 export default function BusinessApplyPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { format } = useCurrency();
   const [step, setStep] = useState(1);
+  const [phase, setPhase] = useState<'plans' | 'design' | 'builder' | 'submitted'>('plans');
+  const [plans, setPlans] = useState<PlanOption[]>([]);
+  const [plansLoading, setPlansLoading] = useState(true);
+  const [plansError, setPlansError] = useState('');
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
@@ -148,6 +152,25 @@ export default function BusinessApplyPage() {
       .catch(() => {});
   }, []);
 
+  // Load subscription plans
+  useEffect(() => {
+    fetch('/api/subscriptions/plans')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.plans) {
+          // Sort: free first, then by price ascending; limit to 6
+          const sorted = [...data.plans].sort((a: PlanOption, b: PlanOption) => {
+            if (a.price === 0 && b.price !== 0) return -1;
+            if (a.price !== 0 && b.price === 0) return 1;
+            return a.price - b.price;
+          });
+          setPlans(sorted.slice(0, 6));
+        }
+      })
+      .catch(() => setPlansError('فشل في تحميل خطط الاشتراك'))
+      .finally(() => setPlansLoading(false));
+  }, []);
+
   const selectedCategory = categories.find((c) => c.id === form.categoryId);
   const subcategories = selectedCategory?.subcategories || [];
 
@@ -219,27 +242,18 @@ export default function BusinessApplyPage() {
       if (!form.slug.trim()) newErrors.slug = 'الرابط المخصص مطلوب';
       if (!/^[a-z0-9-]+$/.test(form.slug)) newErrors.slug = 'يحتوي على أحرف إنجليزية وأرقام وشرطات فقط';
       if (slugAvailable === false) newErrors.slug = 'الرابط مستخدم من قبل';
-      if (!form.categoryId) newErrors.categoryId = 'اختر تصنيفاً';
-      if (!form.subcategoryId && !form.customSubcategory && subcategories.length > 0) {
-        newErrors.subcategoryId = 'اختر أو اكتب تصنيفاً فرعياً';
-      }
       if (!form.acceptedTerms) {
         newErrors.acceptedTerms = 'يجب الموافقة على الشروط والأحكام للمتابعة';
       }
     }
-    if (s === 2) {
-      if (!form.designId) {
-        newErrors.designId = 'اختر تصميماً لموقعك';
-      }
-    }
-    if (s === 5) {
+    if (s === 4) {
       dynamicFields.forEach((field) => {
         if (field.isRequired && (!fieldValues[field.id] || fieldValues[field.id] === '')) {
           newErrors[`field_${field.id}`] = `${field.label} مطلوب`;
         }
       });
     }
-    if (s === 6) {
+    if (s === 5) {
       if (!form.countryId) newErrors.countryId = 'اختر الدولة';
       if (form.phone && form.phone.length < 8) {
         newErrors.phone = 'رقم هاتف غير صالح';
@@ -308,7 +322,24 @@ export default function BusinessApplyPage() {
         }),
       });
       if (res.ok) {
-        newWindow.location.href = `/business/${form.slug}`;
+        const data = await res.json();
+        const businessSlug = data.business?.slug || data.slug || form.slug;
+
+        // Purchase subscription if a paid plan was selected
+        const selectedPlan = plans.find((p) => p.id === selectedPlanId);
+        if (selectedPlan && selectedPlan.price > 0) {
+          try {
+            await fetch('/api/subscriptions/business', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ planId: selectedPlanId }),
+            });
+          } catch {
+            showToast('تم إنشاء الموقع، لكن لم نتمكن من تفعيل الاشتراك المدفوع', 'info');
+          }
+        }
+
+        newWindow.location.href = `/business/${businessSlug}`;
         setSubmitted(true);
       } else {
         const data = await res.json();
@@ -662,110 +693,7 @@ export default function BusinessApplyPage() {
     );
   }
 
-  const websiteTypeOptions = [
-    {
-      key: 'INTRO' as const,
-      title: 'موقع إلكتروني تعريفي',
-      description: 'مناسب لعرض خدماتك وجذب العملاء وحجز المواعيد بشكل احترافي.',
-      icon: LayoutTemplate,
-      features: [
-        'صفحات تعريفية احترافية',
-        'عرض الخدمات والأسعار',
-        'نماذج طلب واستفسار',
-        'نظام حجز المواعيد',
-        'استقبال المدفوعات للحجوزات والخدمات',
-        'معرض أعمال وصور',
-        'تقييمات وآراء العملاء',
-        'تحسين الظهور بمحركات البحث',
-        'ربط بوسائل التواصل الاجتماعي',
-      ],
-    },
-    {
-      key: 'STORE' as const,
-      title: 'متجر إلكتروني',
-      description: 'يتضمن كل مزايا الموقع التعريفي، بالإضافة إلى بيع المنتجات وإدارة الطلبات.',
-      icon: ShoppingBag,
-      features: [
-        'جميع مزايا الموقع التعريفي',
-        'إدارة المنتجات والتصنيفات',
-        'إدارة المخزون والكميات',
-        'سلة شراء متكاملة',
-        'بوابات دفع إلكتروني',
-        'إدارة الطلبات والشحن',
-        'كوبونات وعروض ترويجية',
-        'تقارير المبيعات والإيرادات',
-        'إدارة العملاء والطلبات المتكررة',
-      ],
-    },
-  ];
 
-  if (!form.websiteType) {
-    return (
-      <>
-        <Navbar />
-        <main className="pt-20 pb-10 min-h-screen bg-slate-50">
-          <div className="max-w-5xl mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-8 text-center"
-            >
-              <div className="w-16 h-16 rounded-lg bg-primary flex items-center justify-center text-white mx-auto mb-4 shadow-sm">
-                <Sparkles className="w-8 h-8" />
-              </div>
-              <h1 className="text-2xl font-bold text-foreground">اختر نوع موقعك الإلكتروني</h1>
-              <p className="text-muted mt-1">
-                كل خيار يمنحك أدوات تناسب أهدافك، وكلاهما يدعم الدفع الإلكتروني
-              </p>
-            </motion.div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {websiteTypeOptions.map((option, index) => {
-                const Icon = option.icon;
-                return (
-                  <motion.div
-                    key={option.key}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="bg-surface rounded-xl border border-border p-6 shadow-sm hover:shadow-md transition-all flex flex-col"
-                  >
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
-                      <Icon className="w-6 h-6" />
-                    </div>
-                    <h2 className="text-lg font-bold text-foreground mb-2">{option.title}</h2>
-                    <p className="text-sm text-muted mb-4">{option.description}</p>
-                    <ul className="space-y-2 mb-6 flex-1">
-                      {option.features.map((feature) => (
-                        <li key={feature} className="flex items-start gap-2 text-sm text-foreground">
-                          <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setForm((prev) => ({ ...prev, websiteType: option.key }));
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }}
-                      className="w-full px-4 py-2.5 rounded-md bg-primary text-white font-medium hover:bg-primary-dark transition-colors"
-                    >
-                      اختر {option.title}
-                    </button>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            <p className="mt-6 text-center text-xs text-muted">
-              ✦ كلتا الخيارين يتضمنان وسائل دفع إلكتروني آمنة للخدمات والحجوزات
-            </p>
-          </div>
-        </main>
-      </>
-    );
-  }
 
   const renderStep = () => (
     <>
@@ -841,153 +769,62 @@ export default function BusinessApplyPage() {
                           />
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <label htmlFor="business-category" className="block text-sm font-medium text-foreground mb-1.5">
-                              التصنيف الرئيسي <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                              id="business-category"
-                              value={form.categoryId}
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="rounded-lg border border-amber-200 bg-amber-50 p-4"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="shrink-0 mt-0.5">
+                              <AlertTriangle className="w-5 h-5 text-amber-600" />
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-bold text-amber-800">تنبيه مهم</p>
+                              <p className="text-sm text-amber-700 leading-relaxed">
+                                هذا الخيار متاح لأصحاب المنشآت التجارية الفعلية فقط، ويتطلب إجراء عملية توثيق.
+                              </p>
+                            </div>
+                          </div>
+                        </motion.div>
+
+                        <div className="rounded-lg border border-border bg-surface p-4 space-y-3">
+                          <p className="text-sm font-bold text-foreground">الشروط والأحكام الخاصة بالنشاطات التجارية</p>
+                          <div className="max-h-32 overflow-y-auto rounded-md border border-border bg-slate-50 p-3 text-xs text-muted leading-relaxed space-y-2">
+                            <p>باستخدامك هذا الخيار فإنك توافق على ما يلي:</p>
+                            <ul className="list-disc list-inside space-y-1">
+                              <li>أنك صاحب منشأة تجارية فعلية ومسجلة بشكل قانوني.</li>
+                              <li>أن جميع البيانات المقدمة صحيحة وقابلة للتوثيق.</li>
+                              <li>أن المنصة لها الحق في طلب مستندات إثبات في أي وقت.</li>
+                              <li>أن المنصة قد ترفض أو تعلّق أي حساب لا يتوافق مع هذه الشروط.</li>
+                              <li>الالتزام بكافة سياسات المحتوى والخصوصية المعمول بها في Gateo.</li>
+                            </ul>
+                          </div>
+                          <label className="flex items-start gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={form.acceptedTerms}
                               onChange={(e) => {
-                                setForm((prev) => ({
-                                  ...prev,
-                                  categoryId: e.target.value,
-                                  subcategoryId: '',
-                                  customSubcategory: '',
-                                }));
+                                setForm((prev) => ({ ...prev, acceptedTerms: e.target.checked }));
                                 setErrors((prev) => {
+                                  if (!prev.acceptedTerms) return prev;
                                   const next = { ...prev };
-                                  delete next.categoryId;
-                                  delete next.subcategoryId;
+                                  delete next.acceptedTerms;
                                   return next;
                                 });
                               }}
-                              className={`w-full px-4 py-2.5 rounded-md border ${errors.categoryId ? 'border-red-300' : 'border-border'} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-surface`}
-                            >
-                              <option value="">اختر تصنيفاً رئيسياً</option>
-                              {categories.map((cat) => (
-                                <option key={cat.id} value={cat.id}>{cat.name}</option>
-                              ))}
-                            </select>
-                            {errors.categoryId && <p className="text-red-500 text-xs mt-1">{errors.categoryId}</p>}
-                          </div>
-
-                          <SubcategoryCombobox
-                            subcategories={subcategories}
-                            selectedId={form.subcategoryId}
-                            customValue={form.customSubcategory}
-                            onChange={({ subcategoryId, customSubcategory }) => {
-                              setForm((prev) => ({ ...prev, subcategoryId, customSubcategory }));
-                              setErrors((prev) => {
-                                const next = { ...prev };
-                                delete next.subcategoryId;
-                                return next;
-                              });
-                            }}
-                            disabled={!form.categoryId}
-                            error={errors.subcategoryId}
-                            emptyMessage={!form.categoryId ? 'اختر التصنيف الرئيسي أولاً' : 'لا توجد تصنيفات فرعية'}
-                          />
+                              className="mt-0.5 w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                            />
+                            <span className="text-sm text-foreground">قرأت الشروط والأحكام وأوافق عليها</span>
+                          </label>
+                          {errors.acceptedTerms && (
+                            <p className="text-red-500 text-xs">{errors.acceptedTerms}</p>
+                          )}
                         </div>
-
-                        {form.categoryId && (
-                          <>
-                            <motion.div
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="rounded-lg border border-amber-200 bg-amber-50 p-4"
-                            >
-                              <div className="flex items-start gap-3">
-                                <div className="shrink-0 mt-0.5">
-                                  <AlertTriangle className="w-5 h-5 text-amber-600" />
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-sm font-bold text-amber-800">تنبيه مهم</p>
-                                  <p className="text-sm text-amber-700 leading-relaxed">
-                                    هذا الخيار متاح لأصحاب المنشآت التجارية الفعلية فقط، ويتطلب إجراء عملية توثيق.
-                                  </p>
-                                  <p className="text-sm text-amber-700 leading-relaxed flex items-center gap-1.5">
-                                    <Sparkles className="w-4 h-4 text-amber-600" />
-                                    استمر وأنهِ موقعك الإلكتروني خلال دقائق.
-                                  </p>
-                                </div>
-                              </div>
-                            </motion.div>
-
-                            <div className="rounded-lg border border-border bg-surface p-4 space-y-3">
-                              <p className="text-sm font-bold text-foreground">الشروط والأحكام الخاصة بالنشاطات التجارية</p>
-                              <div className="max-h-32 overflow-y-auto rounded-md border border-border bg-slate-50 p-3 text-xs text-muted leading-relaxed space-y-2">
-                                <p>باستخدامك هذا الخيار فإنك توافق على ما يلي:</p>
-                                <ul className="list-disc list-inside space-y-1">
-                                  <li>أنك صاحب منشأة تجارية فعلية ومسجلة بشكل قانوني.</li>
-                                  <li>أن جميع البيانات المقدمة صحيحة وقابلة للتوثيق.</li>
-                                  <li>أن المنصة لها الحق في طلب مستندات إثبات في أي وقت.</li>
-                                  <li>أن المنصة قد ترفض أو تعلّق أي حساب لا يتوافق مع هذه الشروط.</li>
-                                  <li>الالتزام بكافة سياسات المحتوى والخصوصية المعمول بها في Gateo.</li>
-                                </ul>
-                              </div>
-                              <label className="flex items-start gap-2 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={form.acceptedTerms}
-                                  onChange={(e) => {
-                                    setForm((prev) => ({ ...prev, acceptedTerms: e.target.checked }));
-                                    setErrors((prev) => {
-                                      if (!prev.acceptedTerms) return prev;
-                                      const next = { ...prev };
-                                      delete next.acceptedTerms;
-                                      return next;
-                                    });
-                                  }}
-                                  className="mt-0.5 w-4 h-4 rounded border-border text-primary focus:ring-primary"
-                                />
-                                <span className="text-sm text-foreground">قرأت الشروط والأحكام وأوافق عليها</span>
-                              </label>
-                              {errors.acceptedTerms && (
-                                <p className="text-red-500 text-xs">{errors.acceptedTerms}</p>
-                              )}
-                            </div>
-                          </>
-                        )}
                       </motion.div>
                     )}
 
-                    {/* Step 2: Design */}
+                    {/* Step 2: Images */}
                     {step === 2 && (
-                      <motion.div
-                        key="step2-design"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="space-y-4"
-                      >
-                        <DesignLibrarySelector
-                          selectedDesignId={form.designId}
-                          onSelect={(designId) => {
-                            setForm((prev) => ({ ...prev, designId }));
-                            setErrors((prev) => {
-                              const next = { ...prev };
-                              delete next.designId;
-                              return next;
-                            });
-                          }}
-                          websiteType={form.websiteType}
-                          businessName={form.name}
-                          categoryName={selectedCategory?.name}
-                          subcategoryName={
-                            selectedCategory?.subcategories?.find((s) => s.id === form.subcategoryId)?.name ||
-                            form.customSubcategory
-                          }
-                        />
-                        {errors.designId && (
-                          <p className="text-red-500 text-xs">{errors.designId}</p>
-                        )}
-                      </motion.div>
-                    )}
-
-                    {/* Step 3: Images */}
-                    {step === 3 && (
                       <motion.div
                         key="step2"
                         initial={{ opacity: 0, x: 20 }}
@@ -1271,8 +1108,8 @@ export default function BusinessApplyPage() {
                       </motion.div>
                     )}
 
-                    {/* Step 4: Services / Products */}
-                    {step === 4 && form.websiteType === 'INTRO' && (
+                    {/* Step 3: Services / Products */}
+                    {step === 3 && form.websiteType === 'INTRO' && (
                       <motion.div
                         key="step3-services"
                         initial={{ opacity: 0, x: 20 }}
@@ -1458,7 +1295,7 @@ export default function BusinessApplyPage() {
                       </motion.div>
                     )}
 
-                    {step === 4 && form.websiteType === 'STORE' && (
+                    {step === 3 && form.websiteType === 'STORE' && (
                       <motion.div
                         key="step3-products"
                         initial={{ opacity: 0, x: 20 }}
@@ -1669,8 +1506,8 @@ export default function BusinessApplyPage() {
                       </motion.div>
                     )}
 
-                    {/* Step 5: Dynamic Fields */}
-                    {step === 5 && (
+                    {/* Step 4: Dynamic Fields */}
+                    {step === 4 && (
                       <motion.div
                         key="step4-fields"
                         initial={{ opacity: 0, x: 20 }}
@@ -1705,8 +1542,8 @@ export default function BusinessApplyPage() {
                       </motion.div>
                     )}
 
-                    {/* Step 6: Contact & Location */}
-                    {step === 6 && (
+                    {/* Step 5: Contact & Location */}
+                    {step === 5 && (
                       <motion.div
                         key="step3"
                         initial={{ opacity: 0, x: 20 }}
@@ -1838,8 +1675,8 @@ export default function BusinessApplyPage() {
                       </motion.div>
                     )}
 
-                    {/* Step 7: Working Hours */}
-                    {step === 7 && (
+                    {/* Step 6: Working Hours */}
+                    {step === 6 && (
                       <motion.div
                         key="step6"
                         initial={{ opacity: 0, x: 20 }}
@@ -1879,8 +1716,8 @@ export default function BusinessApplyPage() {
                       </motion.div>
                     )}
 
-                    {/* Step 8: Review */}
-                    {step === 8 && (
+                    {/* Step 7: Review */}
+                    {step === 7 && (
                       <motion.div
                         key="step7"
                         initial={{ opacity: 0, x: 20 }}
@@ -1944,6 +1781,78 @@ export default function BusinessApplyPage() {
     </>
   );
 
+  if (phase === 'plans') {
+    return (
+      <>
+        <Navbar />
+        <PlanSelector
+          plans={plans}
+          loading={plansLoading}
+          error={plansError}
+          selectedPlanId={selectedPlanId}
+          onSelect={(planId) => {
+            setSelectedPlanId(planId);
+            const plan = plans.find((p) => p.id === planId);
+            const websiteType = getPlanWebsiteType(plan?.name || '');
+            setForm((prev) => ({
+              ...prev,
+              websiteType,
+              // Reset design when plan type changes so designs match the new type
+              designId: '',
+            }));
+          }}
+          onNext={() => setPhase('design')}
+        />
+      </>
+    );
+  }
+
+  if (phase === 'design') {
+    return (
+      <>
+        <Navbar />
+        <DesignSetupSelector
+          websiteType={form.websiteType}
+          categoryId={form.categoryId}
+          subcategoryId={form.subcategoryId}
+          customSubcategory={form.customSubcategory}
+          designId={form.designId}
+          businessName={form.name}
+          categories={categories}
+          errors={errors}
+          onWebsiteTypeChange={(type) => setForm((prev) => ({ ...prev, websiteType: type }))}
+          onCategoryChange={(categoryId) =>
+            setForm((prev) => ({
+              ...prev,
+              categoryId,
+              subcategoryId: '',
+              customSubcategory: '',
+            }))
+          }
+          onSubcategoryChange={({ subcategoryId, customSubcategory }) =>
+            setForm((prev) => ({ ...prev, subcategoryId, customSubcategory }))
+          }
+          onDesignChange={(designId) => setForm((prev) => ({ ...prev, designId }))}
+          onNext={() => {
+            const newErrors: Record<string, string> = {};
+            if (!form.websiteType) newErrors.websiteType = 'اختر نوع الموقع';
+            if (!form.categoryId) newErrors.categoryId = 'اختر التصنيف الرئيسي';
+            if (!form.subcategoryId && !form.customSubcategory && subcategories.length > 0) {
+              newErrors.subcategoryId = 'اختر أو اكتب تصنيفاً فرعياً';
+            }
+            if (!form.designId) newErrors.designId = 'اختر تصميماً لموقعك';
+            setErrors(newErrors);
+            if (Object.keys(newErrors).length === 0) {
+              setPhase('builder');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
+          onBack={() => setPhase('plans')}
+        />
+      </>
+    );
+  }
+
   if (form.websiteType === 'INTRO') {
     return (
       <BusinessIntroBuilder
@@ -1954,7 +1863,7 @@ export default function BusinessApplyPage() {
         categories={categories}
         designId={form.designId}
         themeColors={form.themeColors}
-        onBack={() => setForm((prev) => ({ ...prev, websiteType: '' }))}
+        onBack={() => setPhase('design')}
         onNext={handleNext}
         onSubmit={handleSubmit}
         submitting={submitting}
@@ -1974,7 +1883,7 @@ export default function BusinessApplyPage() {
         categories={categories}
         designId={form.designId}
         themeColors={form.themeColors}
-        onBack={() => setForm((prev) => ({ ...prev, websiteType: '' }))}
+        onBack={() => setPhase('design')}
         onNext={handleNext}
         onSubmit={handleSubmit}
         submitting={submitting}
@@ -2000,10 +1909,7 @@ export default function BusinessApplyPage() {
             <p className="text-muted mt-1">
               خطوات بسيطة تفصلك عن موقع إلكتروني احترافي لعملك
             </p>
-            <span className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
-              {form.websiteType === 'STORE' ? <ShoppingBag className="w-3.5 h-3.5" /> : <LayoutTemplate className="w-3.5 h-3.5" />}
-              {form.websiteType === 'STORE' ? 'متجر إلكتروني' : 'موقع إلكتروني تعريفي'}
-            </span>
+
           </motion.div>
 
           {/* Steps Progress */}

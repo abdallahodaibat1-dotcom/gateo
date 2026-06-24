@@ -317,9 +317,84 @@ async function main() {
 
   // ─── Subscription plans ───
   const plans = [
-    { name: 'Basic', nameAr: 'أساسي', description: 'خطة أساسية للأعمال الصغيرة', price: 99, duration: 30, features: [{ feature: 'Profile listing', value: true }, { feature: 'Services', value: 5 }] },
-    { name: 'Pro', nameAr: 'احترافي', description: 'خطة متقدمة مع مميزات إضافية', price: 299, duration: 30, features: [{ feature: 'Profile listing', value: true }, { feature: 'Services', value: 20 }, { feature: 'Analytics', value: true }] },
-    { name: 'Premium', nameAr: 'بريميوم', description: 'خطة شاملة لأكبر التأثير', price: 599, duration: 30, features: [{ feature: 'Profile listing', value: true }, { feature: 'Services', value: 'Unlimited' }, { feature: 'Analytics', value: true }, { feature: 'Priority support', value: true }] },
+    {
+      name: 'Bronze',
+      nameAr: 'برونز',
+      description: 'خطة البداية المجانية لإنشاء موقع تعريفي',
+      price: 0,
+      duration: 365,
+      features: [
+        { feature: 'موقع تعريفي', value: 'نعم' },
+        { feature: 'الخدمات/المنتجات', value: '3' },
+        { feature: 'الدعم', value: 'أساسي' },
+        { feature: 'SEO', value: 'أساسي' },
+      ],
+    },
+    {
+      name: 'Silver',
+      nameAr: 'سلفر',
+      description: 'خطة متقدمة للمواقع التعريفية',
+      price: 99,
+      duration: 30,
+      features: [
+        { feature: 'موقع تعريفي', value: 'نعم' },
+        { feature: 'الخدمات/المنتجات', value: '10' },
+        { feature: 'SEO', value: 'متقدم' },
+        { feature: 'دعم بالبريد', value: 'نعم' },
+      ],
+    },
+    {
+      name: 'Gold',
+      nameAr: 'قولد',
+      description: 'خطة شاملة للمواقع التعريفية',
+      price: 199,
+      duration: 30,
+      features: [
+        { feature: 'موقع تعريفي', value: 'نعم' },
+        { feature: 'الخدمات/المنتجات', value: 'غير محدود' },
+        { feature: 'SEO', value: 'متقدم' },
+        { feature: 'إعلانات مخفضة', value: '20%' },
+      ],
+    },
+    {
+      name: 'Store Plus',
+      nameAr: 'متجر بلس',
+      description: 'خطة البداية المجانية للمتجر الإلكتروني',
+      price: 0,
+      duration: 365,
+      features: [
+        { feature: 'متجر إلكتروني', value: 'نعم' },
+        { feature: 'المنتجات', value: '10' },
+        { feature: 'بوابة دفع', value: 'واحدة' },
+        { feature: 'الدعم', value: 'أساسي' },
+      ],
+    },
+    {
+      name: 'Store Plus Plus',
+      nameAr: 'متجر بلس بلس',
+      description: 'خطة متقدمة للمتاجر الإلكترونية',
+      price: 299,
+      duration: 30,
+      features: [
+        { feature: 'متجر إلكتروني', value: 'نعم' },
+        { feature: 'المنتجات', value: '50' },
+        { feature: 'بوابات الدفع', value: 'متعددة' },
+        { feature: 'إعلانات مخفضة', value: '15%' },
+      ],
+    },
+    {
+      name: 'Store Plus Plus Plus',
+      nameAr: 'متجر بلس بلس بلس',
+      description: 'خطة شاملة للمتاجر الإلكترونية',
+      price: 499,
+      duration: 30,
+      features: [
+        { feature: 'متجر إلكتروني', value: 'نعم' },
+        { feature: 'المنتجات', value: 'غير محدود' },
+        { feature: 'بوابات الدفع', value: 'متعددة' },
+        { feature: 'دعم مميز', value: 'نعم' },
+      ],
+    },
   ];
 
   for (const plan of plans) {
@@ -932,34 +1007,6 @@ async function main() {
       value: 8,
       isActive: true,
       updatedAt: new Date(),
-    },
-  });
-
-  await prisma.subscriptionPlan.upsert({
-    where: { name: 'Starter' },
-    update: {},
-    create: {
-      name: 'Starter',
-      nameAr: 'بداية',
-      description: 'الباقة الأساسية للأنشطة التجارية',
-      price: 29,
-      duration: 30,
-      features: JSON.stringify([{ feature: 'موقع تجاري', value: 'نعم' }, { feature: 'منتجات', value: '50' }]),
-      isActive: true,
-    },
-  });
-
-  await prisma.subscriptionPlan.upsert({
-    where: { name: 'Business' },
-    update: {},
-    create: {
-      name: 'Business',
-      nameAr: 'أعمال',
-      description: 'الباقة المتقدمة للنمو',
-      price: 99,
-      duration: 30,
-      features: JSON.stringify([{ feature: 'منتجات', value: 'غير محدود' }, { feature: 'إعلانات', value: 'خصم 20%' }]),
-      isActive: true,
     },
   });
 
