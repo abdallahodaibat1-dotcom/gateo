@@ -6,7 +6,9 @@ export type HomeTemplateId =
   | 'grand-restaurant'
   | 'houzez'
   | 'jacqueline'
-  | 'ohio';
+  | 'ohio'
+  | 'enfold-spa'
+  | 'beauty-salon';
 
 export interface ThemePreset {
   presetId: string;
@@ -887,6 +889,52 @@ const PRESETS: Record<string, ThemePreset> = {
     navbarStyle: 'static',
     homeTemplate: 'ohio',
   },
+  enfoldSpa: {
+    presetId: 'enfoldSpa',
+    name: 'Enfold Spa',
+    nameAr: 'إنفولد سبا',
+    description: 'Elegant spa and wellness landing theme inspired by Enfold Spa with transparent hero, pastel colors and airy whitespace.',
+    descriptionAr: 'قالب سبا وعافية أنيق مستوحى من Enfold Spa، بهيدر شفاف فوق بطل عريض وألوان باستيل ناعمة ومساحات بيضاء واسعة.',
+    source: 'ThemeForest',
+    style: 'elegant',
+    categoryTags: ['سبا', 'صالون', 'تجميل', 'عناية', 'صحة', 'موقع تعريفي'],
+    keywords: ['enfold', 'spa', 'wellness', 'salon', 'beauty', 'intro', 'elegant', 'pastel'],
+    primaryColor: '#e7b8b8',
+    secondaryColor: '#a5d1d6',
+    accentColor: '#c59696',
+    backgroundColor: '#ffffff',
+    surfaceColor: '#ffffff',
+    textColor: '#222222',
+    fontFamily: 'Cairo',
+    borderRadius: '1.5rem',
+    buttonStyle: 'solid',
+    heroLayout: 'center',
+    navbarStyle: 'transparent',
+    homeTemplate: 'enfold-spa',
+  },
+  beautySalon: {
+    presetId: 'beautySalon',
+    name: 'Beauty Salon',
+    nameAr: 'صالون غالية',
+    description: 'Luxury ladies salon and spa landing page with rose and gold accents, RTL Arabic typography and elegant sections.',
+    descriptionAr: 'قالب هبوط فاخر لصالونات وسبا السيدات بألوان وردية وذهبية وتصميم عربي RTL وأقسام أنيقة.',
+    source: 'Gateo',
+    style: 'elegant',
+    categoryTags: ['صالون', 'سبا', 'تجميل', 'عناية', 'سيدات', 'موقع تعريفي'],
+    keywords: ['beauty salon', 'salon', 'spa', 'ladies', 'bridal', 'makeup', 'hair', 'nails', 'skin care'],
+    primaryColor: '#b76e79',
+    secondaryColor: '#c79b6b',
+    accentColor: '#d9a1a8',
+    backgroundColor: '#fbf7f4',
+    surfaceColor: '#ffffff',
+    textColor: '#2a1f24',
+    fontFamily: 'Tajawal',
+    borderRadius: '1.5rem',
+    buttonStyle: 'solid',
+    heroLayout: 'split',
+    navbarStyle: 'fixed',
+    homeTemplate: 'beauty-salon',
+  },
 };
 
 const DEFAULT_SECTIONS: WebsiteSection[] = [
@@ -1072,7 +1120,7 @@ export function generateThemeForBusiness(
     buttonStyle: preset.buttonStyle,
     heroLayout: preset.heroLayout,
     navbarStyle: preset.navbarStyle,
-    homeTemplate: (websiteType === 'STORE' ? preset.homeTemplate || 'default' : 'default') as HomeTemplateId,
+    homeTemplate: (preset.homeTemplate || 'default') as HomeTemplateId,
     sections,
   };
 
@@ -1179,6 +1227,18 @@ export function getHomeTemplateList(): HomeTemplate[] {
       name: 'Ohio',
       nameAr: 'أوهايو',
       descriptionAr: 'قالب معرض أعمال ووكالة إبداعية مستوحى من Ohio بتصميم بسيط وجريء.',
+    },
+    {
+      id: 'enfold-spa',
+      name: 'Enfold Spa',
+      nameAr: 'إنفولد سبا',
+      descriptionAr: 'قالب سبا وعافية مستوحى من Enfold Spa بهيدر شفاف فوق بطل عريض وألوان باستيل ناعمة.',
+    },
+    {
+      id: 'beauty-salon',
+      name: 'Beauty Salon',
+      nameAr: 'صالون غالية',
+      descriptionAr: 'قالب هبوط فاخر لصالونات وسبا السيدات بألوان وردية وذهبية وتصميم عربي RTL.',
     },
   ];
 }

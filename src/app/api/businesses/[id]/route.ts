@@ -11,8 +11,8 @@ const updateSchema = z.object({
   logo: z.string().url().optional().nullable(),
   cover: z.string().url().optional().nullable(),
   categoryId: z.string().optional().nullable(),
-  subcategoryId: z.string().optional().nullable(),
-  customSubcategory: z.string().max(100).optional().nullable(),
+  subcategoryIds: z.array(z.string()).optional().nullable(),
+  customSubcategories: z.array(z.string().max(100)).optional().nullable(),
   countryId: z.string().optional().nullable(),
   city: z.string().optional().nullable(),
   address: z.string().optional().nullable(),
@@ -54,7 +54,7 @@ export async function GET(
       },
       include: {
         Category: { select: { id: true, name: true, slug: true } },
-        Subcategory: { select: { id: true, name: true, slug: true } },
+        BusinessSubcategory: { include: { Subcategory: { select: { id: true, name: true, slug: true } } } },
         Country: { select: { id: true, name: true, flagEmoji: true } },
         User: { select: { id: true, name: true, avatar: true, createdAt: true } },
         Service: { where: { isActive: true }, orderBy: { createdAt: 'desc' } },
@@ -75,6 +75,11 @@ export async function GET(
         },
         BusinessFieldValue: {
           include: { DynamicFieldDefinition: true },
+        },
+        Review: {
+          orderBy: { createdAt: 'desc' },
+          take: 6,
+          include: { User: { select: { id: true, name: true, avatar: true } } },
         },
         _count: { select: { Review: true, Booking: true } },
       },
@@ -134,15 +139,41 @@ export async function PUT(
     const body = await req.json();
     const data = updateSchema.parse(body);
 
+    const { subcategoryIds, customSubcategories, ...businessData } = data;
+
     const updated = await prisma.business.update({
       where: { id },
       data: {
-        ...data,
-        workingHours: data.workingHours !== undefined ? (data.workingHours === null ? null : JSON.stringify(data.workingHours)) : undefined,
-        images: data.images !== undefined ? (data.images === null ? null : JSON.stringify(data.images)) : undefined,
-        documents: data.documents !== undefined ? (data.documents === null ? null : JSON.stringify(data.documents)) : undefined,
+        ...businessData,
+        workingHours: businessData.workingHours !== undefined ? (businessData.workingHours === null ? null : JSON.stringify(businessData.workingHours)) : undefined,
+        images: businessData.images !== undefined ? (businessData.images === null ? null : JSON.stringify(businessData.images)) : undefined,
+        documents: businessData.documents !== undefined ? (businessData.documents === null ? null : JSON.stringify(businessData.documents)) : undefined,
       } as any,
     });
+
+    // Sync subcategories
+    if (subcategoryIds !== undefined || customSubcategories !== undefined) {
+      await prisma.businessSubcategory.deleteMany({ where: { businessId: id } });
+
+      const records: { businessId: string; subcategoryId: string; sortOrder: number }[] = [];
+      const customRecords: { businessId: string; customName: string; sortOrder: number }[] = [];
+
+      (subcategoryIds || []).forEach((subId, index) => {
+        if (subId) records.push({ businessId: id, subcategoryId: subId, sortOrder: index });
+      });
+
+      (customSubcategories || []).forEach((name, index) => {
+        const trimmed = name.trim();
+        if (trimmed) customRecords.push({ businessId: id, customName: trimmed, sortOrder: (subcategoryIds || []).length + index });
+      });
+
+      if (records.length > 0) {
+        await prisma.businessSubcategory.createMany({ data: records });
+      }
+      if (customRecords.length > 0) {
+        await prisma.businessSubcategory.createMany({ data: customRecords });
+      }
+    }
 
     return NextResponse.json({ business: updated });
   } catch (error) {

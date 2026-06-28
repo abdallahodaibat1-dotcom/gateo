@@ -277,6 +277,28 @@ function storePreviewForTemplate(
           <rect x="188" y="150" width="164" height="80" rx="4" fill="${secondary}" opacity="0.15"/>
         </g>`;
       break;
+    case 'beauty-salon':
+      content = `
+        <rect width="400" height="300" fill="${bg}"/>
+        <rect x="0" y="0" width="400" height="140" rx="0" fill="url(#hero)" opacity="0.9"/>
+        <rect x="24" y="40" width="180" height="16" rx="3" fill="white" opacity="0.95"/>
+        <rect x="24" y="64" width="120" height="10" rx="2" fill="white" opacity="0.8"/>
+        <rect x="24" y="86" width="90" height="26" rx="13" fill="${accent}" stroke="white" stroke-width="1"/>
+        <g transform="translate(16, 160)">
+          <rect x="0" y="0" width="110" height="120" rx="12" fill="${surface}" stroke="${text}" stroke-opacity="0.08"/>
+          <circle cx="55" cy="40" r="24" fill="${secondary}" opacity="0.25"/>
+          <rect x="25" y="76" width="60" height="8" rx="2" fill="${text}" opacity="0.15"/>
+          <rect x="30" y="90" width="50" height="8" rx="2" fill="${primary}" opacity="0.6"/>
+          <rect x="128" y="0" width="110" height="120" rx="12" fill="${surface}" stroke="${text}" stroke-opacity="0.08"/>
+          <circle cx="183" cy="40" r="24" fill="${primary}" opacity="0.2"/>
+          <rect x="153" y="76" width="60" height="8" rx="2" fill="${text}" opacity="0.15"/>
+          <rect x="158" y="90" width="50" height="8" rx="2" fill="${primary}" opacity="0.6"/>
+          <rect x="256" y="0" width="110" height="120" rx="12" fill="${surface}" stroke="${text}" stroke-opacity="0.08"/>
+          <circle cx="311" cy="40" r="24" fill="${accent}" opacity="0.2"/>
+          <rect x="281" y="76" width="60" height="8" rx="2" fill="${text}" opacity="0.15"/>
+          <rect x="286" y="90" width="50" height="8" rx="2" fill="${primary}" opacity="0.6"/>
+        </g>`;
+      break;
     default:
       content = `<rect width="400" height="300" fill="${bg}"/><rect x="24" y="48" width="352" height="120" rx="12" fill="url(#hero)"/><rect x="24" y="184" width="352" height="80" rx="8" fill="${surface}" stroke="${text}" stroke-opacity="0.08"/>`;
   }
@@ -599,6 +621,19 @@ const DESIGNS: WebsiteDesign[] = [
     homeTemplate: 'default',
     previewImage: introPreview('#f59e0b', '#f97316', '#fde68a'),
   },
+  {
+    designId: 'intro-enfold-spa',
+    name: 'Enfold Spa',
+    nameAr: 'إنفولد سبا',
+    descriptionAr: 'قالب سبا وعافية أنيق مستوحى من Enfold Spa، بهيدر شفاف فوق بطل عريض وألوان باستيل ناعمة ومساحات بيضاء واسعة.',
+    websiteType: 'INTRO',
+    categoryTags: ['سبا', 'صالون', 'تجميل', 'عناية', 'صحة', 'موقع تعريفي'],
+    style: 'elegant',
+    source: 'ThemeForest',
+    presetId: 'enfoldSpa',
+    homeTemplate: 'enfold-spa',
+    previewImage: introPreview('#e7b8b8', '#a5d1d6', '#c59696'),
+  },
 
   // Store designs
   {
@@ -759,6 +794,19 @@ const DESIGNS: WebsiteDesign[] = [
     homeTemplate: 'ohio',
     previewImage: storePreviewForTemplate('ohio', '#171717', '#525252', '#e5e5e5'),
   },
+  {
+    designId: 'beauty-salon',
+    name: 'Beauty Salon',
+    nameAr: 'صالون غالية',
+    descriptionAr: 'قالب هبوط فاخر لصالونات وسبا السيدات بألوان وردية وذهبية وتصميم عربي RTL.',
+    websiteType: 'BOTH',
+    categoryTags: ['صالون', 'سبا', 'تجميل', 'عناية', 'سيدات'],
+    style: 'elegant',
+    source: 'Gateo',
+    presetId: 'beautySalon',
+    homeTemplate: 'beauty-salon',
+    previewImage: storePreviewForTemplate('beauty-salon', '#b76e79', '#c79b6b', '#d9a1a8'),
+  },
 ];
 
 export function getDesignList(): WebsiteDesign[] {
@@ -781,8 +829,7 @@ export function getDefaultDesignId(websiteType: 'INTRO' | 'STORE'): string {
 /** Resolve effective homeTemplate based on website type and selected design */
 export function resolveHomeTemplate(design: WebsiteDesign | undefined | null, websiteType: 'INTRO' | 'STORE' | ''): HomeTemplateId {
   if (!design) return 'default';
-  if (websiteType === 'INTRO') return 'default';
-  return design.homeTemplate;
+  return design.homeTemplate || 'default';
 }
 
 /** Resolve effective presetId based on website type and selected design */
