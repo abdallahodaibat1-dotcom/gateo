@@ -11,6 +11,11 @@ import {
   Tags,
   ChevronDown,
   ChevronUp,
+  Scissors,
+  Clock,
+  DollarSign,
+  Check,
+  X,
 } from 'lucide-react';
 import ConfirmModal from '@/components/admin/ConfirmModal';
 import EmptyState from '@/components/ui/EmptyState';
@@ -55,7 +60,7 @@ export default function AdminCategoriesPage() {
   const [formCategoryId, setFormCategoryId] = useState('');
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [deleteType, setDeleteType] = useState<'category' | 'subcategory'>('category');
+  const [deleteType, setDeleteType] = useState<'category' | 'subcategory' | 'serviceTemplate'>('category');
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
 
@@ -68,6 +73,29 @@ export default function AdminCategoriesPage() {
   const [formDesc, setFormDesc] = useState('');
   const [formSort, setFormSort] = useState('0');
   const [formLadiesGate, setFormLadiesGate] = useState(false);
+
+  // Service templates state
+  interface ServiceTemplate {
+    id: string;
+    categoryId: string;
+    name: string;
+    description: string | null;
+    price: number | null;
+    duration: number | null;
+    isActive: boolean;
+    sortOrder: number;
+  }
+  const [serviceTemplates, setServiceTemplates] = useState<ServiceTemplate[]>([]);
+  const [serviceTemplatesLoading, setServiceTemplatesLoading] = useState(false);
+  const [editingServiceTemplate, setEditingServiceTemplate] = useState<ServiceTemplate | null>(null);
+  const [serviceTemplateForm, setServiceTemplateForm] = useState({
+    name: '',
+    description: '',
+    price: '',
+    duration: '',
+    isActive: true,
+    sortOrder: '0',
+  });
 
   const fetchData = async () => {
     setLoading(true);
@@ -109,6 +137,87 @@ export default function AdminCategoriesPage() {
     setShowCategoryForm(false);
     setShowSubForm(false);
     setFormCategoryId('');
+    setServiceTemplates([]);
+    setEditingServiceTemplate(null);
+    setServiceTemplateForm({ name: '', description: '', price: '', duration: '', isActive: true, sortOrder: '0' });
+  };
+
+  const resetServiceTemplateForm = () => {
+    setEditingServiceTemplate(null);
+    setServiceTemplateForm({ name: '', description: '', price: '', duration: '', isActive: true, sortOrder: '0' });
+  };
+
+  const fetchServiceTemplates = async (categoryId: string) => {
+    setServiceTemplatesLoading(true);
+    try {
+      const res = await fetch(`/api/admin/categories/${categoryId}/service-templates`);
+      if (res.ok) {
+        const data = await res.json();
+        setServiceTemplates(data.templates || []);
+      }
+    } catch (e) {}
+    setServiceTemplatesLoading(false);
+  };
+
+  const handleSaveServiceTemplate = async () => {
+    if (!editCategory) return;
+    if (!serviceTemplateForm.name.trim()) return;
+
+    setSaveLoading(true);
+    try {
+      const body = {
+        name: serviceTemplateForm.name.trim(),
+        description: serviceTemplateForm.description.trim() || undefined,
+        price: serviceTemplateForm.price !== '' ? Number(serviceTemplateForm.price) : undefined,
+        duration: serviceTemplateForm.duration !== '' ? Number(serviceTemplateForm.duration) : undefined,
+        isActive: serviceTemplateForm.isActive,
+        sortOrder: Number(serviceTemplateForm.sortOrder) || 0,
+      };
+
+      const url = editingServiceTemplate
+        ? `/api/admin/categories/${editCategory.id}/service-templates/${editingServiceTemplate.id}`
+        : `/api/admin/categories/${editCategory.id}/service-templates`;
+      const method = editingServiceTemplate ? 'PATCH' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        resetServiceTemplateForm();
+        fetchServiceTemplates(editCategory.id);
+      }
+    } catch (e) {}
+    setSaveLoading(false);
+  };
+
+  const handleDeleteServiceTemplate = async () => {
+    if (!deleteId || !editCategory) return;
+    setDeleteLoading(true);
+    try {
+      const res = await fetch(`/api/admin/categories/${editCategory.id}/service-templates/${deleteId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        fetchServiceTemplates(editCategory.id);
+        setDeleteId(null);
+      }
+    } catch (e) {}
+    setDeleteLoading(false);
+  };
+
+  const openEditServiceTemplate = (template: ServiceTemplate) => {
+    setEditingServiceTemplate(template);
+    setServiceTemplateForm({
+      name: template.name,
+      description: template.description || '',
+      price: template.price !== null ? String(template.price) : '',
+      duration: template.duration !== null ? String(template.duration) : '',
+      isActive: template.isActive,
+      sortOrder: String(template.sortOrder),
+    });
   };
 
   const openEditCategory = (cat: Category) => {
@@ -122,6 +231,7 @@ export default function AdminCategoriesPage() {
     setFormSort(String(cat.sortOrder));
     setFormLadiesGate(cat.isLadiesGate);
     setShowCategoryForm(true);
+    fetchServiceTemplates(cat.id);
   };
 
   const openEditSubcategory = (sub: Subcategory) => {
@@ -451,6 +561,150 @@ export default function AdminCategoriesPage() {
                   className="w-full px-3 py-2 rounded-md border border-border bg-surface text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
+
+              {/* Service Templates Section - only when editing a category */}
+              {!showSubForm && editCategory && (
+                <div className="border-t border-border pt-4 mt-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Scissors className="w-4 h-4 text-primary" />
+                    <h4 className="font-bold text-foreground text-sm">الخدمات الشائعة</h4>
+                  </div>
+                  <p className="text-xs text-muted mb-3">الخدمات التالية ستظهر كخيارات جاهزة عند إنشاء موقع بهذه الفئة.</p>
+
+                  {/* Add/Edit Template Form */}
+                  <div className="bg-slate-50 rounded-lg p-3 space-y-3 mb-3">
+                    <div>
+                      <label className="block text-xs font-medium text-foreground mb-1">اسم الخدمة *</label>
+                      <input
+                        type="text"
+                        value={serviceTemplateForm.name}
+                        onChange={(e) => setServiceTemplateForm((prev) => ({ ...prev, name: e.target.value }))}
+                        placeholder="مثال: قص الشعر"
+                        className="w-full px-3 py-2 rounded-md border border-border bg-surface text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-foreground mb-1">الوصف</label>
+                      <textarea
+                        value={serviceTemplateForm.description}
+                        onChange={(e) => setServiceTemplateForm((prev) => ({ ...prev, description: e.target.value }))}
+                        rows={2}
+                        placeholder="وصف مختصر..."
+                        className="w-full px-3 py-2 rounded-md border border-border bg-surface text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-foreground mb-1">السعر</label>
+                        <div className="relative">
+                          <DollarSign className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
+                          <input
+                            type="number"
+                            value={serviceTemplateForm.price}
+                            onChange={(e) => setServiceTemplateForm((prev) => ({ ...prev, price: e.target.value }))}
+                            placeholder="0"
+                            className="w-full pr-8 px-3 py-2 rounded-md border border-border bg-surface text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-foreground mb-1">المدة (دقيقة)</label>
+                        <div className="relative">
+                          <Clock className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
+                          <input
+                            type="number"
+                            value={serviceTemplateForm.duration}
+                            onChange={(e) => setServiceTemplateForm((prev) => ({ ...prev, duration: e.target.value }))}
+                            placeholder="30"
+                            className="w-full pr-8 px-3 py-2 rounded-md border border-border bg-surface text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        id="template-active"
+                        type="checkbox"
+                        checked={serviceTemplateForm.isActive}
+                        onChange={(e) => setServiceTemplateForm((prev) => ({ ...prev, isActive: e.target.checked }))}
+                        className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                      />
+                      <label htmlFor="template-active" className="text-xs text-foreground">نشط</label>
+                    </div>
+                    <div className="flex gap-2">
+                      {editingServiceTemplate && (
+                        <button
+                          type="button"
+                          onClick={resetServiceTemplateForm}
+                          className="px-3 py-1.5 rounded-md border border-border text-xs text-foreground hover:bg-slate-100 transition-colors"
+                        >
+                          إلغاء
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleSaveServiceTemplate}
+                        disabled={saveLoading || !serviceTemplateForm.name.trim()}
+                        className="flex-1 px-3 py-1.5 rounded-md bg-primary text-white text-xs font-medium hover:bg-primary-dark transition-colors disabled:opacity-50"
+                      >
+                        {saveLoading ? 'جاري...' : editingServiceTemplate ? 'حفظ التعديل' : 'إضافة خدمة'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Templates List */}
+                  {serviceTemplatesLoading ? (
+                    <div className="flex justify-center py-3">
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    </div>
+                  ) : serviceTemplates.length === 0 ? (
+                    <p className="text-xs text-muted py-2">لا توجد خدمات شائعة مضافة.</p>
+                  ) : (
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {serviceTemplates.map((template) => (
+                        <div
+                          key={template.id}
+                          className={`flex items-center justify-between bg-surface rounded-lg border px-3 py-2 ${template.isActive ? 'border-border' : 'border-dashed border-slate-300 opacity-60'}`}
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-foreground">{template.name}</span>
+                              {!template.isActive && <span className="text-[10px] text-muted">(غير نشط)</span>}
+                            </div>
+                            {template.description && (
+                              <p className="text-xs text-muted truncate">{template.description}</p>
+                            )}
+                            <div className="flex items-center gap-3 mt-0.5 text-xs text-muted">
+                              {template.price !== null && template.price !== undefined && (
+                                <span>{template.price}</span>
+                              )}
+                              {template.duration && <span>{template.duration} دقيقة</span>}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => openEditServiceTemplate(template)}
+                              aria-label="تعديل"
+                              className="p-1.5 rounded-md text-muted hover:text-primary hover:bg-primary/10 transition-colors"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { setDeleteId(template.id); setDeleteType('serviceTemplate'); }}
+                              aria-label="حذف"
+                              className="p-1.5 rounded-md text-muted hover:text-red-600 hover:bg-red-50 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex gap-3 mt-6">
               <button
@@ -473,9 +727,21 @@ export default function AdminCategoriesPage() {
 
       <ConfirmModal
         isOpen={!!deleteId}
-        title={deleteType === 'category' ? 'حذف الفئة' : 'حذف التصنيف الفرعي'}
-        message={deleteType === 'category' ? 'هل أنت متأكد من حذف هذه الفئة؟ سيتم حذف جميع التصنيفات الفرعية المرتبطة.' : 'هل أنت متأكد من حذف هذا التصنيف الفرعي؟'}
-        onConfirm={handleDelete}
+        title={
+          deleteType === 'category'
+            ? 'حذف الفئة'
+            : deleteType === 'serviceTemplate'
+            ? 'حذف الخدمة الشائعة'
+            : 'حذف التصنيف الفرعي'
+        }
+        message={
+          deleteType === 'category'
+            ? 'هل أنت متأكد من حذف هذه الفئة؟ سيتم حذف جميع التصنيفات الفرعية المرتبطة.'
+            : deleteType === 'serviceTemplate'
+            ? 'هل أنت متأكد من حذف هذه الخدمة الشائعة؟'
+            : 'هل أنت متأكد من حذف هذا التصنيف الفرعي؟'
+        }
+        onConfirm={deleteType === 'serviceTemplate' ? handleDeleteServiceTemplate : handleDelete}
         onCancel={() => setDeleteId(null)}
         isLoading={deleteLoading}
         confirmText="حذف"

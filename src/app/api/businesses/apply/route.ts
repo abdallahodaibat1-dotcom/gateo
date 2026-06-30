@@ -7,17 +7,11 @@ import { getDesignById, resolveHomeTemplate, resolvePresetId } from '@/lib/busin
 
 const applySchema = z.object({
   name: z.string().min(2).max(100),
-  slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/),
+  slug: z.string().min(1).max(50).regex(/^[a-z0-9-]+$/),
   description: z.string().max(2000).optional(),
   categoryId: z.string().optional(),
-  subcategoryId: z.preprocess(
-    (val) => (val === '' ? undefined : val),
-    z.string().optional()
-  ),
-  customSubcategory: z.preprocess(
-    (val) => (val === '' ? undefined : val),
-    z.string().max(100).optional()
-  ),
+  subcategoryIds: z.array(z.string()).default([]),
+  customSubcategories: z.array(z.string().max(100)).default([]),
   countryId: z.string().optional(),
   city: z.string().optional(),
   address: z.string().optional(),
@@ -38,12 +32,18 @@ const applySchema = z.object({
     (val) => (val === '' ? undefined : val),
     z.string().url().optional()
   ),
-  logo: z.string().min(1).optional(),
-  cover: z.string().min(1).optional(),
+  logo: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().min(1).optional()
+  ),
+  cover: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string().min(1).optional()
+  ),
   businessType: z.enum(['INDIVIDUAL', 'COMPANY']).optional(),
   websiteType: z.enum(['INTRO', 'STORE']).optional(),
   themePresetId: z.string().optional(),
-  homeTemplate: z.enum(['default', 'porto-shop1', 'flatsome', 'elessi', 'grand-restaurant', 'houzez', 'jacqueline', 'ohio']).optional(),
+  homeTemplate: z.enum(['default', 'enfold-spa', 'beauty-salon-1']).optional(),
   designId: z.string().optional(),
   useAutoColors: z.boolean().optional(),
   themeColors: z.object({
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
 
     if (existing) {
       // Update existing business with new data
-      const { services: _services, products: _products, themePresetId: _themePresetId, homeTemplate: _homeTemplate, designId: _designId, themeColors: _themeColors, useAutoColors: _useAutoColors, fieldValues: _fieldValues, ...businessData } = data;
+      const { services: _services, products: _products, themePresetId: _themePresetId, homeTemplate: _homeTemplate, designId: _designId, themeColors: _themeColors, useAutoColors: _useAutoColors, fieldValues: _fieldValues, subcategoryIds: _subcategoryIds, customSubcategories: _customSubcategories, ...businessData } = data;
       
       // Check slug uniqueness only if slug changed
       if (data.slug !== existing.slug) {
@@ -131,6 +131,9 @@ export async function POST(req: NextRequest) {
           images: data.images ? JSON.stringify(data.images) : null,
         },
       });
+
+      // Sync subcategories
+      await syncBusinessSubcategories(existing.id, data.subcategoryIds, data.customSubcategories);
 
       // Replace old services with new ones
       await prisma.service.deleteMany({ where: { businessId: existing.id } });
@@ -194,7 +197,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'الرابط مستخدم من قبل' }, { status: 400 });
     }
 
-    const { services: _services, products: _products, themePresetId: _themePresetId, homeTemplate: _homeTemplate, designId: _designId, themeColors: _themeColors, useAutoColors: _useAutoColors, fieldValues: _fieldValues, ...businessData } = data;
+    const { services: _services, products: _products, themePresetId: _themePresetId, homeTemplate: _homeTemplate, designId: _designId, themeColors: _themeColors, useAutoColors: _useAutoColors, fieldValues: _fieldValues, subcategoryIds: _subcategoryIds, customSubcategories: _customSubcategories, ...businessData } = data;
     const business = await prisma.business.create({
       data: {
         ...businessData,
@@ -205,6 +208,9 @@ export async function POST(req: NextRequest) {
         images: data.images ? JSON.stringify(data.images) : null,
       },
     });
+
+    // Sync subcategories
+    await syncBusinessSubcategories(business.id, data.subcategoryIds, data.customSubcategories);
 
     // Create services if provided
     if (data.services && data.services.length > 0) {
@@ -320,11 +326,11 @@ async function applyThemePreset(
   const preset = getThemePresetById(effectivePresetId || 'default') || getThemePresetById('default');
   if (!preset) return;
 
-  const baseSections = websiteType === 'STORE' ? getStoreDefaultSections() : getDefaultSections();
-  const sections = baseSections.map((section) => ({
-    ...section,
-    enabled: section.id !== 'experience',
-  }));
+  const isBeautySalonTemplate = ['beauty-salon-1'].includes(effectiveHomeTemplate || '');
+  const baseSections = websiteType === 'STORE' && !isBeautySalonTemplate
+    ? getStoreDefaultSections()
+    : getDefaultSections();
+  const sections = baseSections.map((section) => ({ ...section }));
 
   const colors = themeColors || {
     primaryColor: preset.primaryColor,
@@ -537,4 +543,31 @@ async function createDefaultPages(
   await prisma.businessPage.createMany({
     data: [...basePages, ...storePages],
   });
+}
+
+async function syncBusinessSubcategories(
+  businessId: string,
+  subcategoryIds: string[],
+  customSubcategories: string[]
+) {
+  await prisma.businessSubcategory.deleteMany({ where: { businessId } });
+
+  const records: { businessId: string; subcategoryId: string; sortOrder: number }[] = [];
+  const customRecords: { businessId: string; customName: string; sortOrder: number }[] = [];
+
+  subcategoryIds.forEach((id, index) => {
+    if (id) records.push({ businessId, subcategoryId: id, sortOrder: index });
+  });
+
+  customSubcategories.forEach((name, index) => {
+    const trimmed = name.trim();
+    if (trimmed) customRecords.push({ businessId, customName: trimmed, sortOrder: subcategoryIds.length + index });
+  });
+
+  if (records.length > 0) {
+    await prisma.businessSubcategory.createMany({ data: records });
+  }
+  if (customRecords.length > 0) {
+    await prisma.businessSubcategory.createMany({ data: customRecords });
+  }
 }

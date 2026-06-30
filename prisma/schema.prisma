@@ -212,8 +212,6 @@ model Business {
   logo                   String?
   cover                  String?
   categoryId             String?
-  subcategoryId          String?
-  customSubcategory      String?
   city                   String?
   address                String?
   latitude               Float?
@@ -243,9 +241,9 @@ model Business {
   BusinessPage BusinessPage[]
   BusinessSubscription BusinessSubscription?
   BusinessTheme BusinessTheme?
+  BusinessSubcategory  BusinessSubcategory[]
   Category             Category?              @relation(fields: [categoryId], references: [id])
   Country Country?               @relation(fields: [countryId], references: [id])
-  Subcategory          Subcategory?           @relation(fields: [subcategoryId], references: [id])
   User                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   Commission            Commission[]
   Invoice               Invoice[]
@@ -260,7 +258,6 @@ model Business {
   @@index([countryId], map: "businesses_countryId_fkey")
   @@index([createdAt])
   @@index([status])
-  @@index([subcategoryId], map: "businesses_subcategoryId_fkey")
   @@index([userId])
   @@map("businesses")
 }
@@ -289,6 +286,7 @@ model Category {
   DynamicFieldDefinition DynamicFieldDefinition[]
   ProfessionalProfile     ProfessionalProfile[]
   Subcategory             Subcategory[]
+  ServiceTemplate         CategoryServiceTemplate[]
 
   @@index([type])
   @@map("categories")
@@ -846,6 +844,8 @@ model Post {
   lng         Float?
   hashtags    String?
   isPublic    Boolean        @default(true)
+  views       Int            @default(0)
+  shares      Int            @default(0)
   createdAt   DateTime       @default(now())
   updatedAt     DateTime         @updatedAt
   postType    posts_postType @default(POST)
@@ -1080,6 +1080,23 @@ model Service {
   @@map("services")
 }
 
+model CategoryServiceTemplate {
+  id          String    @id @default(cuid())
+  categoryId  String
+  name        String
+  description String?   @db.Text
+  price       Decimal?  @db.Decimal(10, 2)
+  duration    Int?
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  Category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId])
+  @@map("category_service_templates")
+}
+
 model Setting {
   id                String   @id @default(cuid())
   siteName          String   @default("Gateo")
@@ -1121,14 +1138,29 @@ model Subcategory {
   icon                      String?
   sortOrder                 Int                         @default(0)
   createdAt                 DateTime                    @default(now())
-  Business                Business[]
-  CommissionRule          CommissionRule[]
-  DynamicFieldDefinition DynamicFieldDefinition[]
-  ProfessionalProfile     ProfessionalProfile[]
-  Category                Category                  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  BusinessSubcategory       BusinessSubcategory[]
+  CommissionRule            CommissionRule[]
+  DynamicFieldDefinition    DynamicFieldDefinition[]
+  ProfessionalProfile       ProfessionalProfile[]
+  Category                  Category                    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@index([categoryId], map: "subcategories_categoryId_fkey")
   @@map("subcategories")
+}
+
+model BusinessSubcategory {
+  id            String       @id @default(cuid())
+  businessId    String
+  subcategoryId String?
+  customName    String?
+  sortOrder     Int          @default(0)
+  createdAt     DateTime     @default(now())
+  Business      Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  Subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@index([subcategoryId])
+  @@map("business_subcategories")
 }
 
 model SubscriptionPlan {

@@ -9,7 +9,7 @@ import {
   Loader2, Store, MapPin, Phone, Clock, FileText, CheckCircle,
   ArrowRight, ArrowLeft, Sparkles, Image, Link as LinkIcon, AlertCircle,
   AlertTriangle, Eye, EyeOff, Camera, X, Images, Globe, ChevronDown, List,
-  LayoutTemplate, ShoppingBag, Check, Palette
+  LayoutTemplate, ShoppingBag, Check, Palette, Plus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -83,8 +83,8 @@ export default function BusinessApplyPage() {
     slug: '',
     description: '',
     categoryId: '',
-    subcategoryId: '',
-    customSubcategory: '',
+    subcategoryIds: [] as string[],
+    customSubcategories: [] as string[],
     acceptedTerms: false,
     websiteType: '' as 'INTRO' | 'STORE' | '',
     designId: '',
@@ -202,7 +202,7 @@ export default function BusinessApplyPage() {
 
   // Check slug availability
   useEffect(() => {
-    if (!form.slug || form.slug.length < 2) {
+    if (!form.slug || form.slug.length < 1) {
       setSlugAvailable(null);
       return;
     }
@@ -298,7 +298,6 @@ export default function BusinessApplyPage() {
           designId: form.designId || undefined,
           themeColors: form.themeColors || undefined,
           workingHours: form.workingHours.filter((w) => w.open && w.close),
-          customSubcategory: form.customSubcategory || undefined,
           latitude: form.latitude ? parseFloat(form.latitude) : undefined,
           longitude: form.longitude ? parseFloat(form.longitude) : undefined,
           images: form.gallery.map((url) => ({ url, type: 'gallery', caption: '' })),
@@ -489,6 +488,50 @@ export default function BusinessApplyPage() {
   const [serviceForm, setServiceForm] = useState({ name: '', description: '', price: '', duration: '', image: '' });
   const [uploadingServiceImage, setUploadingServiceImage] = useState(false);
   const [editingServiceIndex, setEditingServiceIndex] = useState<number | null>(null);
+  const [serviceTemplates, setServiceTemplates] = useState<{ id: string; name: string; description: string | null; price: number | null; duration: number | null }[]>([]);
+  const [serviceTemplatesLoading, setServiceTemplatesLoading] = useState(false);
+
+  // Load service templates when category changes
+  useEffect(() => {
+    if (!form.categoryId) {
+      setServiceTemplates([]);
+      return;
+    }
+    setServiceTemplatesLoading(true);
+    fetch(`/api/admin/categories/${form.categoryId}/service-templates`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.templates) {
+          setServiceTemplates(data.templates.filter((t: any) => t.isActive !== false));
+        }
+      })
+      .catch(() => setServiceTemplates([]))
+      .finally(() => setServiceTemplatesLoading(false));
+  }, [form.categoryId]);
+
+  const addServiceTemplate = (template: typeof serviceTemplates[0]) => {
+    if (form.services.some((s) => s.name === template.name)) {
+      showToast('هذه الخدمة مضافة مسبقاً', 'info');
+      return;
+    }
+    if (form.services.length >= 20) {
+      showToast('يمكنك إضافة 20 خدمة كحد أقصى', 'error');
+      return;
+    }
+    setForm((prev) => ({
+      ...prev,
+      services: [
+        ...prev.services,
+        {
+          name: template.name,
+          description: template.description || '',
+          price: template.price !== null && template.price !== undefined ? String(template.price) : '',
+          duration: template.duration !== null && template.duration !== undefined ? String(template.duration) : '',
+          image: '',
+        },
+      ],
+    }));
+  };
 
   const handleServiceImageUpload = async (file: File) => {
     if (!file) return;
@@ -726,7 +769,7 @@ export default function BusinessApplyPage() {
                               الرابط المخصص <span className="text-red-500">*</span>
                             </label>
                             <div className="flex items-center gap-2">
-                              <span className="text-muted text-sm bg-slate-100 px-3 py-2.5 rounded-md shrink-0">gateo.com/business/</span>
+                              <span className="text-muted text-sm bg-slate-100 px-3 py-2.5 rounded-md shrink-0">gateo.com/b/</span>
                               <div className="flex-1 relative min-w-0">
                                 <input
                                   id="business-slug"
@@ -1238,6 +1281,33 @@ export default function BusinessApplyPage() {
                           </div>
                         </div>
 
+                        {/* Service Templates Quick Add */}
+                        {serviceTemplatesLoading ? (
+                          <div className="flex items-center justify-center gap-2 text-sm text-muted py-3">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            جاري تحميل الخدمات الشائعة...
+                          </div>
+                        ) : serviceTemplates.length > 0 ? (
+                          <div className="bg-slate-50 rounded-md p-4">
+                            <h3 className="font-bold text-foreground text-sm mb-3">اختر من الخدمات الشائعة</h3>
+                            <div className="flex flex-wrap gap-2">
+                              {serviceTemplates.map((template) => (
+                                <button
+                                  key={template.id}
+                                  type="button"
+                                  onClick={() => addServiceTemplate(template)}
+                                  disabled={form.services.some((s) => s.name === template.name)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-surface text-xs text-foreground hover:border-primary hover:bg-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                  {template.name}
+                                </button>
+                              ))}
+                            </div>
+                            <p className="text-xs text-muted mt-2">اضغط على الخدمة لإضافتها، ثم يمكنك تعديلها أو إضافة صورة.</p>
+                          </div>
+                        ) : null}
+
                         {/* Services List */}
                         {form.services.length > 0 && (
                           <div>
@@ -1734,7 +1804,7 @@ export default function BusinessApplyPage() {
                             </div>
                             <div>
                               <span className="text-muted">الرابط:</span>
-                              <span className="text-foreground mr-2 font-medium text-left dir-ltr inline-block">gateo.com/business/{form.slug}</span>
+                              <span className="text-foreground mr-2 font-medium text-left dir-ltr inline-block">gateo.com/b/{form.slug}</span>
                             </div>
                             <div>
                               <span className="text-muted">التصنيف الرئيسي:</span>
@@ -1745,7 +1815,12 @@ export default function BusinessApplyPage() {
                             <div>
                               <span className="text-muted">التصنيف الفرعي:</span>
                               <span className="text-foreground mr-2 font-medium">
-                                {selectedCategory?.subcategories?.find((s) => s.id === form.subcategoryId)?.name || form.customSubcategory || form.subcategoryId || '—'}
+                                {[
+                                  ...form.subcategoryIds
+                                    .map((id) => selectedCategory?.subcategories?.find((s) => s.id === id)?.name)
+                                    .filter(Boolean),
+                                  ...form.customSubcategories,
+                                ].join('، ') || '—'}
                               </span>
                             </div>
                             <div>
@@ -1773,7 +1848,7 @@ export default function BusinessApplyPage() {
                           <p className="text-sm text-primary-dark">
                             <Sparkles className="w-4 h-4 inline-block ml-1" />
                             بعد الإرسال، سيصبح لديك موقع إلكتروني خاص بعملك على الرابط:
-                            <strong className="block mt-1 text-primary-dark">gateo.com/business/{form.slug}</strong>
+                            <strong className="block mt-1 text-primary-dark">gateo.com/b/{form.slug}</strong>
                           </p>
                         </div>
                       </motion.div>
@@ -1814,8 +1889,8 @@ export default function BusinessApplyPage() {
         <DesignSetupSelector
           websiteType={form.websiteType}
           categoryId={form.categoryId}
-          subcategoryId={form.subcategoryId}
-          customSubcategory={form.customSubcategory}
+          subcategoryIds={form.subcategoryIds}
+          customSubcategories={form.customSubcategories}
           designId={form.designId}
           businessName={form.name}
           categories={categories}
@@ -1825,20 +1900,24 @@ export default function BusinessApplyPage() {
             setForm((prev) => ({
               ...prev,
               categoryId,
-              subcategoryId: '',
-              customSubcategory: '',
+              subcategoryIds: [],
+              customSubcategories: [],
             }))
           }
-          onSubcategoryChange={({ subcategoryId, customSubcategory }) =>
-            setForm((prev) => ({ ...prev, subcategoryId, customSubcategory }))
+          onSubcategoryChange={(subcategoryIds, customSubcategories) =>
+            setForm((prev) => ({ ...prev, subcategoryIds, customSubcategories }))
           }
           onDesignChange={(designId) => setForm((prev) => ({ ...prev, designId }))}
           onNext={() => {
             const newErrors: Record<string, string> = {};
             if (!form.websiteType) newErrors.websiteType = 'اختر نوع الموقع';
             if (!form.categoryId) newErrors.categoryId = 'اختر التصنيف الرئيسي';
-            if (!form.subcategoryId && !form.customSubcategory && subcategories.length > 0) {
-              newErrors.subcategoryId = 'اختر أو اكتب تصنيفاً فرعياً';
+            if (
+              form.subcategoryIds.length === 0 &&
+              form.customSubcategories.length === 0 &&
+              subcategories.length > 0
+            ) {
+              newErrors.subcategoryId = 'اختر أو اكتب تصنيفاً فرعياً واحداً على الأقل';
             }
             if (!form.designId) newErrors.designId = 'اختر تصميماً لموقعك';
             setErrors(newErrors);
@@ -2039,24 +2118,38 @@ export default function BusinessApplyPage() {
                       </div>
                       <div className="mb-2 flex-1 min-w-0">
                         <h4 className="font-bold text-foreground text-base truncate">{form.name || 'اسم العمل'}</h4>
-                        <p className="text-xs text-muted truncate">gateo.com/business/{form.slug || '...'}</p>
+                        <p className="text-xs text-muted truncate">gateo.com/b/{form.slug || '...'}</p>
                       </div>
                     </div>
 
                     <div className="mt-4 space-y-3">
                       {/* Category badges */}
-                      {(form.categoryId || form.subcategoryId) && (
+                      {(form.categoryId || form.subcategoryIds.length > 0 || form.customSubcategories.length > 0) && (
                         <div className="flex flex-wrap gap-1.5">
                           {form.categoryId && (
                             <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
                               {categories.find((c) => c.id === form.categoryId)?.name}
                             </span>
                           )}
-                          {(form.subcategoryId || form.customSubcategory) && (
-                            <span className="text-[10px] bg-secondary/10 text-secondary px-2 py-0.5 rounded-full font-medium">
-                              {selectedCategory?.subcategories?.find((s) => s.id === form.subcategoryId)?.name || form.customSubcategory}
+                          {form.subcategoryIds.map((id) => {
+                            const name = selectedCategory?.subcategories?.find((s) => s.id === id)?.name;
+                            return name ? (
+                              <span
+                                key={id}
+                                className="text-[10px] bg-secondary/10 text-secondary px-2 py-0.5 rounded-full font-medium"
+                              >
+                                {name}
+                              </span>
+                            ) : null;
+                          })}
+                          {form.customSubcategories.map((name) => (
+                            <span
+                              key={name}
+                              className="text-[10px] bg-secondary/10 text-secondary px-2 py-0.5 rounded-full font-medium"
+                            >
+                              {name}
                             </span>
-                          )}
+                          ))}
                         </div>
                       )}
 
