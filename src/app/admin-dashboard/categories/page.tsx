@@ -12,6 +12,7 @@ import {
   ChevronDown,
   ChevronUp,
   Scissors,
+  ShoppingBag,
   Clock,
   DollarSign,
   Check,
@@ -60,7 +61,7 @@ export default function AdminCategoriesPage() {
   const [formCategoryId, setFormCategoryId] = useState('');
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [deleteType, setDeleteType] = useState<'category' | 'subcategory' | 'serviceTemplate'>('category');
+  const [deleteType, setDeleteType] = useState<'category' | 'subcategory' | 'serviceTemplate' | 'productTemplate'>('category');
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
 
@@ -93,6 +94,33 @@ export default function AdminCategoriesPage() {
     description: '',
     price: '',
     duration: '',
+    isActive: true,
+    sortOrder: '0',
+  });
+
+  // Product templates state
+  interface ProductTemplate {
+    id: string;
+    categoryId: string;
+    name: string;
+    description: string | null;
+    price: number | null;
+    comparePrice: number | null;
+    quantity: number;
+    category: string | null;
+    isActive: boolean;
+    sortOrder: number;
+  }
+  const [productTemplates, setProductTemplates] = useState<ProductTemplate[]>([]);
+  const [productTemplatesLoading, setProductTemplatesLoading] = useState(false);
+  const [editingProductTemplate, setEditingProductTemplate] = useState<ProductTemplate | null>(null);
+  const [productTemplateForm, setProductTemplateForm] = useState({
+    name: '',
+    description: '',
+    price: '',
+    comparePrice: '',
+    quantity: '',
+    category: '',
     isActive: true,
     sortOrder: '0',
   });
@@ -140,11 +168,19 @@ export default function AdminCategoriesPage() {
     setServiceTemplates([]);
     setEditingServiceTemplate(null);
     setServiceTemplateForm({ name: '', description: '', price: '', duration: '', isActive: true, sortOrder: '0' });
+    setProductTemplates([]);
+    setEditingProductTemplate(null);
+    setProductTemplateForm({ name: '', description: '', price: '', comparePrice: '', quantity: '', category: '', isActive: true, sortOrder: '0' });
   };
 
   const resetServiceTemplateForm = () => {
     setEditingServiceTemplate(null);
     setServiceTemplateForm({ name: '', description: '', price: '', duration: '', isActive: true, sortOrder: '0' });
+  };
+
+  const resetProductTemplateForm = () => {
+    setEditingProductTemplate(null);
+    setProductTemplateForm({ name: '', description: '', price: '', comparePrice: '', quantity: '', category: '', isActive: true, sortOrder: '0' });
   };
 
   const fetchServiceTemplates = async (categoryId: string) => {
@@ -157,6 +193,18 @@ export default function AdminCategoriesPage() {
       }
     } catch (e) {}
     setServiceTemplatesLoading(false);
+  };
+
+  const fetchProductTemplates = async (categoryId: string) => {
+    setProductTemplatesLoading(true);
+    try {
+      const res = await fetch(`/api/admin/categories/${categoryId}/product-templates`);
+      if (res.ok) {
+        const data = await res.json();
+        setProductTemplates(data.templates || []);
+      }
+    } catch (e) {}
+    setProductTemplatesLoading(false);
   };
 
   const handleSaveServiceTemplate = async () => {
@@ -220,6 +268,71 @@ export default function AdminCategoriesPage() {
     });
   };
 
+  const handleSaveProductTemplate = async () => {
+    if (!editCategory) return;
+    if (!productTemplateForm.name.trim()) return;
+
+    setSaveLoading(true);
+    try {
+      const body = {
+        name: productTemplateForm.name.trim(),
+        description: productTemplateForm.description.trim() || undefined,
+        price: productTemplateForm.price !== '' ? Number(productTemplateForm.price) : undefined,
+        comparePrice: productTemplateForm.comparePrice !== '' ? Number(productTemplateForm.comparePrice) : undefined,
+        quantity: productTemplateForm.quantity !== '' ? Number(productTemplateForm.quantity) : undefined,
+        category: productTemplateForm.category.trim() || undefined,
+        isActive: productTemplateForm.isActive,
+        sortOrder: Number(productTemplateForm.sortOrder) || 0,
+      };
+
+      const url = editingProductTemplate
+        ? `/api/admin/categories/${editCategory.id}/product-templates/${editingProductTemplate.id}`
+        : `/api/admin/categories/${editCategory.id}/product-templates`;
+      const method = editingProductTemplate ? 'PATCH' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        resetProductTemplateForm();
+        fetchProductTemplates(editCategory.id);
+      }
+    } catch (e) {}
+    setSaveLoading(false);
+  };
+
+  const handleDeleteProductTemplate = async () => {
+    if (!deleteId || !editCategory) return;
+    setDeleteLoading(true);
+    try {
+      const res = await fetch(`/api/admin/categories/${editCategory.id}/product-templates/${deleteId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        fetchProductTemplates(editCategory.id);
+        setDeleteId(null);
+      }
+    } catch (e) {}
+    setDeleteLoading(false);
+  };
+
+  const openEditProductTemplate = (template: ProductTemplate) => {
+    setEditingProductTemplate(template);
+    setProductTemplateForm({
+      name: template.name,
+      description: template.description || '',
+      price: template.price !== null ? String(template.price) : '',
+      comparePrice: template.comparePrice !== null ? String(template.comparePrice) : '',
+      quantity: template.quantity !== null ? String(template.quantity) : '',
+      category: template.category || '',
+      isActive: template.isActive,
+      sortOrder: String(template.sortOrder),
+    });
+  };
+
   const openEditCategory = (cat: Category) => {
     setEditCategory(cat);
     setFormName(cat.name);
@@ -232,6 +345,7 @@ export default function AdminCategoriesPage() {
     setFormLadiesGate(cat.isLadiesGate);
     setShowCategoryForm(true);
     fetchServiceTemplates(cat.id);
+    fetchProductTemplates(cat.id);
   };
 
   const openEditSubcategory = (sub: Subcategory) => {
@@ -305,10 +419,23 @@ export default function AdminCategoriesPage() {
     if (!deleteId) return;
     setDeleteLoading(true);
     try {
-      const url = deleteType === 'category' ? `/api/admin/categories/${deleteId}` : `/api/admin/subcategories/${deleteId}`;
+      const url =
+        deleteType === 'category'
+          ? `/api/admin/categories/${deleteId}`
+          : deleteType === 'serviceTemplate'
+          ? `/api/admin/categories/${editCategory?.id}/service-templates/${deleteId}`
+          : deleteType === 'productTemplate'
+          ? `/api/admin/categories/${editCategory?.id}/product-templates/${deleteId}`
+          : `/api/admin/subcategories/${deleteId}`;
       const res = await fetch(url, { method: 'DELETE' });
       if (res.ok) {
-        fetchData();
+        if (deleteType === 'serviceTemplate') {
+          if (editCategory) fetchServiceTemplates(editCategory.id);
+        } else if (deleteType === 'productTemplate') {
+          if (editCategory) fetchProductTemplates(editCategory.id);
+        } else {
+          fetchData();
+        }
         setDeleteId(null);
       }
     } catch (e) {}
@@ -705,8 +832,176 @@ export default function AdminCategoriesPage() {
                   )}
                 </div>
               )}
-            </div>
-            <div className="flex gap-3 mt-6">
+
+                {/* Product Templates Section - only when editing a category */}
+                {!showSubForm && editCategory && (
+                  <div className="border-t border-border pt-4 mt-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <ShoppingBag className="w-4 h-4 text-secondary" />
+                      <h4 className="font-bold text-foreground text-sm">المنتجات الشائعة</h4>
+                    </div>
+                    <p className="text-xs text-muted mb-3">المنتجات التالية ستظهر كخيارات جاهزة عند إنشاء متجر بهذه الفئة.</p>
+
+                    {/* Add/Edit Product Template Form */}
+                    <div className="bg-slate-50 rounded-lg p-3 space-y-3 mb-3">
+                      <div>
+                        <label className="block text-xs font-medium text-foreground mb-1">اسم المنتج *</label>
+                        <input
+                          type="text"
+                          value={productTemplateForm.name}
+                          onChange={(e) => setProductTemplateForm((prev) => ({ ...prev, name: e.target.value }))}
+                          placeholder="مثال: عطر فاخر 100 مل"
+                          className="w-full px-3 py-2 rounded-md border border-border bg-surface text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-foreground mb-1">الوصف</label>
+                        <textarea
+                          value={productTemplateForm.description}
+                          onChange={(e) => setProductTemplateForm((prev) => ({ ...prev, description: e.target.value }))}
+                          rows={2}
+                          placeholder="وصف مختصر..."
+                          className="w-full px-3 py-2 rounded-md border border-border bg-surface text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-foreground mb-1">السعر</label>
+                          <div className="relative">
+                            <DollarSign className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
+                            <input
+                              type="number"
+                              value={productTemplateForm.price}
+                              onChange={(e) => setProductTemplateForm((prev) => ({ ...prev, price: e.target.value }))}
+                              placeholder="0"
+                              className="w-full pr-8 px-3 py-2 rounded-md border border-border bg-surface text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-foreground mb-1">السعر قبل الخصم</label>
+                          <div className="relative">
+                            <DollarSign className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
+                            <input
+                              type="number"
+                              value={productTemplateForm.comparePrice}
+                              onChange={(e) => setProductTemplateForm((prev) => ({ ...prev, comparePrice: e.target.value }))}
+                              placeholder="0"
+                              className="w-full pr-8 px-3 py-2 rounded-md border border-border bg-surface text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-foreground mb-1">الكمية</label>
+                          <input
+                            type="number"
+                            value={productTemplateForm.quantity}
+                            onChange={(e) => setProductTemplateForm((prev) => ({ ...prev, quantity: e.target.value }))}
+                            placeholder="1"
+                            className="w-full px-3 py-2 rounded-md border border-border bg-surface text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-foreground mb-1">التصنيف</label>
+                          <input
+                            type="text"
+                            value={productTemplateForm.category}
+                            onChange={(e) => setProductTemplateForm((prev) => ({ ...prev, category: e.target.value }))}
+                            placeholder="مثال: عطور"
+                            className="w-full px-3 py-2 rounded-md border border-border bg-surface text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          id="product-template-active"
+                          type="checkbox"
+                          checked={productTemplateForm.isActive}
+                          onChange={(e) => setProductTemplateForm((prev) => ({ ...prev, isActive: e.target.checked }))}
+                          className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                        />
+                        <label htmlFor="product-template-active" className="text-xs text-foreground">نشط</label>
+                      </div>
+                      <div className="flex gap-2">
+                        {editingProductTemplate && (
+                          <button
+                            type="button"
+                            onClick={resetProductTemplateForm}
+                            className="px-3 py-1.5 rounded-md border border-border text-xs text-foreground hover:bg-slate-100 transition-colors"
+                          >
+                            إلغاء
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleSaveProductTemplate}
+                          disabled={saveLoading || !productTemplateForm.name.trim()}
+                          className="flex-1 px-3 py-1.5 rounded-md bg-secondary text-white text-xs font-medium hover:bg-secondary-dark transition-colors disabled:opacity-50"
+                        >
+                          {saveLoading ? 'جاري...' : editingProductTemplate ? 'حفظ التعديل' : 'إضافة منتج'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Product Templates List */}
+                    {productTemplatesLoading ? (
+                      <div className="flex justify-center py-3">
+                        <Loader2 className="w-4 h-4 animate-spin text-secondary" />
+                      </div>
+                    ) : productTemplates.length === 0 ? (
+                      <p className="text-xs text-muted py-2">لا توجد منتجات شائعة مضافة.</p>
+                    ) : (
+                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                        {productTemplates.map((template) => (
+                          <div
+                            key={template.id}
+                            className={`flex items-center justify-between bg-surface rounded-lg border px-3 py-2 ${template.isActive ? 'border-border' : 'border-dashed border-slate-300 opacity-60'}`}
+                          >
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-foreground">{template.name}</span>
+                                {!template.isActive && <span className="text-[10px] text-muted">(غير نشط)</span>}
+                              </div>
+                              {template.description && (
+                                <p className="text-xs text-muted truncate">{template.description}</p>
+                              )}
+                              <div className="flex items-center gap-3 mt-0.5 text-xs text-muted">
+                                {template.price !== null && template.price !== undefined && (
+                                  <span>{template.price}</span>
+                                )}
+                                {template.comparePrice !== null && template.comparePrice !== undefined && (
+                                  <span className="line-through">{template.comparePrice}</span>
+                                )}
+                                {template.quantity !== null && <span>الكمية: {template.quantity}</span>}
+                                {template.category && <span>{template.category}</span>}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => openEditProductTemplate(template)}
+                                aria-label="تعديل"
+                                className="p-1.5 rounded-md text-muted hover:text-secondary hover:bg-secondary/10 transition-colors"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => { setDeleteId(template.id); setDeleteType('productTemplate'); }}
+                                aria-label="حذف"
+                                className="p-1.5 rounded-md text-muted hover:text-red-600 hover:bg-red-50 transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-3 mt-6">
               <button
                 onClick={resetForm}
                 className="flex-1 px-4 py-2.5 rounded-md border border-border text-foreground font-medium hover:bg-slate-50 transition-colors"
@@ -732,6 +1027,8 @@ export default function AdminCategoriesPage() {
             ? 'حذف الفئة'
             : deleteType === 'serviceTemplate'
             ? 'حذف الخدمة الشائعة'
+            : deleteType === 'productTemplate'
+            ? 'حذف المنتج الشائع'
             : 'حذف التصنيف الفرعي'
         }
         message={
@@ -739,9 +1036,11 @@ export default function AdminCategoriesPage() {
             ? 'هل أنت متأكد من حذف هذه الفئة؟ سيتم حذف جميع التصنيفات الفرعية المرتبطة.'
             : deleteType === 'serviceTemplate'
             ? 'هل أنت متأكد من حذف هذه الخدمة الشائعة؟'
+            : deleteType === 'productTemplate'
+            ? 'هل أنت متأكد من حذف هذا المنتج الشائع؟'
             : 'هل أنت متأكد من حذف هذا التصنيف الفرعي؟'
         }
-        onConfirm={deleteType === 'serviceTemplate' ? handleDeleteServiceTemplate : handleDelete}
+        onConfirm={deleteType === 'serviceTemplate' || deleteType === 'productTemplate' ? (deleteType === 'serviceTemplate' ? handleDeleteServiceTemplate : handleDeleteProductTemplate) : handleDelete}
         onCancel={() => setDeleteId(null)}
         isLoading={deleteLoading}
         confirmText="حذف"

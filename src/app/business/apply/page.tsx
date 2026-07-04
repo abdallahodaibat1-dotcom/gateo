@@ -9,7 +9,7 @@ import {
   Loader2, Store, MapPin, Phone, Clock, FileText, CheckCircle,
   ArrowRight, ArrowLeft, Sparkles, Image, Link as LinkIcon, AlertCircle,
   AlertTriangle, Eye, EyeOff, Camera, X, Images, Globe, ChevronDown, List,
-  LayoutTemplate, ShoppingBag, Check, Palette, Plus
+  LayoutTemplate, ShoppingBag, Check, Palette, Plus, Wand2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -76,6 +76,7 @@ export default function BusinessApplyPage() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [uploadingFashionHero, setUploadingFashionHero] = useState(false);
   const { showToast } = useToast();
 
   const [form, setForm] = useState({
@@ -104,6 +105,13 @@ export default function BusinessApplyPage() {
     phone: '',
     email: '',
     workingHours: DAYS,
+    fashionOne: {
+      fontHeading: '',
+      fontBody: '',
+      heroHeadline: '',
+      heroImage: '',
+      social: { facebook: '', instagram: '', tiktok: '', pinterest: '', youtube: '' },
+    },
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -318,6 +326,15 @@ export default function BusinessApplyPage() {
             image: p.image || undefined,
           })) : undefined,
           fieldValues,
+          fashionOne: form.designId === 'fashion-1'
+            ? {
+                fontHeading: form.fashionOne.fontHeading,
+                fontBody: form.fashionOne.fontBody,
+                heroHeadline: form.fashionOne.heroHeadline || undefined,
+                heroImage: form.fashionOne.heroImage || undefined,
+                socialLinks: form.fashionOne.social,
+              }
+            : undefined,
         }),
       });
       if (res.ok) {
@@ -432,6 +449,39 @@ export default function BusinessApplyPage() {
     }
   };
 
+  const handleFashionHeroUpload = async (file: File) => {
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      showToast('يرجى اختيار صورة بصيغة JPEG, PNG, WebP, أو GIF', 'error');
+      return;
+    }
+
+    setUploadingFashionHero(true);
+    try {
+      const compressedFile = await compressImage(file, { maxWidth: 1600, maxHeight: 900, quality: 0.88, maxSizeBytes: 4 * 1024 * 1024 });
+      const formData = new FormData();
+      formData.append('file', compressedFile);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setForm((prev) => ({ ...prev, fashionOne: { ...prev.fashionOne, heroImage: data.url } }));
+      } else {
+        showToast(data.error || 'فشل في رفع الصورة', 'error');
+      }
+    } catch (e) {
+      showToast('فشل في رفع الصورة', 'error');
+    } finally {
+      setUploadingFashionHero(false);
+    }
+  };
+
   const handleDrop = (
     e: React.DragEvent,
     field: 'logo' | 'cover',
@@ -491,6 +541,9 @@ export default function BusinessApplyPage() {
   const [serviceTemplates, setServiceTemplates] = useState<{ id: string; name: string; description: string | null; price: number | null; duration: number | null }[]>([]);
   const [serviceTemplatesLoading, setServiceTemplatesLoading] = useState(false);
 
+  // Auto-generate data state
+  const [autoDataLoading, setAutoDataLoading] = useState(false);
+
   // Load service templates when category changes
   useEffect(() => {
     if (!form.categoryId) {
@@ -531,6 +584,47 @@ export default function BusinessApplyPage() {
         },
       ],
     }));
+  };
+
+  const generateAutoData = async () => {
+    if (!form.categoryId) {
+      showToast('اختر التصنيف الرئيسي أولاً', 'error');
+      return;
+    }
+    setAutoDataLoading(true);
+    try {
+      const res = await fetch(`/api/categories/${form.categoryId}/generate-data?type=${form.websiteType || 'INTRO'}`);
+      if (!res.ok) throw new Error('فشل في توليد البيانات');
+      const data = await res.json();
+
+      if (form.websiteType === 'STORE') {
+        const incomingProducts: typeof form.products = data.products || [];
+        if (incomingProducts.length === 0) {
+          showToast('لا توجد منتجات شائعة لهذا التصنيف', 'info');
+        } else {
+          const existingNames = new Set(form.products.map((p) => p.name));
+          const newProducts = incomingProducts.filter((p: any) => !existingNames.has(p.name));
+          const combined = [...form.products, ...newProducts].slice(0, 20);
+          setForm((prev) => ({ ...prev, products: combined }));
+          showToast(`تمت إضافة ${newProducts.length} منتج تلقائياً`, 'success');
+        }
+      } else {
+        const incomingServices: typeof form.services = data.services || [];
+        if (incomingServices.length === 0) {
+          showToast('لا توجد خدمات شائعة لهذا التصنيف', 'info');
+        } else {
+          const existingNames = new Set(form.services.map((s) => s.name));
+          const newServices = incomingServices.filter((s: any) => !existingNames.has(s.name));
+          const combined = [...form.services, ...newServices].slice(0, 20);
+          setForm((prev) => ({ ...prev, services: combined }));
+          showToast(`تمت إضافة ${newServices.length} خدمة تلقائياً`, 'success');
+        }
+      }
+    } catch (e) {
+      showToast('فشل في توليد البيانات التلقائية', 'error');
+    } finally {
+      setAutoDataLoading(false);
+    }
   };
 
   const handleServiceImageUpload = async (file: File) => {
@@ -1148,6 +1242,137 @@ export default function BusinessApplyPage() {
                             {form.gallery.length}/10 صور — JPEG, PNG, WebP, GIF — يتم ضغط الصور تلقائياً
                           </p>
                         </div>
+
+                        {/* Fashion-1 (Dress Shop) identity */}
+                        {form.designId === 'fashion-1' && (
+                          <div className="rounded-lg border border-border bg-surface p-4 space-y-4">
+                            <div>
+                              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                                <Sparkles className="w-4 h-4 text-primary" />
+                                هوية متجر الفساتين
+                              </h3>
+                              <p className="text-xs text-muted mt-0.5">
+                                خصّصي خطوط متجركِ، عنوان الواجهة الرئيسية، وروابط التواصل الاجتماعي.
+                              </p>
+                            </div>
+
+                            {/* Fonts */}
+                            <div className="grid sm:grid-cols-2 gap-4">
+                              <div>
+                                <label htmlFor="fashion-font-heading" className="block text-sm font-medium text-foreground mb-1.5">خط العناوين</label>
+                                <select
+                                  id="fashion-font-heading"
+                                  value={form.fashionOne.fontHeading}
+                                  onChange={(e) => setForm((prev) => ({ ...prev, fashionOne: { ...prev.fashionOne, fontHeading: e.target.value } }))}
+                                  className="w-full px-4 py-2.5 rounded-md border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-surface text-foreground"
+                                >
+                                  <option value="">افتراضي القالب</option>
+                                  {['Playfair Display', 'Cormorant Garamond', 'Pinyon Script', 'Tajawal', 'Cairo', 'Almarai'].map((f) => (
+                                    <option key={f} value={f}>{f}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div>
+                                <label htmlFor="fashion-font-body" className="block text-sm font-medium text-foreground mb-1.5">خط النص</label>
+                                <select
+                                  id="fashion-font-body"
+                                  value={form.fashionOne.fontBody}
+                                  onChange={(e) => setForm((prev) => ({ ...prev, fashionOne: { ...prev.fashionOne, fontBody: e.target.value } }))}
+                                  className="w-full px-4 py-2.5 rounded-md border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-surface text-foreground"
+                                >
+                                  <option value="">افتراضي القالب</option>
+                                  {['Playfair Display', 'Cormorant Garamond', 'Pinyon Script', 'Tajawal', 'Cairo', 'Almarai', 'system-ui'].map((f) => (
+                                    <option key={f} value={f}>{f}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+
+                            {/* Hero headline */}
+                            <div>
+                              <label htmlFor="fashion-hero-headline" className="block text-sm font-medium text-foreground mb-1.5">عنوان الواجهة الرئيسية</label>
+                              <input
+                                id="fashion-hero-headline"
+                                type="text"
+                                value={form.fashionOne.heroHeadline}
+                                onChange={(e) => setForm((prev) => ({ ...prev, fashionOne: { ...prev.fashionOne, heroHeadline: e.target.value } }))}
+                                className="w-full px-4 py-2.5 rounded-md border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                placeholder="Wedding Dress"
+                              />
+                            </div>
+
+                            {/* Hero image */}
+                            <div>
+                              <label htmlFor="fashion-hero-upload" className="block text-sm font-medium text-foreground mb-1.5">صورة الواجهة الرئيسية</label>
+                              <div className="relative w-full h-44 rounded-md border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all cursor-pointer overflow-hidden">
+                                <input
+                                  id="fashion-hero-upload"
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) handleFashionHeroUpload(file);
+                                  }}
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                                {form.fashionOne.heroImage ? (
+                                  <img src={form.fashionOne.heroImage} alt="صورة الواجهة" className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="absolute inset-0 flex flex-col items-center justify-center text-muted">
+                                    <Camera className="w-10 h-10 mb-2" />
+                                    <span className="text-sm">اضغط لاختيار صورة الواجهة</span>
+                                  </div>
+                                )}
+                                {form.fashionOne.heroImage && !uploadingFashionHero && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setForm((prev) => ({ ...prev, fashionOne: { ...prev.fashionOne, heroImage: '' } }))}
+                                    aria-label="حذف الصورة"
+                                    title="حذف"
+                                    className="absolute top-2 left-2 z-20 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center shadow-sm"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                                {uploadingFashionHero && (
+                                  <div className="absolute inset-0 bg-surface/80 flex items-center justify-center z-20">
+                                    <div className="flex items-center gap-2 text-primary">
+                                      <Loader2 className="w-5 h-5 animate-spin" />
+                                      <span className="text-sm font-medium">جاري الرفع...</span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted mt-1.5">يفضل 1600×900 بكسل — JPEG, PNG, WebP, GIF — يتم ضغط الصورة تلقائياً</p>
+                            </div>
+
+                            {/* Social links */}
+                            <div className="grid sm:grid-cols-2 gap-4">
+                              {(
+                                [
+                                  { key: 'facebook', label: 'فيسبوك', placeholder: 'https://facebook.com/...' },
+                                  { key: 'instagram', label: 'إنستغرام', placeholder: 'https://instagram.com/...' },
+                                  { key: 'tiktok', label: 'تيك توك', placeholder: 'https://tiktok.com/@...' },
+                                  { key: 'pinterest', label: 'بينتيريست', placeholder: 'https://pinterest.com/...' },
+                                  { key: 'youtube', label: 'يوتيوب', placeholder: 'https://youtube.com/...' },
+                                ] as const
+                              ).map(({ key, label, placeholder }) => (
+                                <div key={key}>
+                                  <label htmlFor={`fashion-social-${key}`} className="block text-sm font-medium text-foreground mb-1.5">{label}</label>
+                                  <input
+                                    id={`fashion-social-${key}`}
+                                    type="text"
+                                    dir="ltr"
+                                    value={form.fashionOne.social[key]}
+                                    onChange={(e) => setForm((prev) => ({ ...prev, fashionOne: { ...prev.fashionOne, social: { ...prev.fashionOne.social, [key]: e.target.value } } }))}
+                                    className="w-full px-4 py-2.5 rounded-md border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-left"
+                                    placeholder={placeholder}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </motion.div>
                     )}
 
@@ -1289,7 +1514,22 @@ export default function BusinessApplyPage() {
                           </div>
                         ) : serviceTemplates.length > 0 ? (
                           <div className="bg-slate-50 rounded-md p-4">
-                            <h3 className="font-bold text-foreground text-sm mb-3">اختر من الخدمات الشائعة</h3>
+                            <div className="flex items-center justify-between mb-3">
+                              <h3 className="font-bold text-foreground text-sm">اختر من الخدمات الشائعة</h3>
+                              <button
+                                type="button"
+                                onClick={generateAutoData}
+                                disabled={autoDataLoading || form.services.length >= 20}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-xs font-medium shadow-sm hover:shadow-md transition-all disabled:opacity-50"
+                              >
+                                {autoDataLoading ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Wand2 className="w-3.5 h-3.5" />
+                                )}
+                                توليد الكل
+                              </button>
+                            </div>
                             <div className="flex flex-wrap gap-2">
                               {serviceTemplates.map((template) => (
                                 <button
@@ -1304,9 +1544,13 @@ export default function BusinessApplyPage() {
                                 </button>
                               ))}
                             </div>
-                            <p className="text-xs text-muted mt-2">اضغط على الخدمة لإضافتها، ثم يمكنك تعديلها أو إضافة صورة.</p>
+                            <p className="text-xs text-muted mt-2">اضغط على الخدمة لإضافتها، أو اضغط "توليد الكل" لإضافة جميع الخدمات دفعة واحدة.</p>
                           </div>
-                        ) : null}
+                        ) : (
+                          <div className="bg-slate-50 rounded-md p-4 flex items-center justify-between">
+                            <p className="text-xs text-muted">لا توجد خدمات شائعة مسجلة لهذا التصنيف.</p>
+                          </div>
+                        )}
 
                         {/* Services List */}
                         {form.services.length > 0 && (
@@ -1373,6 +1617,27 @@ export default function BusinessApplyPage() {
                         exit={{ opacity: 0, x: -20 }}
                         className="space-y-4"
                       >
+                        {/* Product Templates Quick Add / Auto Generate */}
+                        <div className="bg-slate-50 rounded-md p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <h3 className="font-bold text-foreground text-sm">المنتجات الشائعة</h3>
+                            <button
+                              type="button"
+                              onClick={generateAutoData}
+                              disabled={autoDataLoading || form.products.length >= 20}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-xs font-medium shadow-sm hover:shadow-md transition-all disabled:opacity-50"
+                            >
+                              {autoDataLoading ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Wand2 className="w-3.5 h-3.5" />
+                              )}
+                              توليد المنتجات
+                            </button>
+                          </div>
+                          <p className="text-xs text-muted">اضغط "توليد المنتجات" لإضافة قائمة المنتجات الشائعة لهذا التصنيف تلقائياً، ثم يمكنك تعديلها لاحقاً.</p>
+                        </div>
+
                         {/* Product Form */}
                         <div className="bg-slate-50 rounded-md p-4 space-y-4">
                           <h3 className="font-bold text-foreground text-sm">
@@ -1860,6 +2125,27 @@ export default function BusinessApplyPage() {
     return (
       <>
         <Navbar />
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <Link
+            href="/business/apply/ai"
+            className="block w-full p-6 mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Sparkles className="w-7 h-7" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">إنشاء موقعك بالذكاء الاصطناعي</h3>
+                  <p className="text-white/90 mt-1">
+                    أدخل القليل من المعلومات وسنقوم ببناء موقع كامل مع محتوى وتصميم وصور مناسبة.
+                  </p>
+                </div>
+              </div>
+              <ArrowRight className="w-6 h-6 flex-shrink-0" />
+            </div>
+          </Link>
+        </div>
         <PlanSelector
           plans={plans}
           loading={plansLoading}

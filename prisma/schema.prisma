@@ -203,6 +203,29 @@ model BusinessTheme {
   @@map("business_themes")
 }
 
+model BusinessAsset {
+  id          String   @id @default(cuid())
+  businessId  String
+  type        String   // HERO | ABOUT | SERVICE | PRODUCT | TEAM | GALLERY | LOGO | COVER | BRANCH
+  url         String
+  source      String   // USER | REFERENCE | AI_GENERATED
+  sourceUrl   String?  // original URL if extracted from reference
+  altText     String?
+  title       String?
+  role        String?  // hero-main | about-1 | service-dental ...
+  metadata    String?  @db.Text // JSON: analysis scores, dimensions, generatedPrompt, etc.
+  isPrimary   Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@index([businessId, type])
+  @@index([source])
+  @@map("business_assets")
+}
+
 model Business {
   id                     String                   @id @default(cuid())
   userId                 String                   @unique
@@ -241,6 +264,7 @@ model Business {
   BusinessPage BusinessPage[]
   BusinessSubscription BusinessSubscription?
   BusinessTheme BusinessTheme?
+  BusinessAsset BusinessAsset[]
   BusinessSubcategory  BusinessSubcategory[]
   Category             Category?              @relation(fields: [categoryId], references: [id])
   Country Country?               @relation(fields: [countryId], references: [id])
@@ -287,6 +311,7 @@ model Category {
   ProfessionalProfile     ProfessionalProfile[]
   Subcategory             Subcategory[]
   ServiceTemplate         CategoryServiceTemplate[]
+  ProductTemplate         CategoryProductTemplate[]
 
   @@index([type])
   @@map("categories")
@@ -1097,6 +1122,25 @@ model CategoryServiceTemplate {
   @@map("category_service_templates")
 }
 
+model CategoryProductTemplate {
+  id          String    @id @default(cuid())
+  categoryId  String
+  name        String
+  description String?   @db.Text
+  price       Decimal?  @db.Decimal(10, 2)
+  comparePrice Decimal? @db.Decimal(10, 2)
+  quantity    Int       @default(1)
+  category    String?
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  Category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId])
+  @@map("category_product_templates")
+}
+
 model Setting {
   id                String   @id @default(cuid())
   siteName          String   @default("Gateo")
@@ -1579,4 +1623,28 @@ enum professional_profiles_status {
   REJECTED
   SUSPENDED
   @@map("withdrawals")
+}
+
+model AiGenerationJob {
+  id            String    @id @default(cuid())
+  businessId    String
+  userId        String
+  type          String    // FULL_SITE | CONTENT | IMAGES | SECTION | THEME
+  provider      String    // openai | gemini | anthropic
+  model         String
+  prompt        String?   @db.LongText
+  output        String?   @db.LongText
+  status        String    @default("PENDING") // PENDING | RUNNING | COMPLETED | FAILED
+  error         String?   @db.Text
+  tokensUsed    Int?
+  costEstimate  Float?
+  metadata      String?   @db.Text // JSON: referenceUrls, imageSources, etc.
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([businessId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("ai_generation_jobs")
 }
