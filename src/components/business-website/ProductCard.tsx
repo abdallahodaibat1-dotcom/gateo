@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import { Heart, ShoppingCart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -8,6 +10,7 @@ import { useWishlist } from '@/components/WishlistProvider';
 import { useCart } from '@/components/CartProvider';
 import { useToast } from '@/components/ui/Toast';
 import { StarRating } from './StarRating';
+import { businessSlug } from '@/lib/utils';
 
 export interface ProductCardProduct {
   id: string;
@@ -98,7 +101,7 @@ export function ProductCard({
       >
         <div className="relative w-24 h-24 flex-shrink-0 rounded-md overflow-hidden bg-slate-100">
           {primaryImage ? (
-            <img src={primaryImage} alt={product.name} className="w-full h-full object-cover" />
+            <Image src={primaryImage} alt={product.name} fill className="object-cover" sizes="96px" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-slate-300">
               <ShoppingCart className="w-8 h-8" />
@@ -124,29 +127,37 @@ export function ProductCard({
     );
   }
 
+  const productHref = businessSlug
+    ? `/business/${businessSlug}/product/${product.id}`
+    : '#';
+
   return (
     <motion.div
       whileHover={{ y: -5 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group bg-[var(--theme-surface)] rounded-xl border border-border shadow-sm overflow-hidden flex flex-col"
+      className="group bg-[var(--theme-surface,var(--color-surface))] rounded-xl border border-border shadow-sm overflow-hidden flex flex-col"
       style={{ borderRadius: 'var(--theme-radius, 1rem)' }}
     >
-      <div className="aspect-[4/5] bg-slate-100 relative overflow-hidden">
+      <Link href={productHref} className="block aspect-[4/5] bg-slate-100 relative overflow-hidden">
         {primaryImage ? (
           <>
-            <img
+            <Image
               src={primaryImage}
               alt={product.name}
-              className="w-full h-full object-cover transition-opacity duration-500"
+              fill
+              className="object-cover transition-opacity duration-500"
               style={{ opacity: hoverImage && isHovered ? 0 : 1 }}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
             {hoverImage && (
-              <img
+              <Image
                 src={hoverImage}
                 alt={product.name}
-                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+                fill
+                className="absolute inset-0 object-cover transition-opacity duration-500"
                 style={{ opacity: isHovered ? 1 : 0 }}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
               />
             )}
           </>
@@ -189,15 +200,17 @@ export function ProductCard({
             <Heart className="w-4 h-4" fill={wishlisted ? 'currentColor' : 'none'} />
           </button>
         )}
-      </div>
+      </Link>
 
       <div className="p-4 flex-1 flex flex-col min-h-[160px]">
         {product.category && (
           <span className="text-[11px] text-muted mb-1">{product.category}</span>
         )}
-        <h3 className="font-bold text-foreground text-sm mb-1 line-clamp-2 min-h-[2.5rem]">
-          {product.name}
-        </h3>
+        <Link href={productHref}>
+          <h3 className="font-bold text-foreground text-sm mb-1 line-clamp-2 min-h-[2.5rem] hover:text-[var(--theme-primary,var(--color-primary))] transition-colors">
+            {product.name}
+          </h3>
+        </Link>
         <StarRating rating={product.rating || 0} size={12} showValue={showRatingValue} />
         <div className="mt-auto pt-3">
           <div className="flex items-center gap-2 mb-3">

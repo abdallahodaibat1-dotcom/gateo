@@ -47,8 +47,11 @@ interface BusinessApplication {
     avatar: string | null;
   } | null;
   category: { id: string; name: string } | null;
-  subcategory: { id: string; name: string } | null;
-  customSubcategory: string | null;
+  subcategories: { id: string; name: string; slug: string }[] | null;
+  customSubcategories: string[] | null;
+  // توافقية مؤقتة مع الحقول الفردية القديمة
+  subcategory?: { id: string; name: string } | null;
+  customSubcategory?: string | null;
 }
 
 export default function ApplicationsPage() {
@@ -268,9 +271,27 @@ export default function ApplicationsPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
                       {app.category && (
-                        <div className="flex items-center gap-2 text-sm text-muted">
-                          <Briefcase className="w-4 h-4 text-muted" />
-                          <span className="truncate">{app.category.name} {app.subcategory ? `› ${app.subcategory.name}` : app.customSubcategory ? `› ${app.customSubcategory}` : ''}</span>
+                        <div className="flex items-start gap-2 text-sm text-muted">
+                          <Briefcase className="w-4 h-4 text-muted flex-shrink-0 mt-0.5" />
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="truncate">{app.category.name}</span>
+                            {(app.subcategories ?? []).map((sub) => (
+                              <span
+                                key={sub.id}
+                                className="bg-secondary/10 text-secondary px-2 py-0.5 rounded-full text-xs"
+                              >
+                                {sub.name}
+                              </span>
+                            ))}
+                            {(app.customSubcategories ?? []).map((name, idx) => (
+                              <span
+                                key={`custom-${idx}`}
+                                className="bg-secondary/10 text-secondary px-2 py-0.5 rounded-full text-xs"
+                              >
+                                {name}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       )}
                       {app.city && (

@@ -47,13 +47,15 @@ export async function GET(req: NextRequest) {
     const scored = posts.map((post) => {
       const likes = post._count.Like;
       const comments = post._count.Comment;
+      const views = post.views || 0;
+      const shares = post.shares || 0;
       const ageHours = Math.max(1, (now.getTime() - post.createdAt.getTime()) / (1000 * 60 * 60));
-      // Engagement score: likes*2 + comments*3, decayed by age
-      const score = (likes * 2 + comments * 3) / Math.pow(ageHours, 0.3);
+      // Engagement score: likes*2 + comments*3 + views*0.1 + shares*2, decayed by age
+      const score = (likes * 2 + comments * 3 + views * 0.1 + shares * 2) / Math.pow(ageHours, 0.3);
       return {
         ...post,
         score,
-        stats: { likes, comments },
+        stats: { likes, comments, views, shares },
       };
     });
 

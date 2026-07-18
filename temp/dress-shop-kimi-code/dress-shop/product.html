@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل المنتج · Dress Shop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Tajawal:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/product.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container top-inner">
+            <div class="top-left">
+                <span>أهلاً بكِ، <a href="#" class="top-link">تسجيل الدخول</a></span>
+                <span class="sep">|</span>
+                <a href="#" class="top-link">حسابي</a>
+                <span class="sep">|</span>
+                <a href="#" class="top-link">قائمة الأمنيات</a>
+            </div>
+            <div class="top-right">
+                <select class="top-select"><option>AR</option><option>EN</option><option>FR</option></select>
+                <span class="sep">|</span>
+                <select class="top-select"><option>USD $</option><option>SAR ر.س</option><option>AED د.إ</option></select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container header-inner">
+            <a href="index.html" class="logo">
+                <span class="logo-script">Dress Shop</span>
+            </a>
+            <div class="header-search">
+                <input type="search" placeholder="ابحثي عن فستانكِ...">
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </div>
+            <div class="header-right">
+                <a href="tel:+0790000000" class="header-contact">
+                    <i class="fas fa-phone-alt"></i>
+                    <div>
+                        <span>اتصلي بنا</span>
+                        <strong>079-000-0000</strong>
+                    </div>
+                </a>
+                <a href="#" class="header-action" aria-label="حسابي">
+                    <i class="far fa-user"></i>
+                    <span>حسابي</span>
+                </a>
+                <a href="#" class="header-action" aria-label="المفضلة">
+                    <i class="far fa-heart"></i>
+                    <span class="badge">3</span>
+                </a>
+                <a href="#" class="header-action" aria-label="السلة">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="badge">2</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Nav -->
+    <nav class="main-nav">
+        <div class="container">
+            <ul class="nav-list">
+                <li><a href="index.html">الرئيسية</a></li>
+                <li class="has-mega">
+                    <a href="shop.html?cat=wedding">فساتين الزفاف <i class="fas fa-chevron-down"></i></a>
+                    <div class="mega-menu">
+                        <div class="mega-col">
+                            <h4>حسب الستايل</h4>
+                            <ul>
+                                <li><a href="shop.html?cat=wedding&style=princess">أميرة منفوش</a></li>
+                                <li><a href="shop.html?cat=wedding&style=mermaid">حورية البحر</a></li>
+                                <li><a href="shop.html?cat=wedding&style=aline">A-Line</a></li>
+                                <li><a href="shop.html?cat=wedding&style=sheath">مستقيم</a></li>
+                                <li><a href="shop.html?cat=wedding&style=short">قصير</a></li>
+                            </ul>
+                        </div>
+                        <div class="mega-col">
+                            <h4>حسب الكم</h4>
+                            <ul>
+                                <li><a href="shop.html?cat=wedding&sleeve=sleeveless">بدون أكمام</a></li>
+                                <li><a href="shop.html?cat=wedding&sleeve=long">أكمام طويلة</a></li>
+                                <li><a href="shop.html?cat=wedding&sleeve=lace">أكمام دانتيل</a></li>
+                                <li><a href="shop.html?cat=wedding&sleeve=one">كتف واحد</a></li>
+                                <li><a href="shop.html?cat=wedding&sleeve=off">كتف مكشوف</a></li>
+                            </ul>
+                        </div>
+                        <div class="mega-col mega-img">
+                            <img src="images/wedding/princess/2.jpg" alt="تشكيلة الزفاف">
+                            <div class="mega-img-text">
+                                <span>تشكيلة 2026</span>
+                                <strong>اكتشفي الجديد</strong>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="has-mega">
+                    <a href="shop.html?cat=evening">فساتين السهرة <i class="fas fa-chevron-down"></i></a>
+                    <div class="mega-menu">
+                        <div class="mega-col">
+                            <h4>حسب المناسبة</h4>
+                            <ul>
+                                <li><a href="shop.html?cat=evening&occ=engagement">سهرة خطوبة</a></li>
+                                <li><a href="shop.html?cat=evening&occ=wedding">سهرة زفاف</a></li>
+                                <li><a href="shop.html?cat=evening&occ=graduation">سهرة تخرج</a></li>
+                                <li><a href="shop.html?cat=evening&occ=birthday">سهرة عيد ميلاد</a></li>
+                                <li><a href="shop.html?cat=evening&occ=formal">سهرة رسمية</a></li>
+                            </ul>
+                        </div>
+                        <div class="mega-col">
+                            <h4>حسب اللون</h4>
+                            <ul>
+                                <li><a href="shop.html?cat=evening&color=red">أحمر</a></li>
+                                <li><a href="shop.html?cat=evening&color=black">أسود</a></li>
+                                <li><a href="shop.html?cat=evening&color=blue">أزرق ملكي</a></li>
+                                <li><a href="shop.html?cat=evening&color=pink">وردي</a></li>
+                                <li><a href="shop.html?cat=evening&color=gold">ذهبي</a></li>
+                            </ul>
+                        </div>
+                        <div class="mega-col mega-img">
+                            <img src="images/evening/red/2.jpg" alt="تشكيلة السهرة">
+                            <div class="mega-img-text">
+                                <span>تشكيلة حصرية</span>
+                                <strong>فساتين السهرة</strong>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="shop.html?cat=accessories">مستلزمات العروس</a></li>
+                <li><a href="index.html#services">خدماتنا</a></li>
+                <li><a href="index.html#reviews">آراء العميلات</a></li>
+                <li><a href="index.html#about">من نحن</a></li>
+                <li><a href="index.html#contact">تواصلي معنا</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <div class="container">
+            <a href="index.html"><i class="fas fa-home"></i> الرئيسية</a>
+            <span class="bc-sep"><i class="fas fa-chevron-left"></i></span>
+            <a href="shop.html" id="bc-cat-link">فساتين الزفاف</a>
+            <span class="bc-sep"><i class="fas fa-chevron-left"></i></span>
+            <span class="bc-current" id="bc-product-name">فستان الأميرة روز</span>
+        </div>
+    </div>
+
+    <!-- Product Detail -->
+    <section class="product-detail" id="productDetail">
+        <div class="container">
+            <div class="pd-grid">
+                <!-- Gallery -->
+                <div class="pd-gallery">
+                    <div class="pd-main-img" id="pdMainImg">
+                        <img id="mainProductImg" src="" alt="">
+                        <span class="pd-badge" id="mainBadge"></span>
+                        <button class="pd-zoom" id="zoomBtn" aria-label="تكبير"><i class="fas fa-search-plus"></i></button>
+                    </div>
+                    <div class="pd-thumbs" id="pdThumbs">
+                        <!-- Thumbs injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="pd-info">
+                    <span class="pd-cat" id="pdCategory">فستان زفاف</span>
+                    <h1 class="pd-name" id="pdName">فستان الأميرة روز</h1>
+                    
+                    <div class="pd-rating">
+                        <span class="stars" id="pdStars"></span>
+                        <span class="rating-num" id="pdRating">5.0</span>
+                        <a href="#reviews-tab" class="rating-link" id="pdReviewsCount">(128 تقييم)</a>
+                        <span class="rating-sep">|</span>
+                        <a href="#reviews-tab" class="rating-link"><i class="fas fa-pen"></i> اكتب تقييم</a>
+                    </div>
+
+                    <div class="pd-price">
+                        <span class="pd-price-now" id="pdPriceNow">$1,800</span>
+                        <span class="pd-price-old" id="pdPriceOld"></span>
+                        <span class="pd-price-badge" id="pdDiscount"></span>
+                    </div>
+                    <p class="pd-short-desc">
+                        فستان زفاف فاخر بتصميم أميرة منفوش، مزين بتطريز يدوي من الدانتيل الفرنسي،
+                        مصنوع من أجود الخامات لتمنحكِ إطلالة أحلامكِ في يومكِ المميز.
+                    </p>
+
+                    <!-- Variant: Color -->
+                    <div class="pd-variant">
+                        <label>اللون: <strong id="colorLabel">أبيض عاجي</strong></label>
+                        <div class="pd-swatches" id="colorSwatches">
+                            <button class="swatch active" style="background: #f8f5ed;" data-color="أبيض عاجي"></button>
+                            <button class="swatch" style="background: #fff;" data-color="أبيض نقي"></button>
+                            <button class="swatch" style="background: #f0e0d0;" data-color="شامبانيا"></button>
+                            <button class="swatch" style="background: #e8d4d0;" data-color="وردي بودرة"></button>
+                        </div>
+                    </div>
+
+                    <!-- Variant: Size -->
+                    <div class="pd-variant">
+                        <label>المقاس: <strong>اختاري مقاسكِ</strong></label>
+                        <div class="pd-sizes" id="sizeBtns">
+                            <button class="size-btn">XS</button>
+                            <button class="size-btn">S</button>
+                            <button class="size-btn active">M</button>
+                            <button class="size-btn">L</button>
+                            <button class="size-btn">XL</button>
+                            <button class="size-btn">XXL</button>
+                        </div>
+                        <a href="#" class="size-guide-link" id="openSizeGuide"><i class="fas fa-ruler"></i> دليل المقاسات</a>
+                    </div>
+
+                    <!-- Service Type -->
+                    <div class="pd-variant">
+                        <label>نوع الخدمة:</label>
+                        <div class="pd-service-toggle" id="serviceToggle">
+                            <button class="service-opt active" data-mode="buy">
+                                <i class="fas fa-tag"></i>
+                                <strong>شراء</strong>
+                                <span class="svc-price">$1,800</span>
+                            </button>
+                            <button class="service-opt" data-mode="rent">
+                                <i class="far fa-clock"></i>
+                                <strong>إيجار</strong>
+                                <span class="svc-price">$350 / يوم</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Stock -->
+                    <div class="pd-stock">
+                        <i class="fas fa-check-circle"></i>
+                        <span>متوفر في المخزون - جاهز للشحن خلال 3-5 أيام</span>
+                    </div>
+
+                    <!-- Quantity & Cart -->
+                    <div class="pd-cart">
+                        <div class="pd-qty">
+                            <button class="qty-btn" id="qtyMinus">−</button>
+                            <input type="number" id="qtyInput" value="1" min="1" max="10">
+                            <button class="qty-btn" id="qtyPlus">+</button>
+                        </div>
+                        <button class="btn-primary pd-add-cart" id="addToCart">
+                            <i class="fas fa-shopping-bag"></i> أضيفي للسلة
+                        </button>
+                        <button class="pd-wishlist" id="addWishlist" aria-label="المفضلة">
+                            <i class="far fa-heart"></i>
+                        </button>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="pd-quick-actions">
+                        <a href="#booking" class="pd-quick-link"><i class="far fa-calendar-check"></i> احجزي موعد قياس</a>
+                        <a href="https://wa.me/0790000000" class="pd-quick-link"><i class="fab fa-whatsapp"></i> استشيري عبر واتساب</a>
+                    </div>
+
+                    <!-- Trust -->
+                    <ul class="pd-trust">
+                        <li><i class="fas fa-truck"></i> توصيل مجاني داخل المدينة</li>
+                        <li><i class="fas fa-undo"></i> إرجاع مجاني خلال 14 يوم</li>
+                        <li><i class="fas fa-shield-alt"></i> ضمان سنة كاملة</li>
+                        <li><i class="fas fa-credit-card"></i> دفع آمن متعدد الوسائل</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tabs + Accordion Section -->
+            <div class="pd-tabs-section">
+                <!-- Top Tabs Navigation -->
+                <div class="pd-tabs-nav" id="pdTabsNav">
+                    <button class="pd-tab-btn active" data-tab="details">
+                        <i class="far fa-file-alt"></i> التفاصيل
+                    </button>
+                    <button class="pd-tab-btn" data-tab="specs">
+                        <i class="fas fa-list-ul"></i> المواصفات
+                    </button>
+                    <button class="pd-tab-btn" data-tab="shipping">
+                        <i class="fas fa-truck"></i> الشحن والإرجاع
+                    </button>
+                    <button class="pd-tab-btn" data-tab="reviews">
+                        <i class="far fa-star"></i> التقييمات
+                    </button>
+                    <button class="pd-tab-btn" data-tab="care">
+                        <i class="fas fa-tshirt"></i> العناية بالفستان
+                    </button>
+                </div>
+
+                <!-- Tab: Details (with Accordion inside) -->
+                <div class="pd-tab-panel active" id="tab-details">
+                    <div class="pd-tab-layout">
+                        <div class="pd-tab-content">
+                            <h2 class="pd-tab-title">Durable and Versatile</h2>
+                            <p>هذا الفستان الاستثنائي مصمم خصيصاً ليمنحكِ إطلالة الأميرات في أهم لحظات حياتكِ. يتميز بقصة منفوشة أنيقة مع ذيل طويل يضفي لمسة من الفخامة.</p>
+                            <p>مزين بتطريز يدوي دقيق من الدانتيل الفرنسي وحبيبات لؤلؤية تضيف بريقاً ساحراً تحت الأضواء.</p>
+
+                            <!-- Accordion Inside Tab -->
+                            <div class="pd-accordion" id="pdAccordion">
+                                <div class="pd-acc-item open">
+                                    <button class="pd-acc-head">
+                                        <span><i class="fas fa-gem"></i> المادة والسعة</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="pd-acc-body">
+                                        <p>مصنوع من أفخر أنواع الأقمشة: دانتيل فرنسي، تول إيطالي ناعم، ساتان حريري طبيعي. البطانة الداخلية من القطن المصري عالي الجودة.</p>
+                                    </div>
+                                </div>
+
+                                <div class="pd-acc-item">
+                                    <button class="pd-acc-head">
+                                        <span><i class="fas fa-ruler-combined"></i> المقاس والملاءمة</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="pd-acc-body">
+                                        <p>الفستان مصمم ليلائم الجسم بشكل مثالي مع قصة A-Line الكلاسيكية. ننصح بأخذ المقاس بعد إجراء التعديلات الأخيرة (قبل 4-6 أسابيع من المناسبة).</p>
+                                        <ul>
+                                            <li>XS: محيط الصدر 80 سم</li>
+                                            <li>S: محيط الصدر 84 سم</li>
+                                            <li>M: محيط الصدر 88 سم</li>
+                                            <li>L: محيط الصدر 92 سم</li>
+                                            <li>XL: محيط الصدر 96 سم</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="pd-acc-item">
+                                    <button class="pd-acc-head">
+                                        <span><i class="fas fa-magic"></i> تعليمات العناية</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="pd-acc-body">
+                                        <p>يُنصح بالتنظيف الجاف (Dry Clean) فقط. يُخزن في مكان جاف بعيداً عن الرطوبة وأشعة الشمس المباشرة. يُعلّق على شمّاعة مبطنة للحفاظ على شكله.</p>
+                                    </div>
+                                </div>
+
+                                <div class="pd-acc-item">
+                                    <button class="pd-acc-head">
+                                        <span><i class="fas fa-pencil-ruler"></i> التعديلات</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="pd-acc-body">
+                                        <p>نوفر خدمة تعديل مجانية خلال 30 يوماً من الشراء. يمكن تعديل طول الذيل، والأكمام، والمحيط بكل سهولة. خدمة التعديل متوفرة أيضاً للإيجار.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pd-tab-image">
+                            <img src="images/wedding/princess/2.jpg" alt="صورة إضافية">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Specs -->
+                <div class="pd-tab-panel" id="tab-specs">
+                    <h2 class="pd-tab-title">مواصفات المنتج</h2>
+                    <div class="specs-grid">
+                        <div class="spec-row"><span>العلامة التجارية</span><strong>Dress Shop Exclusive</strong></div>
+                        <div class="spec-row"><span>الموديل</span><strong>NUYASA-MIUAYSE-2026</strong></div>
+                        <div class="spec-row"><span>الفئة</span><strong id="specCategory">فستان زفاف</strong></div>
+                        <div class="spec-row"><span>الستايل</span><strong>Princess Ball Gown</strong></div>
+                        <div class="spec-row"><span>الخامة الرئيسية</span><strong>دانتيل فرنسي + تول إيطالي</strong></div>
+                        <div class="spec-row"><span>البطانة</span><strong>قطن مصري 100%</strong></div>
+                        <div class="spec-row"><span>التطريز</span><strong>يدوي - حبيبات لؤلؤية</strong></div>
+                        <div class="spec-row"><span>طول الذيل</span><strong>120 سم</strong></div>
+                        <div class="spec-row"><span>الموسم</span><strong>كل الفصول</strong></div>
+                        <div class="spec-row"><span>بلد الصنع</span><strong>إيطاليا (تصميم) + تركيا (تصنيع)</strong></div>
+                        <div class="spec-row"><span>الضمان</span><strong>سنة كاملة</strong></div>
+                        <div class="spec-row"><span>رقم القطعة</span><strong>DS-WD-2026-001</strong></div>
+                    </div>
+                </div>
+
+                <!-- Tab: Shipping -->
+                <div class="pd-tab-panel" id="tab-shipping">
+                    <h2 class="pd-tab-title">الشحن والإرجاع</h2>
+                    <div class="shipping-grid">
+                        <div class="ship-card">
+                            <i class="fas fa-truck"></i>
+                            <h3>التوصيل</h3>
+                            <p>توصيل مجاني داخل المدينة خلال 24-48 ساعة. للمدن الأخرى 3-5 أيام عمل مع تأمين شامل.</p>
+                            <span class="ship-price">مجاني للمدينة</span>
+                        </div>
+                        <div class="ship-card">
+                            <i class="fas fa-undo"></i>
+                            <h3>الإرجاع</h3>
+                            <p>يمكنكِ إرجاع أو استبدال المنتج خلال 14 يوماً من الاستلام بشرط أن يكون بحالته الأصلية.</p>
+                            <span class="ship-price">إرجاع مجاني</span>
+                        </div>
+                        <div class="ship-card">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>الضمان</h3>
+                            <p>ضمان شامل لمدة سنة ضد عيوب الصناعة. تعديلات مجانية خلال 30 يوماً من الشراء.</p>
+                            <span class="ship-price">سنة كاملة</span>
+                        </div>
+                        <div class="ship-card">
+                            <i class="fas fa-credit-card"></i>
+                            <h3>الدفع</h3>
+                            <p>نقبل جميع بطاقات الائتمان، Apple Pay، والمحافظ الإلكترونية. إمكانية الدفع عند الاستلام.</p>
+                            <span class="ship-price">آمن 100%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Reviews -->
+                <div class="pd-tab-panel" id="tab-reviews">
+                    <h2 class="pd-tab-title">آراء العميلات</h2>
+                    <div class="reviews-summary">
+                        <div class="rs-big">
+                            <strong id="rs-rating">4.9</strong>
+                            <div class="rs-stars" id="rs-stars"></div>
+                            <span>من ٥ — <span id="rs-count">128</span> تقييم</span>
+                        </div>
+                        <div class="rs-bars" id="rsBars">
+                            <div class="rs-row"><span>5 ★</span><div class="rs-bar"><div style="width:88%"></div></div><span>88%</span></div>
+                            <div class="rs-row"><span>4 ★</span><div class="rs-bar"><div style="width:9%"></div></div><span>9%</span></div>
+                            <div class="rs-row"><span>3 ★</span><div class="rs-bar"><div style="width:2%"></div></div><span>2%</span></div>
+                            <div class="rs-row"><span>2 ★</span><div class="rs-bar"><div style="width:1%"></div></div><span>1%</span></div>
+                            <div class="rs-row"><span>1 ★</span><div class="rs-bar"><div style="width:0%"></div></div><span>0%</span></div>
+                        </div>
+                    </div>
+
+                    <div class="reviews-list" id="reviewsList">
+                        <!-- Reviews injected via JS -->
+                    </div>
+
+                    <button class="btn-outline" style="margin-top:24px;">عرض جميع التقييمات (128)</button>
+                </div>
+
+                <!-- Tab: Care -->
+                <div class="pd-tab-panel" id="tab-care">
+                    <h2 class="pd-tab-title">تعليمات العناية بالفستان</h2>
+                    <div class="care-grid">
+                        <div class="care-item">
+                            <div class="care-icon"><i class="fas fa-tint"></i></div>
+                            <h4>التنظيف</h4>
+                            <p>تنظيف جاف فقط (Dry Clean). لا تنقعيه في الماء ولا تستخدمي الغسالة أبداً.</p>
+                        </div>
+                        <div class="care-item">
+                            <div class="care-icon"><i class="fas fa-sun"></i></div>
+                            <h4>التخزين</h4>
+                            <p>احفظيه في كيس قماشي (غير بلاستيكي) في مكان جاف ومظلل بعيداً عن الشمس.</p>
+                        </div>
+                        <div class="care-item">
+                            <div class="care-icon"><i class="fas fa-tshirt"></i></div>
+                            <h4>الكي</h4>
+                            <p>كي على درجة حرارة منخفضة مع قماش قطني بين المكواة والفستان. تجنبي البخار المباشر.</p>
+                        </div>
+                        <div class="care-item">
+                            <div class="care-icon"><i class="fas fa-fire-alt"></i></div>
+                            <h4>البقع</h4>
+                            <p>أزيلي البقع فوراً بقطعة قماش مبللة. لا تفركي. استشيري خبيرة تنظيف متخصصة.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Products -->
+            <div class="related-products">
+                <div class="section-head-simple">
+                    <h2 class="section-title-simple">YOU MAY <em>Also Like</em></h2>
+                    <p class="section-sub-simple">منتجات قد تعجبكِ أيضاً</p>
+                </div>
+                <div class="related-grid" id="relatedGrid"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sticky Add to Cart (mobile) -->
+    <div class="sticky-cart" id="stickyCart">
+        <div class="container sticky-inner">
+            <div class="sticky-info">
+                <img id="stickyImg" src="" alt="">
+                <div>
+                    <strong id="stickyName">فستان الأميرة روز</strong>
+                    <span id="stickyPrice">$1,800</span>
+                </div>
+            </div>
+            <button class="btn-primary" id="stickyAdd">
+                <i class="fas fa-shopping-bag"></i> أضيفي للسلة
+            </button>
+        </div>
+    </div>
+
+    <!-- Newsletter -->
+    <section class="newsletter">
+        <div class="container">
+            <div class="news-card">
+                <span class="news-tag">Newsletter</span>
+                <h3>اشتركي في نشرتنا البريدية</h3>
+                <p>كوني أول من يعرف عن التشكيلات الجديدة والعروض الحصرية</p>
+                <form class="news-form">
+                    <input type="email" placeholder="بريدكِ الإلكتروني" required>
+                    <button type="submit">اشتراك <i class="fas fa-envelope"></i></button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-top">
+            <div class="container footer-grid">
+                <div class="footer-col footer-brand">
+                    <a href="index.html" class="logo footer-logo"><span class="logo-script">Dress Shop</span></a>
+                    <p>متجر متخصص بفساتين الزفاف والسهرة ومستلزمات العروس الفاخرة منذ ٢٠١٥.</p>
+                    <div class="social">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-tiktok"></i></a>
+                        <a href="#"><i class="fab fa-pinterest-p"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>INFORMATION</h4>
+                    <ul>
+                        <li><a href="index.html#about">من نحن</a></li>
+                        <li><a href="#">التوصيل</a></li>
+                        <li><a href="#">الإرجاع</a></li>
+                        <li><a href="#">الشروط والأحكام</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>SHOP</h4>
+                    <ul>
+                        <li><a href="shop.html?cat=wedding">فساتين زفاف</a></li>
+                        <li><a href="shop.html?cat=evening">فساتين سهرة</a></li>
+                        <li><a href="shop.html?cat=accessories">مستلزمات</a></li>
+                        <li><a href="shop.html">جميع المنتجات</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>ACCOUNT</h4>
+                    <ul>
+                        <li><a href="#">حسابي</a></li>
+                        <li><a href="#">طلباتي</a></li>
+                        <li><a href="#">المفضلة</a></li>
+                        <li><a href="#">تتبع الطلب</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col footer-contact">
+                    <h4>CONTACT US</h4>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> شارع الموضة، المدينة</li>
+                        <li><i class="fas fa-phone"></i> 079-000-0000</li>
+                        <li><i class="fab fa-whatsapp"></i> 079-000-0000</li>
+                        <li><i class="far fa-clock"></i> يومياً ١٠ص - ١٠م</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <div class="footer-bottom-inner">
+                    <p>© 2026 <strong>Dress Shop</strong> · جميع الحقوق محفوظة · صُنع بحب 💕</p>
+                    <div class="payment">
+                        <span>طرق الدفع:</span>
+                        <i class="fab fa-cc-visa"></i>
+                        <i class="fab fa-cc-mastercard"></i>
+                        <i class="fab fa-cc-amex"></i>
+                        <i class="fab fa-cc-paypal"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating Actions -->
+    <div class="float-actions">
+        <a href="https://wa.me/0790000000" class="float-btn whatsapp"><i class="fab fa-whatsapp"></i></a>
+        <button class="float-btn scroll-top" id="scrollTop"><i class="fas fa-chevron-up"></i></button>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Size Guide Modal -->
+    <div class="modal" id="sizeGuideModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="closeSizeGuide"><i class="fas fa-times"></i></button>
+            <h3>دليل المقاسات</h3>
+            <table class="size-table">
+                <thead>
+                    <tr><th>المقاس</th><th>الصدر (سم)</th><th>الخصر (سم)</th><th>الورك (سم)</th><th>الطول (سم)</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>XS</td><td>80</td><td>62</td><td>88</td><td>160</td></tr>
+                    <tr><td>S</td><td>84</td><td>66</td><td>92</td><td>162</td></tr>
+                    <tr><td>M</td><td>88</td><td>70</td><td>96</td><td>164</td></tr>
+                    <tr><td>L</td><td>92</td><td>74</td><td>100</td><td>166</td></tr>
+                    <tr><td>XL</td><td>96</td><td>78</td><td>104</td><td>168</td></tr>
+                    <tr><td>XXL</td><td>100</td><td>82</td><td>108</td><td>170</td></tr>
+                </tbody>
+            </table>
+            <p class="modal-note">هل تحتاجين مساعدة في اختيار المقاس؟ <a href="https://wa.me/0790000000">تواصلي معنا</a></p>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/product.js"></script>
+</body>
+</html>

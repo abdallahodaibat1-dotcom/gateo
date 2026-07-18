@@ -74,7 +74,6 @@ async function main() {
     slug: TEST_SLUG,
     description: 'موقع تعريفي تجريبي لاختبار مكتبة التصاميم.',
     categoryId: category.id,
-    subcategoryId: subcategory?.id || undefined,
     acceptedTerms: true,
     websiteType: 'INTRO',
     designId: 'intro-medical',
@@ -128,6 +127,12 @@ async function main() {
     include: { BusinessTheme: true },
   });
   if (!business?.BusinessTheme) throw new Error('Theme not created');
+
+  if (subcategory) {
+    await prisma.businessSubcategory.create({
+      data: { businessId: business.id, subcategoryId: subcategory.id },
+    });
+  }
 
   console.log('✅ Intro site created:', TEST_SLUG);
   console.log('🎨 Theme record:', {

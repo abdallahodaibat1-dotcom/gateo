@@ -19,6 +19,15 @@ export interface TemplateProduct {
   createdAt?: string | Date;
 }
 
+export interface TemplateService {
+  id: string;
+  name: string;
+  description?: string | null;
+  price?: number | string | null;
+  duration?: number | null;
+  image?: string | null;
+}
+
 export interface TemplatePost {
   id: string;
   title: string;
@@ -47,6 +56,7 @@ export interface TemplateBusiness {
   city: string | null;
   address?: string | null;
   workingHours?: { day: string; open: string; close: string }[] | Record<string, string> | string | null;
+  images?: { url: string; type?: string; caption?: string }[] | null;
   avgRating: number;
   reviewCount: number;
   theme: {
@@ -60,11 +70,14 @@ export interface TemplateBusiness {
     borderRadius: string;
     buttonStyle: string;
     homeTemplate?: string;
+    sections?: { id: string; type: string; title?: string; enabled: boolean; order: number; settings?: Record<string, unknown> }[];
   } | null;
   pages: TemplateBusinessPage[];
+  services?: TemplateService[];
   products?: TemplateProduct[];
   posts?: TemplatePost[];
   reviews?: TemplateReview[];
+  assets?: { type: string; url: string; role?: string | null; altText?: string | null }[];
 }
 
 export function formatWorkingHours(

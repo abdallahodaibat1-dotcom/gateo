@@ -74,8 +74,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       posts: posts.map((post) => ({
         ...post,
+        user: post.User,
+        business: post.Business,
+        _count: { likes: (post._count as any).Like, comments: (post._count as any).Comment, views: post.views, shares: post.shares },
         isLiked: post.Like && post.Like.length > 0,
         isSaved: post.SavedPosts && post.SavedPosts.length > 0,
+        User: undefined,
+        Business: undefined,
         Like: undefined,
         SavedPosts: undefined,
       })),
@@ -117,7 +122,15 @@ export async function POST(req: NextRequest) {
     // Award points for creating a post
     await awardPoints(session.user.id, 10, 'نشر منشور جديد', 'EARN', post.id).catch(() => {});
 
-    return NextResponse.json({ post }, { status: 201 });
+    return NextResponse.json({
+      post: {
+        ...post,
+        user: post.User,
+        _count: { likes: (post._count as any).Like, comments: (post._count as any).Comment, views: post.views, shares: post.shares },
+        User: undefined,
+        Like: undefined,
+      },
+    }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

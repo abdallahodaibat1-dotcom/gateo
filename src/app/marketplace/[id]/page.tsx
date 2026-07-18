@@ -16,10 +16,17 @@ import {
   CheckCircle,
   Tag,
   Shield,
+  ShoppingCart,
+  Minus,
+  Plus,
+  Heart,
 } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useCart } from '@/components/CartProvider';
+import { useToast } from '@/components/ui/Toast';
+import { MarketplaceCartDrawer } from '@/components/marketplace/MarketplaceCartDrawer';
 
 interface Listing {
   id: string;
@@ -81,6 +88,10 @@ export default function MarketplaceProductPage() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [error, setError] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [cartOpen, setCartOpen] = useState(false);
+  const { addItem } = useCart();
+  const { showToast } = useToast();
 
   const fetchListing = useCallback(async () => {
     try {
@@ -108,6 +119,25 @@ export default function MarketplaceProductPage() {
       console.error(e);
     }
     router.push(`/business/${listing.product.business.slug || listing.product.business.id}?product=${listing.product.id}`);
+  };
+
+  const handleAddToCart = () => {
+    if (!listing) return;
+    addItem({
+      productId: listing.product.id,
+      businessId: listing.product.business.id,
+      businessName: listing.product.business.name,
+      businessSlug: listing.product.business.slug || listing.product.business.id,
+      name: listing.product.name,
+      price: listing.product.price,
+      image: listing.product.images?.[0]?.url || null,
+    });
+    showToast('تمت إضافة المنتج للسلة', 'success');
+  };
+
+  const handleBuyNow = () => {
+    handleAddToCart();
+    setCartOpen(true);
   };
 
   if (loading) {
@@ -228,20 +258,61 @@ export default function MarketplaceProductPage() {
               )}
 
               <div className="mt-auto space-y-3">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center border border-border rounded-xl overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="w-10 h-12 flex items-center justify-center hover:bg-slate-50 transition"
+                      aria-label="تقليل"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <span className="w-12 text-center font-bold">{quantity}</span>
+                    <button
+                      type="button"
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="w-10 h-12 flex items-center justify-center hover:bg-slate-50 transition"
+                      aria-label="زيادة"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddToCart}
+                    className="flex-1 h-12 rounded-xl bg-primary text-white font-bold flex items-center justify-center gap-2 hover:bg-primary-dark transition active:scale-95"
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    أضف للسلة
+                  </button>
+                </div>
+                
+                <button
+                  onClick={handleBuyNow}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-base shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                >
+                  <ShoppingBag className="w-5 h-5" />
+                  شراء الآن
+                </button>
+                
                 <button
                   onClick={handleBuyClick}
-                  className="w-full py-4 rounded-md bg-primary text-white font-bold text-lg shadow-sm hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl border-2 border-primary text-primary font-bold text-base hover:bg-primary/5 transition flex items-center justify-center gap-2"
                 >
                   <ExternalLink className="w-5 h-5" />
                   الشراء من موقع النشاط
                 </button>
+                
                 <p className="text-xs text-muted text-center">
-                  سيتم تحويلك إلى موقع صاحب النشاط لإتمام الطلب.
+                  خيار "شراء الآن" يضيف المنتج للسلة ويفتحها مباشرة. خيار "الشراء من موقع النشاط" يحولك لصفحة البائع.
                 </p>
               </div>
             </div>
           </div>
         </motion.div>
+
+        <MarketplaceCartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
 
         {/* Business Card */}
         <motion.div

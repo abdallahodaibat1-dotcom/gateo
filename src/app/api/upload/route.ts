@@ -152,51 +152,114 @@ export async function POST(req: NextRequest) {
       const thumbFilename = `${timestamp}-${random}-thumb.jpg`;
       const thumbPath = join(uploadsDir, thumbFilename);
 
-      // Video filter: 720p landscape for posts, 720p portrait (9:16) for reels
-      const videoFilter = isReel
-        ? 'scale=720:-2:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black'
-        : 'scale=-2:720:force_original_aspect_ratio=decrease';
+      // Probe input codecs to decide whether we can remux without re-encoding.
+      // Reels are always re-encoded to enforce 9:16 portrait like Instagram.
+      let canCopy = false;
+      if (!isReel) {
+        try {
+          const probeOutput = await new Promise<string>((resolve) => {
+            const ffprobe = spawn('ffprobe', [
+              '-v', 'error',
+              '-select_streams', 'v:0',
+              '-show_entries', 'stream=codec_name',
+              '-of', 'default=noprint_wrappers=1:nokey=1',
+              rawPath,
+            ]);
+            let output = '';
+            ffprobe.stdout.on('data', (d) => { output += d.toString(); });
+            ffprobe.on('close', () => resolve(output.trim().toLowerCase()));
+          });
+          const audioCodec = await new Promise<string>((resolve) => {
+            const ffprobe = spawn('ffprobe', [
+              '-v', 'error',
+              '-select_streams', 'a:0',
+              '-show_entries', 'stream=codec_name',
+              '-of', 'default=noprint_wrappers=1:nokey=1',
+              rawPath,
+            ]);
+            let output = '';
+            ffprobe.stdout.on('data', (d) => { output += d.toString(); });
+            ffprobe.on('close', () => resolve(output.trim().toLowerCase()));
+          });
+          canCopy = probeOutput === 'h264' && (audioCodec === 'aac' || audioCodec === '');
+        } catch {
+          canCopy = false;
+        }
+      }
 
-      await new Promise<void>((resolve, reject) => {
-        const ffmpeg = spawn('ffmpeg', [
-          '-y',
-          '-i', rawPath,
-          '-c:v', 'libx264',
-          '-preset', 'fast',
-          '-crf', '28',
-          '-maxrate', isReel ? '4M' : '2M',
-          '-bufsize', isReel ? '8M' : '4M',
-          '-vf', videoFilter,
-          '-c:a', 'aac',
-          '-b:a', '128k',
-          '-movflags', '+faststart',
-          '-f', 'mp4',
-          outPath,
-        ]);
+      // Try remuxing without re-encoding first (faster, preserves quality)
+      let remuxSucceeded = false;
+      if (canCopy) {
+        try {
+          await new Promise<void>((resolve, reject) => {
+            const ffmpeg = spawn('ffmpeg', [
+              '-y',
+              '-i', rawPath,
+              '-c', 'copy',
+              '-movflags', '+faststart',
+              '-f', 'mp4',
+              outPath,
+            ]);
+            ffmpeg.on('close', (code) => {
+              if (code === 0) resolve(); else reject(new Error(`remux failed with code ${code}`));
+            });
+            ffmpeg.on('error', reject);
+          });
+          remuxSucceeded = true;
+        } catch (remuxErr) {
+          console.log('Remux failed, falling back to transcode:', remuxErr);
+          try { await unlink(outPath); } catch {}
+        }
+      }
 
-        let stderr = '';
-        ffmpeg.stderr.on('data', (data) => {
-          stderr += data.toString();
-        });
+      // Fall back to transcoding if remux is not possible or failed
+      if (!remuxSucceeded) {
+        // Video filter: 720p landscape for posts, 720p portrait (9:16) for reels
+        const videoFilter = isReel
+          ? 'scale=720:-2:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black'
+          : 'scale=-2:720:force_original_aspect_ratio=decrease';
 
-        ffmpeg.on('close', async (code) => {
-          if (code === 0) {
-            resolve();
-          } else {
+        await new Promise<void>((resolve, reject) => {
+          const ffmpeg = spawn('ffmpeg', [
+            '-y',
+            '-i', rawPath,
+            '-c:v', 'libx264',
+            '-preset', isReel ? 'veryfast' : 'fast',
+            '-crf', isReel ? '26' : '28',
+            '-maxrate', isReel ? '4M' : '2M',
+            '-bufsize', isReel ? '8M' : '4M',
+            '-vf', videoFilter,
+            '-c:a', 'aac',
+            '-b:a', '128k',
+            '-movflags', '+faststart',
+            '-f', 'mp4',
+            outPath,
+          ]);
+
+          let stderr = '';
+          ffmpeg.stderr.on('data', (data) => {
+            stderr += data.toString();
+          });
+
+          ffmpeg.on('close', async (code) => {
+            if (code === 0) {
+              resolve();
+            } else {
+              // cleanup
+              try { await unlink(rawPath); } catch {}
+              try { await unlink(outPath); } catch {}
+              reject(new Error(`ffmpeg failed with code ${code}: ${stderr.slice(-200)}`));
+            }
+          });
+
+          ffmpeg.on('error', (err) => {
             // cleanup
-            try { await unlink(rawPath); } catch {}
-            try { await unlink(outPath); } catch {}
-            reject(new Error(`ffmpeg failed with code ${code}: ${stderr.slice(-200)}`));
-          }
+            try { unlink(rawPath); } catch {}
+            try { unlink(outPath); } catch {}
+            reject(err);
+          });
         });
-
-        ffmpeg.on('error', (err) => {
-          // cleanup
-          try { unlink(rawPath); } catch {}
-          try { unlink(outPath); } catch {}
-          reject(err);
-        });
-      });
+      }
 
       // Generate thumbnail at 1s mark
       try {

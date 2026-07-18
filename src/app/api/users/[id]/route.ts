@@ -91,6 +91,17 @@ export async function GET(
       : null;
 
     const normalizedUser: any = { ...user };
+    normalizedUser.profile = user.Profile || null;
+    normalizedUser.business = user.Business || null;
+    delete normalizedUser.Profile;
+    delete normalizedUser.Business;
+    delete normalizedUser.ProfessionalProfile;
+    normalizedUser._count = {
+      posts: user._count?.Post || 0,
+      followers: user._count?.follows_follows_followingIdTousers || 0,
+      following: user._count?.follows_follows_followerIdTousers || 0,
+    };
+
     if (user?.ProfessionalProfile) {
       const prof = user.ProfessionalProfile as any;
       normalizedUser.professionalProfile = {
@@ -108,7 +119,7 @@ export async function GET(
     return NextResponse.json(
       {
         ...normalizedUser,
-        completionPercent: calculateCompletionPercent(user.Profile as Record<string, unknown> | null),
+        completionPercent: calculateCompletionPercent(normalizedUser.profile as Record<string, unknown> | null),
         isFollowing: !!isFollowing,
       },
       {

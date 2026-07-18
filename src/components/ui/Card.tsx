@@ -5,10 +5,11 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   padding?: 'none' | 'sm' | 'md' | 'lg';
   shadow?: 'none' | 'sm' | 'md';
   border?: boolean;
+  themed?: boolean;
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ children, className, padding = 'md', shadow = 'sm', border = true, ...props }, ref) => {
+  ({ children, className, padding = 'md', shadow = 'sm', border = true, themed = false, style, ...props }, ref) => {
     const paddings = {
       none: '',
       sm: 'p-4',
@@ -26,12 +27,17 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'bg-surface rounded-lg overflow-hidden',
+          'rounded-lg overflow-hidden',
+          themed ? 'bg-[var(--theme-surface,var(--color-surface))]' : 'bg-surface',
           border && 'border border-border',
           shadows[shadow],
           paddings[padding],
           className
         )}
+        style={{
+          borderRadius: themed ? 'var(--theme-radius, 1rem)' : undefined,
+          ...style,
+        }}
         {...props}
       >
         {children}

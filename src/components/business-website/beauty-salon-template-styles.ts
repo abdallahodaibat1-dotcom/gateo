@@ -3,7 +3,7 @@ export const TEMPLATE_STYLES = `
 
 /* ============ Reset & Base ============ */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; scroll-padding-top: 90px; }
   body {
     font-family: 'Tajawal', sans-serif;
     background: #fbf7f4;
@@ -107,7 +107,7 @@ export const TEMPLATE_STYLES = `
   }
   .hero-bg {
     position: absolute; inset: 0;
-    background-image: url('/templates/beauty-salon/hero-hair.jpg');
+    background-image: var(--hero-image, url('/templates/beauty-salon/hero-hair.jpg'));
     background-size: cover;
     background-position: center;
     z-index: 0;

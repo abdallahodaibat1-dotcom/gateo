@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
-import { getThemePresetById, getDefaultSections, getStoreDefaultSections, type HomeTemplateId } from '@/lib/business-template-generator';
+import { getThemePresetById, getDefaultSections, getStoreDefaultSections, getFashionOneSections, type HomeTemplateId } from '@/lib/business-template-generator';
 import { getDesignById, resolveHomeTemplate, resolvePresetId } from '@/lib/business-design-library';
 
 const applySchema = z.object({
@@ -43,7 +43,7 @@ const applySchema = z.object({
   businessType: z.enum(['INDIVIDUAL', 'COMPANY']).optional(),
   websiteType: z.enum(['INTRO', 'STORE']).optional(),
   themePresetId: z.string().optional(),
-  homeTemplate: z.enum(['default', 'enfold-spa', 'beauty-salon-1']).optional(),
+  homeTemplate: z.enum(['default', 'enfold-spa', 'beauty-salon-1', 'modern-intro']).optional(),
   designId: z.string().optional(),
   useAutoColors: z.boolean().optional(),
   themeColors: z.object({
@@ -85,6 +85,19 @@ const applySchema = z.object({
     image: z.string().min(1).optional(),
   })).optional(),
   fieldValues: z.record(z.string(), z.string().nullable()).optional(),
+  fashionOne: z.object({
+    fontHeading: z.string().optional(),
+    fontBody: z.string().optional(),
+    heroHeadline: z.string().optional(),
+    heroImage: z.string().optional(),
+    socialLinks: z.object({
+      facebook: z.string().optional(),
+      instagram: z.string().optional(),
+      tiktok: z.string().optional(),
+      pinterest: z.string().optional(),
+      youtube: z.string().optional(),
+    }).optional(),
+  }).optional(),
 });
 
 // POST /api/businesses/apply - Submit business application
@@ -109,7 +122,7 @@ export async function POST(req: NextRequest) {
 
     if (existing) {
       // Update existing business with new data
-      const { services: _services, products: _products, themePresetId: _themePresetId, homeTemplate: _homeTemplate, designId: _designId, themeColors: _themeColors, useAutoColors: _useAutoColors, fieldValues: _fieldValues, subcategoryIds: _subcategoryIds, customSubcategories: _customSubcategories, ...businessData } = data;
+      const { services: _services, products: _products, themePresetId: _themePresetId, homeTemplate: _homeTemplate, designId: _designId, themeColors: _themeColors, useAutoColors: _useAutoColors, fieldValues: _fieldValues, subcategoryIds: _subcategoryIds, customSubcategories: _customSubcategories, fashionOne: _fashionOne, ...businessData } = data;
       
       // Check slug uniqueness only if slug changed
       if (data.slug !== existing.slug) {
@@ -180,6 +193,7 @@ export async function POST(req: NextRequest) {
           websiteType: data.websiteType,
           homeTemplate: data.homeTemplate,
           themeColors: data.themeColors,
+          fashionOne: data.fashionOne,
         });
       }
 
@@ -197,7 +211,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'الرابط مستخدم من قبل' }, { status: 400 });
     }
 
-    const { services: _services, products: _products, themePresetId: _themePresetId, homeTemplate: _homeTemplate, designId: _designId, themeColors: _themeColors, useAutoColors: _useAutoColors, fieldValues: _fieldValues, subcategoryIds: _subcategoryIds, customSubcategories: _customSubcategories, ...businessData } = data;
+    const { services: _services, products: _products, themePresetId: _themePresetId, homeTemplate: _homeTemplate, designId: _designId, themeColors: _themeColors, useAutoColors: _useAutoColors, fieldValues: _fieldValues, subcategoryIds: _subcategoryIds, customSubcategories: _customSubcategories, fashionOne: _fashionOne, ...businessData } = data;
     const business = await prisma.business.create({
       data: {
         ...businessData,
@@ -254,6 +268,7 @@ export async function POST(req: NextRequest) {
       websiteType: data.websiteType,
       homeTemplate: data.homeTemplate,
       themeColors: data.themeColors,
+      fashionOne: data.fashionOne,
     });
 
     // Create default pages
@@ -299,13 +314,20 @@ interface ApplyThemeOptions {
     surfaceColor: string;
     textColor: string;
   };
+  fashionOne?: {
+    fontHeading?: string;
+    fontBody?: string;
+    heroHeadline?: string;
+    heroImage?: string;
+    socialLinks?: { facebook?: string; instagram?: string; tiktok?: string; pinterest?: string; youtube?: string };
+  };
 }
 
 async function applyThemePreset(
   businessId: string,
   options: ApplyThemeOptions = {}
 ) {
-  const { designId, themePresetId, websiteType = 'INTRO', homeTemplate, themeColors } = options;
+  const { designId, themePresetId, websiteType = 'INTRO', homeTemplate, themeColors, fashionOne } = options;
 
   // Resolve design → preset + homeTemplate
   let effectivePresetId = themePresetId;
@@ -327,10 +349,53 @@ async function applyThemePreset(
   if (!preset) return;
 
   const isBeautySalonTemplate = ['beauty-salon-1'].includes(effectiveHomeTemplate || '');
-  const baseSections = websiteType === 'STORE' && !isBeautySalonTemplate
+  const isFashionOneTemplate = effectiveHomeTemplate === 'fashion-1';
+  const baseSections = isFashionOneTemplate
+    ? getFashionOneSections()
+    : websiteType === 'STORE' && !isBeautySalonTemplate
     ? getStoreDefaultSections()
     : getDefaultSections();
   const sections = baseSections.map((section) => ({ ...section }));
+
+  // Merge the apply-wizard collected fashion-1 fields on top of the seeded
+  // section settings (only for fashion-1, and only when values were provided).
+  if (isFashionOneTemplate && fashionOne) {
+    const findSection = (id: string) => sections.find((s) => s.id === id);
+    const filteredNonEmpty = (obj: Record<string, string | undefined>): Record<string, string> => {
+      const out: Record<string, string> = {};
+      for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'string' && value.trim() !== '') out[key] = value;
+      }
+      return out;
+    };
+
+    const branding = findSection('branding');
+    if (branding) {
+      const settings = (branding.settings ?? {}) as Record<string, unknown>;
+      if (fashionOne.fontHeading) settings.fontHeading = fashionOne.fontHeading;
+      if (fashionOne.fontBody) settings.fontBody = fashionOne.fontBody;
+      branding.settings = settings;
+    }
+
+    const hero = findSection('hero');
+    if (hero) {
+      const settings = (hero.settings ?? {}) as Record<string, unknown>;
+      if (!Array.isArray(settings.slides)) settings.slides = [];
+      const slides = settings.slides as Record<string, unknown>[];
+      if (slides.length === 0) slides.push({});
+      if (fashionOne.heroHeadline) slides[0].titleEm = fashionOne.heroHeadline;
+      if (fashionOne.heroImage) slides[0].image = fashionOne.heroImage;
+      hero.settings = settings;
+    }
+
+    const footer = findSection('footer');
+    if (footer && fashionOne.socialLinks) {
+      const settings = (footer.settings ?? {}) as Record<string, unknown>;
+      const existingSocial = (settings.socialLinks ?? {}) as Record<string, unknown>;
+      settings.socialLinks = { ...existingSocial, ...filteredNonEmpty(fashionOne.socialLinks) };
+      footer.settings = settings;
+    }
+  }
 
   const colors = themeColors || {
     primaryColor: preset.primaryColor,

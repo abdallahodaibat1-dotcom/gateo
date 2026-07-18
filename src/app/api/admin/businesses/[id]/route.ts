@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { notFound, serverError } from '@/lib/api-utils';
+import { serializeBusiness } from '@/lib/business-serializer';
 import { requireAdmin } from '../../_lib/utils';
 
 // GET /api/admin/businesses/[id] - Get business details
@@ -18,7 +19,11 @@ export async function GET(
       include: {
         User: { select: { id: true, name: true, email: true, phone: true } },
         Category: true,
-        Subcategory: true,
+        BusinessSubcategory: {
+          include: {
+            Subcategory: { select: { id: true, name: true, slug: true } },
+          },
+        },
         Service: true,
         Review: {
           orderBy: { createdAt: 'desc' },
@@ -38,7 +43,7 @@ export async function GET(
 
     if (!business) return notFound('Business not found');
 
-    return NextResponse.json({ business });
+    return NextResponse.json({ business: serializeBusiness(business) });
   } catch (error) {
     return serverError(error);
   }
@@ -79,7 +84,7 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json({ business });
+    return NextResponse.json({ business: serializeBusiness(business) });
   } catch (error) {
     return serverError(error);
   }

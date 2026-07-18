@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استوديو الصور الذكي · Dress Shop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #c5a572;
+            --primary-dark: #a4844c;
+            --primary-light: #e3cfa3;
+            --bg: #f8f5f0;
+            --bg-soft: #fbf8f3;
+            --bg-white: #ffffff;
+            --text: #1f1a14;
+            --text-soft: #5a5147;
+            --text-light: #8a8278;
+            --border: #e8e0d3;
+            --border-soft: #f0eadf;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 8px 24px rgba(0,0,0,0.06);
+            --shadow-lg: 0 16px 48px rgba(0,0,0,0.10);
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-mark {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .logo-text h1 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #fef9f0 0%, #f5ede1 100%);
+            border-radius: 24px;
+            padding: 48px;
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(197, 165, 114, 0.15) 0%, transparent 70%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 700px;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(255,255,255,0.7);
+            color: var(--primary-dark);
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            backdrop-filter: blur(8px);
+        }
+
+        .hero h2 {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 16px;
+            color: var(--text-soft);
+            line-height: 1.7;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 32px;
+            margin-top: 24px;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-num {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            display: block;
+        }
+
+        .hero-stat-label {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .hero-illustration {
+            font-size: 120px;
+            opacity: 0.15;
+            color: var(--primary);
+        }
+
+        /* Settings Panel */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .panel {
+            background: var(--bg-white);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+        }
+
+        .panel-title i {
+            color: var(--primary);
+        }
+
+        /* Purposes (image positions) */
+        .purposes {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .purpose-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-white);
+        }
+
+        .purpose-item:hover {
+            border-color: var(--primary-light);
+            background: var(--bg-soft);
+        }
+
+        .purpose-item.active {
+            border-color: var(--primary);
+            background: var(--bg-soft);
+        }
+
+        .purpose-item input { display: none; }
+
+        .purpose-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--bg-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-dark);
+            font-size: 16px;
+        }
+
+        .purpose-item.active .purpose-icon {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .purpose-info {
+            flex: 1;
+        }
+
+        .purpose-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .purpose-specs {
+            font-size: 11px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+
+        .purpose-check {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            font-size: 9px;
+        }
+
+        .purpose-item.active .purpose-check {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        /* Settings */
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-soft);
+        }
+
+        .settings-row:last-child { border-bottom: none; }
+
+        .settings-label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .settings-hint {
+            font-size: 11px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch.active {
+            background: var(--success);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(-20px);
+        }
+
+        .quality-slider {
+            width: 140px;
+            accent-color: var(--primary);
+        }
+
+        /* Drop zone */
+        .dropzone {
+            background: var(--bg-white);
+            border: 3px dashed var(--border);
+            border-radius: 20px;
+            padding: 60px 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--primary);
+            background: var(--bg-soft);
+            transform: translateY(-2px);
+        }
+
+        .dropzone-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 24px rgba(164, 132, 76, 0.3);
+        }
+
+        .dropzone h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .dropzone p {
+            font-size: 14px;
+            color: var(--text-soft);
+            margin-bottom: 16px;
+        }
+
+        .dropzone input { display: none; }
+
+        .dropzone-features {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .dropzone-feature {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-soft);
+        }
+
+        .dropzone-feature i {
+            color: var(--primary);
+        }
+
+        /* Image list */
+        .images-section {
+            background: var(--bg-white);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .images-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .images-title {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .images-count {
+            background: var(--primary);
+            color: #fff;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .images-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(164, 132, 76, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .btn-success:hover { background: #16a34a; }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 1.5px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary-dark);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        /* Image cards grid */
+        .images-grid {
+            padding: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .image-card {
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: all 0.3s;
+            background: var(--bg-white);
+        }
+
+        .image-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            border-color: var(--primary-light);
+        }
+
+        .image-preview {
+            aspect-ratio: 4/3;
+            background: var(--bg-soft);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview .purpose-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            backdrop-filter: blur(8px);
+        }
+
+        .image-preview .status-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .image-info {
+            padding: 14px;
+        }
+
+        .image-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .image-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .meta-tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            background: var(--bg-soft);
+            color: var(--text-soft);
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .meta-tag.green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .meta-tag.blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .meta-tag.purple {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .image-actions .btn {
+            flex: 1;
+            justify-content: center;
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            padding: 16px 24px;
+            background: linear-gradient(90deg, var(--primary-light) 0%, var(--bg-soft) 100%);
+            border-top: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-num {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        /* Empty state */
+        .empty-state {
+            padding: 80px 32px;
+            text-align: center;
+            color: var(--text-light);
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            color: var(--border);
+            margin-bottom: 16px;
+        }
+
+        /* Result modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-white);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-soft);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-soft);
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        /* Variants list */
+        .variant-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .variant-item {
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            background: var(--bg-white);
+        }
+
+        .variant-item img {
+            width: 100%;
+            aspect-ratio: 4/3;
+            object-fit: cover;
+            background: var(--bg-soft);
+        }
+
+        .variant-info {
+            padding: 8px 12px;
+            font-size: 11px;
+        }
+
+        .variant-size {
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .variant-bytes {
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--text);
+            color: #fff;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+
+        /* AI Detection badge */
+        .ai-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Progress */
+        .progress-mini {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-mini-fill {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .settings-grid { grid-template-columns: 1fr; }
+            .hero { padding: 32px; text-align: center; flex-direction: column; }
+            .hero-stats { justify-content: center; }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            .dropzone { padding: 40px 16px; }
+            .hero h2 { font-size: 24px; }
+            .images-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo">
+            <div class="logo-mark">D</div>
+            <div class="logo-text">
+                <h1>استوديو الصور الذكي</h1>
+                <p>Dress Shop · معالجة تلقائية بالذكاء الاصطناعي</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="index.html" class="btn btn-outline"><i class="fas fa-home"></i> الموقع</a>
+            <a href="admin.html" class="btn btn-outline"><i class="fas fa-cog"></i> لوحة التحكم</a>
+            <button class="btn btn-success" id="processAllBtn" disabled>
+                <i class="fas fa-magic"></i> معالجة الكل
+            </button>
+            <button class="btn btn-primary" id="downloadAllBtn" disabled>
+                <i class="fas fa-download"></i> تحميل ZIP
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- Hero -->
+        <div class="hero">
+            <div class="hero-content">
+                <span class="hero-tag">
+                    <i class="fas fa-robot"></i> مدعوم بالذكاء الاصطناعي
+                </span>
+                <h2>حوّلي صوركِ لصور موقع جاهزة تلقائياً</h2>
+                <p>أداتي تكتشف نوع كل صورة وتختار لها القياس والجودة المناسبين. توفّر عليكِ ساعات من العمل اليدوي.</p>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat-num">6</span>
+                        <span class="hero-stat-label">أحجام مختلفة</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-num">7</span>
+                        <span class="hero-stat-label">مواقع ذكية</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-num">70%</span>
+                        <span class="hero-stat-label">توفير بالحجم</span>
+                    </div>
+                </div>
+            </div>
+            <i class="fas fa-wand-magic-sparkles hero-illustration"></i>
+        </div>
+
+        <!-- Settings -->
+        <div class="settings-grid">
+            <!-- Purposes -->
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="fas fa-bullseye"></i>
+                    موقع الصورة بالموقع
+                </div>
+                <div class="purposes" id="purposesList">
+                    <label class="purpose-item active" data-purpose="auto">
+                        <div class="purpose-icon"><i class="fas fa-magic"></i></div>
+                        <div class="purpose-info">
+                            <div class="purpose-name">كشف تلقائي بالذكاء الاصطناعي</div>
+                            <div class="purpose-specs">يحلل نسبة الأبعاد ويختار الموقع المناسب</div>
+                        </div>
+                        <div class="purpose-check"><i class="fas fa-check"></i></div>
+                    </label>
+                    <label class="purpose-item" data-purpose="hero">
+                        <div class="purpose-icon"><i class="fas fa-image"></i></div>
+                        <div class="purpose-info">
+                            <div class="purpose-name">قسم Hero الرئيسي</div>
+                            <div class="purpose-specs">21:9 - 1920×820 بكسل</div>
+                        </div>
+                        <div class="purpose-check"><i class="fas fa-check"></i></div>
+                    </label>
+                    <label class="purpose-item" data-purpose="product">
+                        <div class="purpose-icon"><i class="fas fa-tshirt"></i></div>
+                        <div class="purpose-info">
+                            <div class="purpose-name">كارت المنتج</div>
+                            <div class="purpose-specs">3:4 - 800×1067 بكسل</div>
+                        </div>
+                        <div class="purpose-check"><i class="fas fa-check"></i></div>
+                    </label>
+                    <label class="purpose-item" data-purpose="category">
+                        <div class="purpose-icon"><i class="fas fa-th-large"></i></div>
+                        <div class="purpose-info">
+                            <div class="purpose-name">صورة تصنيف</div>
+                            <div class="purpose-specs">1:1 - 600×600 بكسل</div>
+                        </div>
+                        <div class="purpose-check"><i class="fas fa-check"></i></div>
+                    </label>
+                    <label class="purpose-item" data-purpose="accessory">
+                        <div class="purpose-icon"><i class="fas fa-gem"></i></div>
+                        <div class="purpose-info">
+                            <div class="purpose-name">إكسسوار / مستلزمات</div>
+                            <div class="purpose-specs">1:1 - 500×500 بكسل</div>
+                        </div>
+                        <div class="purpose-check"><i class="fas fa-check"></i></div>
+                    </label>
+                    <label class="purpose-item" data-purpose="gallery">
+                        <div class="purpose-icon"><i class="fas fa-images"></i></div>
+                        <div class="purpose-info">
+                            <div class="purpose-name">معرض المنتج</div>
+                            <div class="purpose-specs">3:4 - 1000×1333 بكسل</div>
+                        </div>
+                        <div class="purpose-check"><i class="fas fa-check"></i></div>
+                    </label>
+                    <label class="purpose-item" data-purpose="thumbnail">
+                        <div class="purpose-icon"><i class="fas fa-th"></i></div>
+                        <div class="purpose-info">
+                            <div class="purpose-name">صورة مصغرة</div>
+                            <div class="purpose-specs">1:1 - 200×200 بكسل</div>
+                        </div>
+                        <div class="purpose-check"><i class="fas fa-check"></i></div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="fas fa-sliders"></i>
+                    إعدادات المعالجة
+                </div>
+
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">تنسيق WebP (الأحدث والأخف)</div>
+                        <div class="settings-hint">يوفّر 25-35% من حجم الملف مقارنة بـ JPEG</div>
+                    </div>
+                    <div class="toggle-switch active" id="webpToggle"></div>
+                </div>
+
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">إنشاء نسخة JPEG احتياطية</div>
+                        <div class="settings-hint">للتوافق مع المتصفحات القديمة</div>
+                    </div>
+                    <div class="toggle-switch active" id="jpegToggle"></div>
+                </div>
+
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">ضغط ذكي (Smart Compression)</div>
+                        <div class="settings-hint">يعدل الجودة تلقائياً حسب المحتوى</div>
+                    </div>
+                    <div class="toggle-switch active" id="smartCompress"></div>
+                </div>
+
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">إزالة البيانات الوصفية (EXIF)</div>
+                        <div class="settings-hint">يقلل الحجم ويحمي الخصوصية</div>
+                    </div>
+                    <div class="toggle-switch active" id="stripExif"></div>
+                </div>
+
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">قص ذكي بمركز الاهتمام</div>
+                        <div class="settings-hint">يكتشف الوجوه/الكائنات ويضعها بالوسط</div>
+                    </div>
+                    <div class="toggle-switch active" id="smartCrop"></div>
+                </div>
+
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">جودة الإخراج</div>
+                        <div class="settings-hint">جودة أعلى = حجم أكبر</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <input type="range" class="quality-slider" id="qualitySlider" min="50" max="100" value="85">
+                        <span id="qualityValue" style="font-weight:700;color:var(--primary-dark);width:40px;">85%</span>
+                    </div>
+                </div>
+
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">توليد Lazy Loading Placeholder</div>
+                        <div class="settings-hint">صور صغيرة جداً (Base64) لتحميل سريع</div>
+                    </div>
+                    <div class="toggle-switch" id="lazyPlaceholder"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dropzone -->
+        <div class="dropzone" id="dropzone">
+            <input type="file" id="fileInput" multiple accept="image/*">
+            <div class="dropzone-icon">
+                <i class="fas fa-cloud-arrow-up"></i>
+            </div>
+            <h3>اسحبي الصور هنا أو اضغطي للاختيار</h3>
+            <p>يدعم: JPG, PNG, WebP, HEIC · حد أقصى 20 صورة · معالجة فورية</p>
+            <div class="dropzone-features">
+                <span class="dropzone-feature"><i class="fas fa-check"></i> كشف تلقائي للموقع</span>
+                <span class="dropzone-feature"><i class="fas fa-check"></i> ضغط ذكي</span>
+                <span class="dropzone-feature"><i class="fas fa-check"></i> تحويل WebP + JPEG</span>
+                <span class="dropzone-feature"><i class="fas fa-check"></i> نسخ متعددة الأحجام</span>
+            </div>
+        </div>
+
+        <!-- Images -->
+        <div class="images-section">
+            <div class="images-header">
+                <div class="images-title">
+                    <i class="fas fa-images"></i>
+                    الصور المرفوعة
+                    <span class="images-count" id="imagesCount">0</span>
+                </div>
+                <div class="images-actions">
+                    <button class="btn btn-outline" id="clearBtn" disabled>
+                        <i class="fas fa-trash"></i> مسح الكل
+                    </button>
+                    <button class="btn btn-outline" id="processBtn" disabled>
+                        <i class="fas fa-cog"></i> معالجة المختار
+                    </button>
+                </div>
+            </div>
+
+            <div id="imagesGrid" class="images-grid">
+                <div class="empty-state">
+                    <i class="fas fa-images"></i>
+                    <p>لم يتم رفع أي صور بعد</p>
+                    <p style="font-size: 13px; margin-top: 4px;">اسحبي الصور أو اضغطي على المنطقة أعلاه</p>
+                </div>
+            </div>
+
+            <div class="stats-bar" id="statsBar" style="display:none;">
+                <div class="stat-item">
+                    <span class="stat-num" id="totalImages">0</span>
+                    <span class="stat-label">إجمالي الصور</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num" id="totalSize">0</span>
+                    <span class="stat-label">الحجم الأصلي</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num" id="optimizedSize">0</span>
+                    <span class="stat-label">بعد التحسين</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num" id="savedSize">0%</span>
+                    <span class="stat-label">التوفير</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="resultTitle">نتيجة المعالجة</h3>
+                <button class="modal-close" id="closeResult"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="resultContent"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============================
+        // Image Position Specifications
+        // ============================
+        const PURPOSES = {
+            hero: {
+                name: 'Hero Slider',
+                aspect: 21/9,
+                sizes: [
+                    { name: 'xl', w: 1920, h: 820 },
+                    { name: 'lg', w: 1440, h: 615 },
+                    { name: 'md', w: 1024, h: 437 },
+                    { name: 'sm', w: 768, h: 328 }
+                ],
+                quality: 82,
+                folder: 'images/hero'
+            },
+            product: {
+                name: 'كارت المنتج',
+                aspect: 3/4,
+                sizes: [
+                    { name: 'xl', w: 800, h: 1067 },
+                    { name: 'lg', w: 600, h: 800 },
+                    { name: 'md', w: 400, h: 533 },
+                    { name: 'thumb', w: 200, h: 267 }
+                ],
+                quality: 85,
+                folder: 'images/products'
+            },
+            category: {
+                name: 'صورة تصنيف',
+                aspect: 1/1,
+                sizes: [
+                    { name: 'xl', w: 600, h: 600 },
+                    { name: 'lg', w: 400, h: 400 },
+                    { name: 'md', w: 300, h: 300 },
+                    { name: 'thumb', w: 150, h: 150 }
+                ],
+                quality: 85,
+                folder: 'images/categories'
+            },
+            accessory: {
+                name: 'إكسسوار',
+                aspect: 1/1,
+                sizes: [
+                    { name: 'xl', w: 500, h: 500 },
+                    { name: 'lg', w: 350, h: 350 },
+                    { name: 'md', w: 250, h: 250 },
+                    { name: 'thumb', w: 120, h: 120 }
+                ],
+                quality: 88,
+                folder: 'images/accessories'
+            },
+            gallery: {
+                name: 'معرض',
+                aspect: 3/4,
+                sizes: [
+                    { name: 'xl', w: 1000, h: 1333 },
+                    { name: 'lg', w: 700, h: 933 },
+                    { name: 'md', w: 500, h: 667 },
+                    { name: 'thumb', w: 150, h: 200 }
+                ],
+                quality: 85,
+                folder: 'images/gallery'
+            },
+            thumbnail: {
+                name: 'مصغرة',
+                aspect: 1/1,
+                sizes: [
+                    { name: 'lg', w: 200, h: 200 },
+                    { name: 'md', w: 100, h: 100 },
+                    { name: 'sm', w: 50, h: 50 }
+                ],
+                quality: 90,
+                folder: 'images/thumbs'
+            }
+        };
+
+        // ============================
+        // State
+        // ============================
+        let uploadedImages = [];
+        let selectedPurpose = 'auto';
+        let settings = {
+            webp: true,
+            jpeg: true,
+            smartCompress: true,
+            stripExif: true,
+            smartCrop: true,
+            quality: 85,
+            lazyPlaceholder: false
+        };
+
+        // ============================
+        // AI Purpose Detection
+        // ============================
+        function detectPurpose(image) {
+            const aspect = image.width / image.height;
+            
+            // Ultra-wide = Hero
+            if (aspect >= 1.8) return 'hero';
+            
+            // Wide landscape (16:9 to 16:10) = Hero fallback
+            if (aspect >= 1.5) return 'hero';
+            
+            // Square-ish (1:1 to 5:4) = Category/Accessory
+            if (aspect >= 0.85 && aspect <= 1.2) {
+                // Heuristic: smaller dimensions = accessory
+                if (Math.min(image.width, image.height) < 1000) return 'accessory';
+                return 'category';
+            }
+            
+            // Portrait (3:4 typical) = Product
+            if (aspect >= 0.65 && aspect < 0.85) return 'product';
+            
+            // Tall portrait (gallery)
+            if (aspect < 0.65) return 'gallery';
+            
+            // Default
+            return 'product';
+        }
+
+        // ============================
+        // Smart Focal Point Detection (Simple AI)
+        // ============================
+        function findFocalPoint(canvas) {
+            // Simple algorithm: find region with highest contrast/variance
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            const data = ctx.getImageData(0, 0, w, h).data;
+            
+            // Divide into 9 zones (3x3 grid)
+            const zones = [];
+            const zoneW = Math.floor(w / 3);
+            const zoneH = Math.floor(h / 3);
+            
+            for (let zy = 0; zy < 3; zy++) {
+                for (let zx = 0; zx < 3; zx++) {
+                    let variance = 0;
+                    let sum = 0;
+                    let count = 0;
+                    let prev = 0;
+                    
+                    for (let y = zy * zoneH; y < (zy + 1) * zoneH && y < h; y += 4) {
+                        for (let x = zx * zoneW; x < (zx + 1) * zoneW && x < w; x += 4) {
+                            const i = (y * w + x) * 4;
+                            const gray = (data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114);
+                            sum += gray;
+                            count++;
+                            if (count > 1) variance += Math.pow(gray - prev, 2);
+                            prev = gray;
+                        }
+                    }
+                    
+                    zones.push({
+                        x: zx, y: zy,
+                        variance: variance / count,
+                        centerX: zx * zoneW + zoneW / 2,
+                        centerY: zy * zoneH + zoneH / 2
+                    });
+                }
+            }
+            
+            // Find zone with highest variance (most "interesting")
+            zones.sort((a, b) => b.variance - a.variance);
+            const focal = zones[0];
+            
+            // Bias toward center (avoid extreme corners)
+            const centerBias = {
+                centerX: w / 2,
+                centerY: h / 2
+            };
+            
+            return {
+                x: focal.centerX,
+                y: focal.centerY
+            };
+        }
+
+        // ============================
+        // Smart Crop
+        // ============================
+        function smartCrop(sourceCanvas, targetW, targetH, focalPoint) {
+            const targetAspect = targetW / targetH;
+            const sourceAspect = sourceCanvas.width / sourceCanvas.height;
+            
+            let sx, sy, sw, sh;
+            
+            if (sourceAspect > targetAspect) {
+                // Source wider - crop horizontally
+                sh = sourceCanvas.height;
+                sw = sh * targetAspect;
+                sx = focalPoint ? 
+                    Math.max(0, Math.min(sourceCanvas.width - sw, focalPoint.x - sw / 2)) :
+                    (sourceCanvas.width - sw) / 2;
+                sy = 0;
+            } else {
+                // Source taller - crop vertically
+                sw = sourceCanvas.width;
+                sh = sw / targetAspect;
+                sy = focalPoint ?
+                    Math.max(0, Math.min(sourceCanvas.height - sh, focalPoint.y - sh / 2)) :
+                    (sourceCanvas.height - sh) / 2;
+                sx = 0;
+            }
+            
+            return {
+                sx, sy, sw, sh,
+                dx: 0, dy: 0, dw: targetW, dh: targetH
+            };
+        }
+
+        // ============================
+        // Image Processing
+        // ============================
+        async function processImage(image, purpose, settings) {
+            const spec = PURPOSES[purpose];
+            const result = {
+                purpose: purpose,
+                purposeName: spec.name,
+                originalSize: image.originalSize,
+                variants: [],
+                totalSaved: 0
+            };
+            
+            // Load image
+            const img = new Image();
+            img.src = image.dataUrl;
+            await new Promise(r => img.onload = r);
+            
+            // Source canvas
+            const sourceCanvas = document.createElement('canvas');
+            sourceCanvas.width = img.width;
+            sourceCanvas.height = img.height;
+            const sourceCtx = sourceCanvas.getContext('2d');
+            sourceCtx.drawImage(img, 0, 0);
+            
+            // Find focal point if smart crop enabled
+            let focalPoint = null;
+            if (settings.smartCrop) {
+                try {
+                    focalPoint = findFocalPoint(sourceCanvas);
+                } catch (e) {
+                    focalPoint = null;
+                }
+            }
+            
+            // Generate each size
+            for (const sizeSpec of spec.sizes) {
+                const canvas = document.createElement('canvas');
+                canvas.width = sizeSpec.w;
+                canvas.height = sizeSpec.h;
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                
+                const crop = smartCrop(sourceCanvas, sizeSpec.w, sizeSpec.h, focalPoint);
+                ctx.drawImage(sourceCanvas, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, sizeSpec.w, sizeSpec.h);
+                
+                // Generate WebP
+                if (settings.webp) {
+                    const webpBlob = await canvasToBlob(canvas, 'image/webp', settings.quality / 100);
+                    result.variants.push({
+                        size: sizeSpec.name,
+                        format: 'webp',
+                        width: sizeSpec.w,
+                        height: sizeSpec.h,
+                        blob: webpBlob,
+                        bytes: webpBlob.size,
+                        url: URL.createObjectURL(webpBlob)
+                    });
+                }
+                
+                // Generate JPEG
+                if (settings.jpeg) {
+                    const jpegBlob = await canvasToBlob(canvas, 'image/jpeg', settings.quality / 100);
+                    result.variants.push({
+                        size: sizeSpec.name,
+                        format: 'jpeg',
+                        width: sizeSpec.w,
+                        height: sizeSpec.h,
+                        blob: jpegBlob,
+                        bytes: jpegBlob.size,
+                        url: URL.createObjectURL(jpegBlob)
+                    });
+                }
+            }
+            
+            // Calculate savings
+            const newTotal = result.variants.reduce((s, v) => s + v.bytes, 0);
+            const oldTotal = image.originalSize * spec.sizes.length * (settings.webp && settings.jpeg ? 2 : 1);
+            result.totalSaved = Math.max(0, Math.round((1 - newTotal / oldTotal) * 100));
+            
+            return result;
+        }
+
+        function canvasToBlob(canvas, type, quality) {
+            return new Promise(resolve => {
+                canvas.toBlob(blob => resolve(blob), type, quality);
+            });
+        }
+
+        // ============================
+        // UI Updates
+        // ============================
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+        
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('dragover');
+        });
+        
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        async function handleFiles(files) {
+            const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+            const newImages = [];
+            
+            for (const file of files) {
+                if (!file.type.startsWith('image/')) continue;
+                
+                const dataUrl = await readFileAsDataURL(file);
+                const img = new Image();
+                img.src = dataUrl;
+                await new Promise(r => img.onload = r);
+                
+                // AI detect purpose
+                const detectedPurpose = detectPurpose(img);
+                const purposeSpec = PURPOSES[detectedPurpose];
+                
+                newImages.push({
+                    id: Date.now() + Math.random(),
+                    file: file,
+                    name: file.name,
+                    originalSize: file.size,
+                    width: img.width,
+                    height: img.height,
+                    aspect: img.width / img.height,
+                    dataUrl: dataUrl,
+                    detectedPurpose: detectedPurpose,
+                    purposeName: purposeSpec.name,
+                    processed: null,
+                    processing: false
+                });
+            }
+            
+            uploadedImages.push(...newImages);
+            renderImages();
+            updateButtons();
+            
+            if (newImages.length > 0) {
+                showToast(`تم رفع ${newImages.length} صورة · الذكاء الاصطناعي حدد مواقعها تلقائياً`, 'success');
+            }
+        }
+
+        function readFileAsDataURL(file) {
+            return new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function renderImages() {
+            const grid = document.getElementById('imagesGrid');
+            const count = document.getElementById('imagesCount');
+            count.textContent = uploadedImages.length;
+            
+            if (uploadedImages.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-images"></i>
+                        <p>لم يتم رفع أي صور بعد</p>
+                        <p style="font-size: 13px; margin-top: 4px;">اسحبي الصور أو اضغطي على المنطقة أعلاه</p>
+                    </div>
+                `;
+                document.getElementById('statsBar').style.display = 'none';
+                return;
+            }
+            
+            grid.innerHTML = uploadedImages.map((img, i) => {
+                const purposeColors = {
+                    hero: 'purple',
+                    product: 'blue',
+                    category: 'green',
+                    accessory: 'green',
+                    gallery: 'blue',
+                    thumbnail: 'green'
+                };
+                const color = purposeColors[img.detectedPurpose] || 'green';
+                
+                return `
+                    <div class="image-card" data-id="${img.id}">
+                        <div class="image-preview">
+                            <img src="${img.dataUrl}" alt="${img.name}">
+                            <div class="ai-badge">
+                                <i class="fas fa-robot"></i> AI
+                            </div>
+                            <span class="purpose-badge">${img.purposeName}</span>
+                            ${img.processing ? `<div class="status-overlay"><div class="spinner"></div></div>` : ''}
+                            ${img.processed ? `<div class="status-overlay" style="background:rgba(34, 197, 94, 0.9);color:#fff;"><i class="fas fa-check" style="font-size:32px;"></i></div>` : ''}
+                        </div>
+                        <div class="image-info">
+                            <div class="image-name" title="${img.name}">${img.name}</div>
+                            <div class="image-meta">
+                                <span class="meta-tag ${color}">${img.width}×${img.height}</span>
+                                <span class="meta-tag">${formatBytes(img.originalSize)}</span>
+                                <span class="meta-tag">${img.aspect.toFixed(2)}:1</span>
+                            </div>
+                            ${img.processed ? `
+                                <div class="image-meta">
+                                    <span class="meta-tag green">${img.processed.variants.length} نسخة</span>
+                                    <span class="meta-tag green">وفّرت ${img.processed.totalSaved}%</span>
+                                </div>
+                            ` : ''}
+                            <div class="image-actions">
+                                <button class="btn btn-outline" onclick="processSingle(${i})" ${img.processing ? 'disabled' : ''}>
+                                    ${img.processed ? '<i class="fas fa-redo"></i> إعادة' : '<i class="fas fa-magic"></i> معالجة'}
+                                </button>
+                                <button class="btn btn-primary" onclick="showResult(${i})" ${!img.processed ? 'disabled' : ''}>
+                                    <i class="fas fa-eye"></i> عرض
+                                </button>
+                                <button class="btn btn-danger" onclick="removeImage(${i})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            updateStats();
+        }
+
+        function updateStats() {
+            const statsBar = document.getElementById('statsBar');
+            if (uploadedImages.length === 0) {
+                statsBar.style.display = 'none';
+                return;
+            }
+            statsBar.style.display = 'grid';
+            
+            const totalSize = uploadedImages.reduce((s, img) => s + img.originalSize, 0);
+            const optimizedSize = uploadedImages.reduce((s, img) => {
+                return s + (img.processed ? img.processed.variants.reduce((v, x) => v + x.bytes, 0) : img.originalSize);
+            }, 0);
+            
+            document.getElementById('totalImages').textContent = uploadedImages.length;
+            document.getElementById('totalSize').textContent = formatBytes(totalSize);
+            document.getElementById('optimizedSize').textContent = formatBytes(optimizedSize);
+            document.getElementById('savedSize').textContent = totalSize > optimizedSize ? 
+                Math.round((1 - optimizedSize / totalSize) * 100) + '%' : '0%';
+        }
+
+        function updateButtons() {
+            const has = uploadedImages.length > 0;
+            const allProcessed = uploadedImages.length > 0 && uploadedImages.every(i => i.processed);
+            document.getElementById('clearBtn').disabled = !has;
+            document.getElementById('processBtn').disabled = !has || uploadedImages.every(i => i.processed);
+            document.getElementById('processAllBtn').disabled = !has || uploadedImages.every(i => i.processed);
+            document.getElementById('downloadAllBtn').disabled = !allProcessed;
+        }
+
+        // ============================
+        // Process images
+        // ============================
+        async function processSingle(index) {
+            const img = uploadedImages[index];
+            img.processing = true;
+            renderImages();
+            
+            try {
+                img.processed = await processImage(img, img.detectedPurpose, settings);
+                img.processing = false;
+                renderImages();
+                updateButtons();
+                showToast(`تمت معالجة "${img.name}" بنجاح ✓`, 'success');
+            } catch (e) {
+                console.error(e);
+                img.processing = false;
+                renderImages();
+                showToast('فشلت المعالجة', 'error');
+            }
+        }
+
+        async function processAll() {
+            for (let i = 0; i < uploadedImages.length; i++) {
+                if (!uploadedImages[i].processed) {
+                    await processSingle(i);
+                }
+            }
+        }
+
+        // ============================
+        // Show result modal
+        // ============================
+        function showResult(index) {
+            const img = uploadedImages[index];
+            if (!img.processed) return;
+            
+            document.getElementById('resultTitle').textContent = `${img.name} · ${img.processed.variants.length} نسخة`;
+            
+            const variants = img.processed.variants;
+            const content = document.getElementById('resultContent');
+            
+            content.innerHTML = `
+                <div style="margin-bottom:20px;padding:16px;background:var(--bg-soft);border-radius:10px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <strong>${img.purposeName}</strong>
+                            <p style="font-size:12px;color:var(--text-light);margin-top:4px;">
+                                الأصلي: ${formatBytes(img.originalSize)} (${img.width}×${img.height})
+                            </p>
+                        </div>
+                        <div style="text-align:left;">
+                            <strong style="color:var(--success);font-size:18px;">وفّرت ${img.processed.totalSaved}%</strong>
+                            <p style="font-size:12px;color:var(--text-light);">من الحجم الأصلي</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h4 style="font-size:14px;font-weight:700;margin-bottom:12px;">النسخ المولّدة:</h4>
+                <div class="variant-list">
+                    ${variants.map(v => `
+                        <div class="variant-item">
+                            <img src="${v.url}" alt="${v.size}.${v.format}">
+                            <div class="variant-info">
+                                <div class="variant-size">${v.size.toUpperCase()} · ${v.format.toUpperCase()}</div>
+                                <div class="variant-bytes">${v.width}×${v.height} · ${formatBytes(v.bytes)}</div>
+                                <a href="${v.url}" download="${img.name.split('.')[0]}-${v.size}.${v.format}" 
+                                   style="display:inline-block;margin-top:6px;font-size:11px;color:var(--primary-dark);">
+                                    <i class="fas fa-download"></i> تحميل
+                                </a>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="display:flex;gap:8px;margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+                    <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="downloadImage(${index})">
+                        <i class="fas fa-download"></i> تحميل كل النسخ
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('resultModal').classList.add('show');
+        }
+
+        async function downloadImage(index) {
+            const img = uploadedImages[index];
+            if (!img.processed) return;
+            
+            const zip = new JSZip();
+            const baseName = img.name.split('.')[0].replace(/[^a-z0-9\u0600-\u06FF]/gi, '-');
+            
+            img.processed.variants.forEach(v => {
+                zip.file(`${baseName}-${v.size}.${v.format}`, v.blob);
+            });
+            
+            const blob = await zip.generateAsync({ type: 'blob' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${baseName}-variants.zip`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('تم التحميل ✓', 'success');
+        }
+
+        async function downloadAll() {
+            const processed = uploadedImages.filter(i => i.processed);
+            if (processed.length === 0) return;
+            
+            const zip = new JSZip();
+            const folders = {};
+            
+            for (const img of processed) {
+                const spec = PURPOSES[img.detectedPurpose];
+                const folderName = spec.folder;
+                if (!folders[folderName]) folders[folderName] = zip.folder(folderName);
+                
+                const baseName = img.name.split('.')[0].replace(/[^a-z0-9\u0600-\u06FF]/gi, '-');
+                
+                img.processed.variants.forEach(v => {
+                    folders[folderName].file(`${baseName}-${v.size}.${v.format}`, v.blob);
+                });
+            }
+            
+            // Add README
+            const readme = `# Dress Shop - Processed Images
+Generated: ${new Date().toISOString()}
+
+Total images: ${processed.length}
+Total variants: ${processed.reduce((s, i) => s + i.processed.variants.length, 0)}
+
+Folders:
+${Object.keys(folders).map(f => `- ${f}/`).join('\n')}
+`;
+            zip.file('README.md', readme);
+            
+            const blob = await zip.generateAsync({ type: 'blob' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dress-shop-images-${Date.now()}.zip`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast(`تم تحميل ${processed.length} صورة في ZIP منظم ✓`, 'success');
+        }
+
+        function removeImage(index) {
+            const img = uploadedImages[index];
+            if (img.processed) {
+                img.processed.variants.forEach(v => URL.revokeObjectURL(v.url));
+            }
+            uploadedImages.splice(index, 1);
+            renderImages();
+            updateButtons();
+        }
+
+        function clearAll() {
+            if (!confirm('سيتم حذف جميع الصور. متابعة؟')) return;
+            uploadedImages.forEach(img => {
+                if (img.processed) {
+                    img.processed.variants.forEach(v => URL.revokeObjectURL(v.url));
+                }
+            });
+            uploadedImages = [];
+            renderImages();
+            updateButtons();
+        }
+
+        // ============================
+        // Settings
+        // ============================
+        function toggleSetting(id, key) {
+            const el = document.getElementById(id);
+            el.classList.toggle('active');
+            settings[key] = el.classList.contains('active');
+        }
+
+        document.getElementById('webpToggle').addEventListener('click', () => toggleSetting('webpToggle', 'webp'));
+        document.getElementById('jpegToggle').addEventListener('click', () => toggleSetting('jpegToggle', 'jpeg'));
+        document.getElementById('smartCompress').addEventListener('click', () => toggleSetting('smartCompress', 'smartCompress'));
+        document.getElementById('stripExif').addEventListener('click', () => toggleSetting('stripExif', 'stripExif'));
+        document.getElementById('smartCrop').addEventListener('click', () => toggleSetting('smartCrop', 'smartCrop'));
+        document.getElementById('lazyPlaceholder').addEventListener('click', () => toggleSetting('lazyPlaceholder', 'lazyPlaceholder'));
+
+        const qualitySlider = document.getElementById('qualitySlider');
+        qualitySlider.addEventListener('input', () => {
+            settings.quality = parseInt(qualitySlider.value);
+            document.getElementById('qualityValue').textContent = qualitySlider.value + '%';
+        });
+
+        // Purposes
+        document.querySelectorAll('.purpose-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.purpose-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                selectedPurpose = item.dataset.purpose;
+                
+                // Auto-detect means we use image's detected purpose
+                // Otherwise override detected
+                uploadedImages.forEach(img => {
+                    if (selectedPurpose !== 'auto') {
+                        img.detectedPurpose = selectedPurpose;
+                        img.purposeName = PURPOSES[selectedPurpose].name;
+                        img.processed = null; // Reset processed
+                    }
+                });
+                renderImages();
+                updateButtons();
+            });
+        });
+
+        // ============================
+        // Buttons
+        // ============================
+        document.getElementById('processAllBtn').addEventListener('click', processAll);
+        document.getElementById('processBtn').addEventListener('click', processAll);
+        document.getElementById('downloadAllBtn').addEventListener('click', downloadAll);
+        document.getElementById('clearBtn').addEventListener('click', clearAll);
+        document.getElementById('closeResult').addEventListener('click', () => {
+            document.getElementById('resultModal').classList.remove('show');
+        });
+
+        document.getElementById('resultModal').addEventListener('click', (e) => {
+            if (e.target.id === 'resultModal') {
+                document.getElementById('resultModal').classList.remove('show');
+            }
+        });
+
+        // ============================
+        // Utils
+        // ============================
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function showToast(message, type = '') {
+            const toast = document.getElementById('toast');
+            clearTimeout(window.toastTimeout);
+            toast.className = 'toast ' + type;
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i> ${message}`;
+            toast.classList.add('show');
+            window.toastTimeout = setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        // Init
+        updateButtons();
+    </script>
+</body>
+</html>

@@ -109,19 +109,23 @@ export function ThemeSelector({
             مكتبة تحتوي على {ALL_PRESETS.length} قالباً مجانياً مُلهمًا من أشهر مصادر التصميم.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleAiSuggest}
-          disabled={aiSuggesting}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-medium shadow-sm hover:shadow-md transition-all disabled:opacity-60"
-        >
-          {aiSuggesting ? (
-            <Sparkles className="w-4 h-4 animate-spin" />
-          ) : (
-            <Wand2 className="w-4 h-4" />
-          )}
-          اقتراح ذكي حسب النشاط
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleAiSuggest}
+            disabled={aiSuggesting}
+            aria-label="اضغط هنا للاختيار التلقائي"
+            title="اضغط هنا للاختيار التلقائي"
+            className="flex items-center justify-center px-3 py-2.5 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm hover:shadow-md transition-all disabled:opacity-60"
+          >
+            {aiSuggesting ? (
+              <Sparkles className="w-4 h-4 animate-spin" />
+            ) : (
+              <Wand2 className="w-4 h-4" />
+            )}
+          </button>
+          <span className="text-xs font-medium text-primary cursor-pointer hover:underline whitespace-nowrap">اضغط هنا للاختيار التلقائي</span>
+        </div>
       </div>
 
       {/* Selected banner */}

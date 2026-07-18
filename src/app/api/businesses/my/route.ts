@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
       where: { userId: session.user.id },
       include: {
         Category: { select: { id: true, name: true } },
-        Subcategory: { select: { id: true, name: true } },
+        BusinessSubcategory: { include: { Subcategory: { select: { id: true, name: true, slug: true } } } },
         Service: { orderBy: { createdAt: 'desc' } },
         _count: { select: { Review: true, Booking: true } },
       },

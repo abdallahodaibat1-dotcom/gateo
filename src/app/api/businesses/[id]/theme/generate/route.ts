@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
 import { generateThemeForBusiness } from '@/lib/business-template-generator';
+import { serializeBusiness } from '@/lib/business-serializer';
 
 function parseSections(theme: any) {
   if (!theme) return theme;
@@ -18,7 +19,12 @@ function parseSections(theme: any) {
 async function getBusinessAndAuthorize(id: string, session: any) {
   const business = await prisma.business.findFirst({
     where: { OR: [{ id }, { slug: id }] },
-    include: { Category: true, Subcategory: true },
+    include: {
+      Category: true,
+      BusinessSubcategory: {
+        include: { Subcategory: { select: { id: true, name: true, slug: true } } },
+      },
+    },
   });
   if (!business) return { error: 'العمل غير موجود', status: 404 };
   if (business.userId !== session.user.id && session.user.role !== 'ADMIN') {
@@ -46,7 +52,8 @@ export async function POST(
     }
 
     const { business } = result;
-    const generated = generateThemeForBusiness(business);
+    const serializedBusiness = serializeBusiness(business);
+    const generated = generateThemeForBusiness(serializedBusiness);
 
     const theme = await prisma.businessTheme.upsert({
       where: { businessId: business.id },

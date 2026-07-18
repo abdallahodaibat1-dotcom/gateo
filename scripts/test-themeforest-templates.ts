@@ -78,7 +78,6 @@ async function applyStoreWithDesign(jar: CookieJar, designId: string) {
     slug,
     description: 'متجر تجريبي لاختبار قوالب ThemeForest الجديدة.',
     categoryId: category.id,
-    subcategoryId: subcategory?.id || undefined,
     websiteType: 'STORE',
     designId,
     logo: logoUrl,
@@ -126,6 +125,16 @@ async function applyStoreWithDesign(jar: CookieJar, designId: string) {
     console.error('Apply response:', data);
     throw new Error(`Apply failed for ${designId}: ${res.status}`);
   }
+
+  if (subcategory?.id && data.business?.id) {
+    await prisma.businessSubcategory.create({
+      data: {
+        businessId: data.business.id,
+        subcategoryId: subcategory.id,
+      },
+    });
+  }
+
   console.log(`✅ ${designId} store created:`, data.business?.slug || slug);
   return data.business?.slug || slug;
 }

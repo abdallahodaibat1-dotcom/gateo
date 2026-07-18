@@ -1,10 +1,11 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Globe, LayoutTemplate, ShoppingBag, Store } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { DesignLibrarySelector } from './DesignLibrarySelector';
-import { SubcategoryCombobox } from './SubcategoryCombobox';
+import { SubcategoryMultiSelect } from './SubcategoryMultiSelect';
 
 interface Subcategory {
   id: string;
@@ -21,15 +22,15 @@ interface Category {
 interface DesignSetupSelectorProps {
   websiteType: 'INTRO' | 'STORE' | '';
   categoryId: string;
-  subcategoryId: string;
-  customSubcategory: string;
+  subcategoryIds: string[];
+  customSubcategories: string[];
   designId: string;
   businessName: string;
   categories: Category[];
   errors: Record<string, string>;
   onWebsiteTypeChange: (type: 'INTRO' | 'STORE') => void;
   onCategoryChange: (categoryId: string) => void;
-  onSubcategoryChange: (payload: { subcategoryId: string; customSubcategory: string }) => void;
+  onSubcategoryChange: (subcategoryIds: string[], customSubcategories: string[]) => void;
   onDesignChange: (designId: string) => void;
   onNext: () => void;
   onBack: () => void;
@@ -53,8 +54,8 @@ const TYPE_OPTIONS = [
 export function DesignSetupSelector({
   websiteType,
   categoryId,
-  subcategoryId,
-  customSubcategory,
+  subcategoryIds,
+  customSubcategories,
   designId,
   businessName,
   categories,
@@ -68,6 +69,17 @@ export function DesignSetupSelector({
 }: DesignSetupSelectorProps) {
   const selectedCategory = categories.find((c) => c.id === categoryId);
   const subcategories = selectedCategory?.subcategories || [];
+  const selectedSubcategoryNames = subcategories
+    .filter((s) => subcategoryIds.includes(s.id))
+    .map((s) => s.name);
+  const subcategoryNames = [...selectedSubcategoryNames, ...customSubcategories];
+  const navigationRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (designId && navigationRef.current) {
+      navigationRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [designId]);
 
   return (
     <div className="min-h-screen bg-slate-50 pb-12">
@@ -159,46 +171,51 @@ export function DesignSetupSelector({
             >
               <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
                 <Store className="w-5 h-5 text-primary" />
-                تصنيف النشاط
+                التصنيف الرئيسي
               </h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="setup-category" className="block text-sm font-medium text-foreground mb-1.5">
-                    التصنيف الرئيسي <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    id="setup-category"
-                    value={categoryId}
-                    onChange={(e) => onCategoryChange(e.target.value)}
-                    className={`w-full px-4 py-2.5 rounded-md border ${
-                      errors.categoryId ? 'border-red-300' : 'border-border'
-                    } focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-surface`}
-                  >
-                    <option value="">اختر تصنيفاً رئيسياً</option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.categoryId && <p className="text-red-500 text-xs mt-1">{errors.categoryId}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">
-                    التصنيف الفرعي
-                  </label>
-                  <SubcategoryCombobox
-                    subcategories={subcategories}
-                    selectedId={subcategoryId}
-                    customValue={customSubcategory}
-                    onChange={onSubcategoryChange}
-                    disabled={!categoryId}
-                    error={errors.subcategoryId}
-                    emptyMessage={!categoryId ? 'اختر التصنيف الرئيسي أولاً' : 'لا توجد تصنيفات فرعية'}
-                  />
-                </div>
+              <div>
+                <label htmlFor="setup-category" className="block text-sm font-medium text-foreground mb-1.5">
+                  التصنيف الرئيسي <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="setup-category"
+                  value={categoryId}
+                  onChange={(e) => onCategoryChange(e.target.value)}
+                  className={`w-full px-4 py-2.5 rounded-md border ${
+                    errors.categoryId ? 'border-red-300' : 'border-border'
+                  } focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-surface`}
+                >
+                  <option value="">اختر تصنيفاً رئيسياً</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.categoryId && <p className="text-red-500 text-xs mt-1">{errors.categoryId}</p>}
               </div>
+            </motion.div>
+
+            {/* Subcategory */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="bg-surface rounded-xl border border-border p-6 shadow-sm"
+            >
+              <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+                <Store className="w-5 h-5 text-secondary" />
+                التصنيف الفرعي
+              </h2>
+              <SubcategoryMultiSelect
+                subcategories={subcategories}
+                selectedIds={subcategoryIds}
+                customSubcategories={customSubcategories}
+                onChange={onSubcategoryChange}
+                disabled={!categoryId}
+                error={errors.subcategoryId}
+                emptyMessage={!categoryId ? 'اختر التصنيف الرئيسي أولاً' : 'لا توجد تصنيفات فرعية'}
+              />
             </motion.div>
 
             {/* Design */}
@@ -214,28 +231,35 @@ export function DesignSetupSelector({
                 websiteType={websiteType}
                 businessName={businessName}
                 categoryName={selectedCategory?.name}
-                subcategoryName={
-                  selectedCategory?.subcategories?.find((s) => s.id === subcategoryId)?.name ||
-                  customSubcategory
-                }
+                subcategoryName={subcategoryNames.join(' / ')}
               />
               {errors.designId && <p className="text-red-500 text-xs mt-3">{errors.designId}</p>}
             </motion.div>
 
             {/* Navigation */}
             <motion.div
+              ref={navigationRef}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="flex items-center justify-between pt-4"
+              className="flex items-center justify-between gap-4 pt-6"
             >
-              <Button variant="outline" onClick={onBack} rightIcon={<ArrowRight className="w-4 h-4" />}>
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                onClick={onBack}
+                rightIcon={<ArrowRight className="w-5 h-5" />}
+                className="min-w-[140px]"
+              >
                 رجوع
               </Button>
               <Button
+                type="button"
                 size="lg"
                 onClick={onNext}
                 leftIcon={<ArrowLeft className="w-5 h-5" />}
+                className="min-w-[200px] shadow-md hover:shadow-lg"
               >
                 متابعة إلى بناء الموقع
               </Button>

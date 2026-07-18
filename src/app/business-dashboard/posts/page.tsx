@@ -15,7 +15,7 @@ interface Post {
   images: any;
   video: string | null;
   createdAt: string;
-  _count: { likes: number; comments: number };
+  _count: { likes: number; comments: number; views: number; shares: number };
 }
 
 interface Business {

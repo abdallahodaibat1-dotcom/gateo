@@ -35,7 +35,7 @@ interface Post {
   postType?: string;
   user: { id: string; name: string | null; avatar: string | null } | null;
   business: { id: string; name: string | null; logo: string | null } | null;
-  _count: { likes: number; comments: number };
+  _count: { likes: number; comments: number; views: number; shares: number };
 }
 
 interface SuggestedUser {
@@ -626,7 +626,7 @@ export default function HomeFeed() {
                       احصلي على موقع إلكتروني خاص وحلول حجز متكاملة
                     </p>
                     <Link
-                      href="/business/apply"
+                      href="/business/apply/start"
                       className="inline-block px-4 py-2 bg-surface text-primary text-xs font-bold rounded-md hover:bg-slate-50 transition-colors shadow-sm"
                     >
                       ابدأ الآن

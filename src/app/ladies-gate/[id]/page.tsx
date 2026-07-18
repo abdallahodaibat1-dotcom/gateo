@@ -24,9 +24,11 @@ interface Business {
   logo: string | null; cover: string | null; city: string | null;
   avgRating: number; reviewCount: number; isVerified: boolean;
   latitude: number | null; longitude: number | null;
-  subcategory: { id: string; name: string } | null;
+  subcategories?: { id: string; name: string; slug: string }[];
+  customSubcategories?: string[];
+  subcategory?: { id: string; name: string } | null;
   category: { id: string; name: string } | null;
-  customSubcategory: string | null;
+  customSubcategory?: string | null;
   distance?: number | null;
   _count: { reviews: number };
 }
@@ -508,12 +510,21 @@ export default function CategoryPage() {
                             </button>
                           </div>
                           <div className="p-4">
-                            {biz.subcategory ? (
-                              <span className="text-[11px] font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">{biz.subcategory.name}</span>
-                            ) : biz.customSubcategory ? (
-                              <span className="text-[11px] font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">{biz.customSubcategory}</span>
+                            {(biz.subcategories && biz.subcategories.length > 0) || (biz.customSubcategories && biz.customSubcategories.length > 0) ? (
+                              <div className="flex flex-wrap gap-1.5">
+                                {biz.subcategories?.map((sub) => (
+                                  <span key={sub.id} className="inline-flex items-center text-xs font-medium bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">
+                                    {sub.name}
+                                  </span>
+                                ))}
+                                {biz.customSubcategories?.map((name, idx) => (
+                                  <span key={`custom-${idx}`} className="inline-flex items-center text-xs font-medium bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">
+                                    {name}
+                                  </span>
+                                ))}
+                              </div>
                             ) : (
-                              <span className="text-[11px] font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">{biz.category?.name}</span>
+                              <span className="inline-flex items-center text-xs font-medium bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">{biz.category?.name}</span>
                             )}
                             <h3 className="text-sm font-bold text-foreground mt-2 mb-1 group-hover:text-primary transition-colors truncate">{biz.name}</h3>
                             <p className="text-xs text-muted line-clamp-2 mb-2 leading-relaxed">{biz.description || 'خدمة متميزة مخصصة للجميع'}</p>

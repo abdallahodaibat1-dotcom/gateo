@@ -25,7 +25,7 @@ interface PostCardProps {
     isPublic: boolean;
     user?: { id: string; name: string | null; avatar: string | null } | null;
     business?: { id: string; name: string | null; logo: string | null } | null;
-    _count?: { likes: number; comments: number };
+    _count?: { likes: number; comments: number; views?: number; shares?: number };
   };
   onLike?: (postId: string, liked: boolean) => void;
   onSave?: (postId: string, saved: boolean) => void;
@@ -40,12 +40,15 @@ export default function PostCard({ post, onLike, onSave, onDelete, onRequireAuth
   const [liked, setLiked] = useState(post.isLiked || false);
   const [saved, setSaved] = useState(post.isSaved || false);
   const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
+  const [viewCount, setViewCount] = useState(post._count?.views || 0);
+  const [shareCount, setShareCount] = useState(post._count?.shares || 0);
   const [showMenu, setShowMenu] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
   const [muted, setMuted] = useState(true);
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const viewTrackedRef = useRef(false);
 
   const images: string[] = Array.isArray(post.images) ? post.images : [];
   const authorName = post.user?.name || post.business?.name || 'مستخدم';
@@ -56,21 +59,40 @@ export default function PostCard({ post, onLike, onSave, onDelete, onRequireAuth
 
   useEffect(() => {
     if (!isReel || !videoRef.current) return;
+    const video = videoRef.current;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          videoRef.current?.play().catch(() => {});
+          video.play().catch(() => {});
           setVideoPlaying(true);
+          trackView();
         } else {
-          videoRef.current?.pause();
+          video.pause();
           setVideoPlaying(false);
         }
       },
       { threshold: 0.6 }
     );
-    observer.observe(videoRef.current);
+    observer.observe(video);
     return () => observer.disconnect();
   }, [isReel]);
+
+  const trackView = () => {
+    if (viewTrackedRef.current) return;
+    if (typeof window === 'undefined') return;
+    const viewedKey = `viewed_posts`;
+    try {
+      const viewed = JSON.parse(localStorage.getItem(viewedKey) || '[]') as string[];
+      if (viewed.includes(post.id)) return;
+      viewed.push(post.id);
+      localStorage.setItem(viewedKey, JSON.stringify(viewed));
+      viewTrackedRef.current = true;
+      fetch(`/api/posts/${post.id}/view`, { method: 'POST' }).catch(() => {});
+      setViewCount((prev) => prev + 1);
+    } catch {
+      // ignore localStorage errors
+    }
+  };
 
   const handleLike = async () => {
     if (!currentUserId) {
@@ -101,6 +123,11 @@ export default function PostCard({ post, onLike, onSave, onDelete, onRequireAuth
         onSave?.(post.id, data.saved);
       }
     } catch (e) {}
+  };
+
+  const handleShare = async () => {
+    setShareCount((prev) => prev + 1);
+    fetch(`/api/posts/${post.id}/share`, { method: 'POST' }).catch(() => {});
   };
 
   const handleDelete = async () => {
@@ -271,7 +298,13 @@ export default function PostCard({ post, onLike, onSave, onDelete, onRequireAuth
         {/* Regular Video */}
         {!isReel && post.video && images.length === 0 && (
           <div className="bg-black">
-            <video src={post.video} controls className="w-full aspect-video" />
+            <video
+              ref={videoRef}
+              src={post.video}
+              controls
+              className="w-full aspect-video"
+              onPlay={trackView}
+            />
           </div>
         )}
 
@@ -300,7 +333,14 @@ export default function PostCard({ post, onLike, onSave, onDelete, onRequireAuth
                 <MessageCircle className="w-6 h-6" />
               </Link>
               <button
-                onClick={() => currentUserId ? setShareOpen(true) : onRequireAuth?.()}
+                onClick={() => {
+                  if (!currentUserId) {
+                    onRequireAuth?.();
+                    return;
+                  }
+                  setShareOpen(true);
+                  handleShare();
+                }}
                 className="p-2 rounded-full text-foreground hover:text-muted transition-colors"
                 aria-label="مشاركة"
               >
@@ -319,18 +359,24 @@ export default function PostCard({ post, onLike, onSave, onDelete, onRequireAuth
           </div>
         </div>
 
-        {/* Likes & Caption */}
+        {/* Stats, Likes & Caption */}
         <div className="px-4 pb-1">
-          {likeCount > 0 && (
-            <div className="text-sm font-semibold text-foreground mb-1">
-              {likeCount.toLocaleString('ar-SA')} {likeCount === 1 ? 'إعجاب' : 'إعجاب'}
-            </div>
-          )}
-          {post._count && post._count.comments > 0 && (
-            <Link href={`/post/${post.id}`} className="text-sm text-muted hover:text-foreground block mb-1">
-              عرض كل {post._count.comments} {post._count.comments === 1 ? 'تعليق' : 'تعليقات'}
-            </Link>
-          )}
+          <div className="flex items-center gap-3 text-sm text-muted mb-2">
+            {likeCount > 0 && (
+              <span>{likeCount.toLocaleString('ar-SA')} إعجاب</span>
+            )}
+            {viewCount > 0 && (
+              <span>{viewCount.toLocaleString('ar-SA')} مشاهدة</span>
+            )}
+            {shareCount > 0 && (
+              <span>{shareCount.toLocaleString('ar-SA')} مشاركة</span>
+            )}
+            {post._count && post._count.comments > 0 && (
+              <Link href={`/post/${post.id}`} className="hover:text-foreground">
+                {post._count.comments} {post._count.comments === 1 ? 'تعليق' : 'تعليقات'}
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Add comment teaser */}

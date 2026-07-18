@@ -430,7 +430,6 @@ async function main() {
         logo: logoUrl,
         cover: coverUrl,
         categoryId: category.id,
-        subcategoryId: subcategory.id,
         countryId: country?.id || null,
         city: biz.city,
         address: biz.address,
@@ -452,7 +451,6 @@ async function main() {
         logo: logoUrl,
         cover: coverUrl,
         categoryId: category.id,
-        subcategoryId: subcategory.id,
         countryId: country?.id || null,
         city: biz.city,
         address: biz.address,
@@ -467,6 +465,15 @@ async function main() {
         avgRating: 4.5 + Math.random() * 0.5,
         reviewCount: Math.floor(Math.random() * 150) + 20,
         updatedAt: new Date(),
+      },
+    });
+
+    // Seed subcategories
+    await prisma.businessSubcategory.deleteMany({ where: { businessId: business.id } });
+    await prisma.businessSubcategory.create({
+      data: {
+        businessId: business.id,
+        subcategoryId: subcategory.id,
       },
     });
 

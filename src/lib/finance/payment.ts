@@ -9,7 +9,14 @@ export async function processBookingPayment(
 ) {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
-    include: { Business: true, Service: true },
+    include: {
+      Business: {
+        include: {
+          BusinessSubcategory: { select: { subcategoryId: true } },
+        },
+      },
+      Service: true,
+    },
   });
   if (!booking) throw new Error('الحجز غير موجود');
   if (booking.userId !== userId) throw new Error('غير مصرح');
@@ -65,11 +72,15 @@ export async function processBookingPayment(
   });
 
   // Calculate and record commission
+  const subcategoryIds = booking.Business.BusinessSubcategory.map(
+    (bs) => bs.subcategoryId
+  ).filter((id): id is string => Boolean(id));
+
   const commission = await calculateCommission(
     'bookings',
     Number(invoice.total),
     booking.Business.categoryId,
-    booking.Business.subcategoryId
+    subcategoryIds
   );
   if (commission.amount > 0 && commission.ruleId) {
     await recordCommission(commission.ruleId, commission.amount, 'BOOKING', booking.id, {

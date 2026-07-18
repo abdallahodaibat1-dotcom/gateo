@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Minus, Trash2, ShoppingBag, CreditCard } from 'lucide-react';
 import { useCart } from '@/components/CartProvider';
@@ -78,12 +79,14 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     key={item.productId}
                     className="flex gap-3 p-3 rounded-xl bg-[var(--theme-surface)] border border-border shadow-sm"
                   >
-                    <div className="w-20 h-20 rounded-lg bg-slate-100 overflow-hidden shrink-0">
+                    <div className="relative w-20 h-20 rounded-lg bg-slate-100 overflow-hidden shrink-0">
                       {item.image ? (
-                        <img
+                        <Image
                           src={item.image}
                           alt={item.name}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="80px"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-300">

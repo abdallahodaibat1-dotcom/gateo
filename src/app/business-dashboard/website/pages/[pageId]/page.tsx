@@ -123,7 +123,7 @@ export default function PageEditorPage() {
       const businessRes = await fetch('/api/businesses/my');
       if (!businessRes.ok) {
         if (businessRes.status === 404) {
-          router.push('/business/apply');
+          router.push('/business/apply/start');
           return;
         }
         throw new Error('فشل في جلب بيانات النشاط');

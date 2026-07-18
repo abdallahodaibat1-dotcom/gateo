@@ -38,12 +38,12 @@ const defaultTheme = {
   sections: [
     { id: 'hero', type: 'hero', enabled: true, order: 10 },
     { id: 'about', type: 'about', enabled: true, order: 20 },
-    { id: 'experience', type: 'experience', enabled: true, order: 30 },
-    { id: 'services', type: 'services', enabled: true, order: 40 },
-    { id: 'gallery', type: 'gallery', enabled: true, order: 50 },
-    { id: 'reviews', type: 'reviews', enabled: true, order: 60 },
-    { id: 'contact', type: 'contact', enabled: true, order: 70 },
-    { id: 'cta', type: 'cta', enabled: true, order: 80 },
+    { id: 'services', type: 'services', enabled: true, order: 30 },
+    { id: 'bridal', type: 'bridal', enabled: true, order: 40 },
+    { id: 'pricing', type: 'pricing', enabled: true, order: 50 },
+    { id: 'gallery', type: 'gallery', enabled: true, order: 60 },
+    { id: 'reviews', type: 'reviews', enabled: true, order: 70 },
+    { id: 'contact', type: 'contact', enabled: true, order: 80 },
   ],
   customCss: null,
   isPublished: true,
@@ -63,7 +63,7 @@ const updateSchema = z.object({
   buttonStyle: z.enum(['gradient', 'solid', 'outline']).optional(),
   heroLayout: z.enum(['center', 'split', 'minimal']).optional(),
   navbarStyle: z.enum(['fixed', 'static', 'transparent']).optional(),
-  homeTemplate: z.enum(['default', 'porto-shop1', 'flatsome', 'elessi', 'grand-restaurant', 'houzez', 'jacqueline', 'ohio']).optional(),
+  homeTemplate: z.enum(['default', 'enfold-spa', 'beauty-salon-1', 'fashion-1', 'modern-intro']).optional(),
   sections: z.array(z.object({
     id: z.string(),
     type: z.string(),
@@ -79,7 +79,14 @@ const updateSchema = z.object({
 async function getBusinessAndAuthorize(id: string, session: any) {
   const business = await prisma.business.findFirst({
     where: { OR: [{ id }, { slug: id }] },
-    include: { Category: true, Subcategory: true },
+    include: {
+      Category: true,
+      BusinessSubcategory: {
+        include: {
+          Subcategory: { select: { id: true, name: true, slug: true } },
+        },
+      },
+    },
   });
   if (!business) return { error: 'العمل غير موجود', status: 404 };
   if (business.userId !== session.user.id && session.user.role !== 'ADMIN') {

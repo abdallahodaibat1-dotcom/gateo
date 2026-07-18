@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dress Shop · Wedding Dress Fashion</title>
+    <meta name="description" content="Dress Shop - متجر متخصص بفساتين السهرة والأعراس ومستلزمات العروس الفاخرة. تشكيلة حصرية وخدمة بيع وإيجار.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Tajawal:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Top Announcement Bar -->
+    <div class="top-bar">
+        <div class="container top-inner">
+            <div class="top-left">
+                <span>أهلاً بكِ، <a href="#" class="top-link">تسجيل الدخول</a></span>
+                <span class="sep">|</span>
+                <a href="#" class="top-link">حسابي</a>
+                <span class="sep">|</span>
+                <a href="#" class="top-link">قائمة الأمنيات</a>
+            </div>
+            <div class="top-right">
+                <select class="top-select" aria-label="اللغة">
+                    <option>AR</option>
+                    <option>EN</option>
+                    <option>FR</option>
+                </select>
+                <span class="sep">|</span>
+                <select class="top-select" aria-label="العملة">
+                    <option>USD $</option>
+                    <option>SAR ر.س</option>
+                    <option>AED د.إ</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="container header-inner">
+            <a href="index.html" class="logo">
+                <span class="logo-script">Dress Shop</span>
+            </a>
+
+            <div class="header-search">
+                <input type="search" placeholder="ابحثي عن فستانكِ..." aria-label="بحث">
+                <button type="submit" aria-label="بحث"><i class="fas fa-search"></i></button>
+            </div>
+
+            <div class="header-right">
+                <a href="tel:+0790000000" class="header-contact">
+                    <i class="fas fa-phone-alt"></i>
+                    <div>
+                        <span>اتصلي بنا</span>
+                        <strong>079-000-0000</strong>
+                    </div>
+                </a>
+                <a href="#" class="header-action" aria-label="حسابي">
+                    <i class="far fa-user"></i>
+                    <span>حسابي</span>
+                </a>
+                <a href="#" class="header-action" aria-label="المفضلة">
+                    <i class="far fa-heart"></i>
+                    <span class="badge">3</span>
+                </a>
+                <a href="#" class="header-action" aria-label="السلة">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="badge">2</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation (Mega Menu) -->
+    <nav class="main-nav">
+        <div class="container">
+            <ul class="nav-list">
+                <li><a href="index.html" class="active">الرئيسية</a></li>
+                <li class="has-mega">
+                    <a href="shop.html?cat=wedding">فساتين الزفاف <i class="fas fa-chevron-down"></i></a>
+                    <div class="mega-menu">
+                        <div class="mega-col">
+                            <h4>حسب الستايل</h4>
+                            <ul>
+                                <li><a href="shop.html?cat=wedding&style=princess">أميرة منفوش</a></li>
+                                <li><a href="shop.html?cat=wedding&style=mermaid">حورية البحر</a></li>
+                                <li><a href="shop.html?cat=wedding&style=aline">A-Line</a></li>
+                                <li><a href="shop.html?cat=wedding&style=sheath">مستقيم</a></li>
+                                <li><a href="shop.html?cat=wedding&style=short">قصير</a></li>
+                            </ul>
+                        </div>
+                        <div class="mega-col">
+                            <h4>حسب الكم</h4>
+                            <ul>
+                                <li><a href="shop.html?cat=wedding&sleeve=sleeveless">بدون أكمام</a></li>
+                                <li><a href="shop.html?cat=wedding&sleeve=long">أكمام طويلة</a></li>
+                                <li><a href="shop.html?cat=wedding&sleeve=lace">دانتيل</a></li>
+                                <li><a href="shop.html?cat=wedding&sleeve=one">كتف واحد</a></li>
+                                <li><a href="shop.html?cat=wedding&sleeve=off">كتف مكشوف</a></li>
+                            </ul>
+                        </div>
+                        <div class="mega-col mega-img">
+                            <a href="shop.html?cat=wedding"><img src="images/wedding/princess/2.jpg" alt="تشكيلة الزفاف">
+                            <div class="mega-img-text">
+                                <span>تشكيلة 2026</span>
+                                <strong>اكتشفي الجديد</strong>
+                            </div></a>
+                        </div>
+                    </div>
+                </li>
+                <li class="has-mega">
+                    <a href="shop.html?cat=evening">فساتين السهرة <i class="fas fa-chevron-down"></i></a>
+                    <div class="mega-menu">
+                        <div class="mega-col">
+                            <h4>حسب المناسبة</h4>
+                            <ul>
+                                <li><a href="shop.html?cat=evening&occ=engagement">خطوبة</a></li>
+                                <li><a href="shop.html?cat=evening&occ=wedding">زفاف</a></li>
+                                <li><a href="shop.html?cat=evening&occ=graduation">تخرج</a></li>
+                                <li><a href="shop.html?cat=evening&occ=birthday">عيد ميلاد</a></li>
+                                <li><a href="shop.html?cat=evening&occ=formal">رسمية</a></li>
+                            </ul>
+                        </div>
+                        <div class="mega-col">
+                            <h4>حسب اللون</h4>
+                            <ul>
+                                <li><a href="shop.html?cat=evening&color=red">أحمر</a></li>
+                                <li><a href="shop.html?cat=evening&color=black">أسود</a></li>
+                                <li><a href="shop.html?cat=evening&color=blue">أزرق ملكي</a></li>
+                                <li><a href="shop.html?cat=evening&color=pink">وردي</a></li>
+                                <li><a href="shop.html?cat=evening&color=gold">ذهبي</a></li>
+                            </ul>
+                        </div>
+                        <div class="mega-col mega-img">
+                            <a href="shop.html?cat=evening"><img src="images/evening/red/2.jpg" alt="تشكيلة السهرة">
+                            <div class="mega-img-text">
+                                <span>تشكيلة حصرية</span>
+                                <strong>فساتين السهرة</strong>
+                            </div></a>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="shop.html?cat=accessories">مستلزمات العروس</a></li>
+                <li><a href="#services">خدماتنا</a></li>
+                <li><a href="#reviews">آراء العميلات</a></li>
+                <li><a href="#about">من نحن</a></li>
+                <li><a href="#contact">تواصلي معنا</a></li>
+                <li><a href="shop.html">المتجر</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Slider -->
+    <section class="hero-slider" id="home">
+        <div class="hero-slides">
+            <div class="hero-slide active" style="background-image: url('images/wedding/2.jpg')">
+                <div class="hero-content">
+                    <span class="hero-tag">— مجموعة 2026 —</span>
+                    <h1 class="hero-title"><em>Wedding Dress</em> Fashion</h1>
+                    <p class="hero-sub">تشكيلة حصرية من فساتين الزفاف الفاخرة، تجمع بين الأناقة الكلاسيكية واللمسات العصرية</p>
+                    <div class="hero-actions">
+                        <a href="#dresses" class="btn-primary">اكتشفي التشكيلة</a>
+                        <a href="#booking" class="btn-line">احجزي موعد</a>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-slide" style="background-image: url('images/evening/red/5.jpg')">
+                <div class="hero-content">
+                    <span class="hero-tag">— الأكثر طلباً —</span>
+                    <h1 class="hero-title"><em>Off Shoulder</em> Dress</h1>
+                    <p class="hero-sub">فساتين سهرة بكتف مكشوف، تجمع بين الجرأة والأنوثة في تصميم واحد مذهل</p>
+                    <div class="hero-actions">
+                        <a href="#dresses" class="btn-primary">تسوّقي الآن</a>
+                        <a href="#booking" class="btn-line">احجزي موعد</a>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-slide" style="background-image: url('images/wedding/princess/5.jpg')">
+                <div class="hero-content">
+                    <span class="hero-tag">— لحظة العمر —</span>
+                    <h1 class="hero-title"><em>Seize Your</em> Moment</h1>
+                    <p class="hero-sub">اجعلي يوم زفافكِ ذكرى لا تُنسى مع فساتين Princess المصممة خصيصاً لكِ</p>
+                    <div class="hero-actions">
+                        <a href="#dresses" class="btn-primary">شاهدي التشكيلة</a>
+                        <a href="#booking" class="btn-line">احجزي موعد</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="hero-arrow hero-prev" aria-label="السابق"><i class="fas fa-chevron-right"></i></button>
+        <button class="hero-arrow hero-next" aria-label="التالي"><i class="fas fa-chevron-left"></i></button>
+
+        <div class="hero-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+    </section>
+
+    <!-- Three Category Cards -->
+    <section class="cat-cards">
+        <div class="container">
+            <div class="cat-grid">
+                <a href="shop.html?cat=accessories" class="cat-card">
+                    <div class="cat-img"><img src="images/accessories/5.jpg" alt="أحذية"></div>
+                    <div class="cat-text">
+                        <span class="cat-script">Bridal</span>
+                        <span class="cat-sans">SHOES</span>
+                    </div>
+                </a>
+                <a href="shop.html?cat=accessories" class="cat-card">
+                    <div class="cat-img"><img src="images/accessories/bouquet/2.jpg" alt="باقات"></div>
+                    <div class="cat-text">
+                        <span class="cat-script">Wedding</span>
+                        <span class="cat-sans">BOUQUETS</span>
+                    </div>
+                </a>
+                <a href="shop.html?cat=accessories" class="cat-card">
+                    <div class="cat-img"><img src="images/accessories/3.jpg" alt="مجوهرات"></div>
+                    <div class="cat-text">
+                        <span class="cat-script">Bridal</span>
+                        <span class="cat-sans">JEWELRY</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="featured" id="dresses">
+        <div class="container">
+            <div class="section-head-simple">
+                <h2 class="section-title-simple">FEATURED <em>Products</em></h2>
+                <p class="section-sub-simple">أكثر الفساتين طلباً من عميلاتنا</p>
+            </div>
+
+            <div class="filter-tabs">
+                <button class="tab-btn active" data-filter="all">الكل</button>
+                <button class="tab-btn" data-filter="wedding">أعراس</button>
+                <button class="tab-btn" data-filter="evening">سهرة</button>
+                <button class="tab-btn" data-filter="accessories">مستلزمات</button>
+            </div>
+
+            <div class="products-grid" id="productsGrid">
+                <!-- Products injected via JS -->
+            </div>
+
+            <div class="load-more-wrap">
+                <a href="shop.html" class="btn-outline">عرض جميع المنتجات</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Promo Banner -->
+    <section class="promo-banner">
+        <div class="container">
+            <div class="promo-card">
+                <div class="promo-img">
+                    <img src="images/accessories/0.jpg" alt="إكسسوارات">
+                </div>
+                <div class="promo-text">
+                    <span class="promo-tag">جديد</span>
+                    <h2 class="promo-title"><em>New!</em> Accessories</h2>
+                    <p>تشكيلة 2026 من إكسسوارات العروس الفاخرة</p>
+                    <a href="#dresses" class="btn-primary">تسوّقي الآن</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services -->
+    <section class="services-section" id="services">
+        <div class="container">
+            <div class="section-head-simple">
+                <h2 class="section-title-simple">OUR <em>Services</em></h2>
+                <p class="section-sub-simple">خدمات متكاملة لراحتكِ</p>
+            </div>
+
+            <div class="services-grid">
+                <div class="service-card">
+                    <i class="fas fa-tshirt service-icon"></i>
+                    <h3>الإيجار الفاخر</h3>
+                    <p>خزّانة فساتين فاخرة متجددة، خدمة تأجير شاملة مع التنظيف والكي.</p>
+                </div>
+                <div class="service-card">
+                    <i class="fas fa-gem service-icon"></i>
+                    <h3>البيع المباشر</h3>
+                    <p>اقتني فستان أحلامكِ للأبد، مع ضمان الجودة والتعديل المجاني.</p>
+                </div>
+                <div class="service-card">
+                    <i class="fas fa-magic service-icon"></i>
+                    <h3>التصميم حسب الطلب</h3>
+                    <p>مصممتنا تترجم حلمكِ إلى واقع، من الفكرة حتى الفستان النهائي.</p>
+                </div>
+                <div class="service-card">
+                    <i class="fas fa-truck service-icon"></i>
+                    <h3>التوصيل المجاني</h3>
+                    <p>خدمة توصيل آمنة لكل أنحاء المدينة مع تأمين شامل.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="about">
+        <div class="container about-grid">
+            <div class="about-img">
+                <img src="images/wedding/princess/0.jpg" alt="من نحن">
+                <div class="about-img-deco">
+                    <span class="deco-script">Est.</span>
+                    <strong>2015</strong>
+                </div>
+            </div>
+            <div class="about-content">
+                <span class="about-tag">— قصتنا —</span>
+                <h2 class="about-title">A <em>Boutique</em><br>for the Modern Bride</h2>
+                <p>منذ عام ٢٠١٥ ونحن في Dress Shop نؤمن بأن كل عروس تستحق إطلالة استثنائية. نمزج بين الأناقة الكلاسيكية والذوق العصري لنقدم لكِ تشكيلة فريدة من فساتين الزفاف والسهرة.</p>
+                <p>خبراؤنا في الموضة يرافقونكِ في كل خطوة، من اختيار الفستان حتى التعديلات الأخيرة، لنضمن لكِ تجربة لا تُنسى.</p>
+                <div class="about-stats">
+                    <div class="about-stat">
+                        <strong>850+</strong>
+                        <span>فستان فاخر</span>
+                    </div>
+                    <div class="about-stat">
+                        <strong>2400+</strong>
+                        <span>عروس سعيدة</span>
+                    </div>
+                    <div class="about-stat">
+                        <strong>4.9★</strong>
+                        <span>تقييم العميلات</span>
+                    </div>
+                </div>
+                <a href="#booking" class="btn-primary">احجزي موعد</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Accessories Highlight -->
+    <section class="accessories-section" id="accessories">
+        <div class="container">
+            <div class="section-head-simple">
+                <h2 class="section-title-simple">BRIDAL <em>Accessories</em></h2>
+                <p class="section-sub-simple">لمسات تكمل إطلالتكِ</p>
+            </div>
+
+            <div class="acc-grid">
+                <a href="#" class="acc-card">
+                    <div class="acc-img-wrap"><img src="images/accessories/3.jpg" alt="تيجان"></div>
+                    <h4>تيجان وطرحات</h4>
+                    <span class="acc-link">تسوّقي →</span>
+                </a>
+                <a href="#" class="acc-card">
+                    <div class="acc-img-wrap"><img src="images/accessories/0.jpg" alt="مجوهرات"></div>
+                    <h4>مجوهرات العروس</h4>
+                    <span class="acc-link">تسوّقي →</span>
+                </a>
+                <a href="#" class="acc-card">
+                    <div class="acc-img-wrap"><img src="images/accessories/5.jpg" alt="أحذية"></div>
+                    <h4>أحذية وكعب</h4>
+                    <span class="acc-link">تسوّقي →</span>
+                </a>
+                <a href="#" class="acc-card">
+                    <div class="acc-img-wrap"><img src="images/accessories/bouquet/2.jpg" alt="باقات"></div>
+                    <h4>باقات الزهور</h4>
+                    <span class="acc-link">تسوّقي →</span>
+                </a>
+                <a href="#" class="acc-card">
+                    <div class="acc-img-wrap"><img src="images/accessories/8.jpg" alt="حقائب"></div>
+                    <h4>حقائب وإكسسوارات</h4>
+                    <span class="acc-link">تسوّقي →</span>
+                </a>
+                <a href="#" class="acc-card">
+                    <div class="acc-img-wrap"><img src="images/accessories/1.jpg" alt="مكملات"></div>
+                    <h4>مكملات يدوية</h4>
+                    <span class="acc-link">تسوّقي →</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews -->
+    <section class="reviews-section" id="reviews">
+        <div class="container">
+            <div class="section-head-simple">
+                <h2 class="section-title-simple">CUSTOMER <em>Reviews</em></h2>
+                <p class="section-sub-simple">قصص حقيقية من عميلاتنا</p>
+            </div>
+
+            <div class="rating-overview">
+                <div class="rating-big">
+                    <strong>4.9</strong>
+                    <div class="rating-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <span>من ٥ — ٢٤١٨ تقييم</span>
+                </div>
+                <div class="rating-bars">
+                    <div class="rb-row"><span>5 ★</span><div class="rb"><div style="width: 92%"></div></div><span class="rb-pct">92%</span></div>
+                    <div class="rb-row"><span>4 ★</span><div class="rb"><div style="width: 6%"></div></div><span class="rb-pct">6%</span></div>
+                    <div class="rb-row"><span>3 ★</span><div class="rb"><div style="width: 1%"></div></div><span class="rb-pct">1%</span></div>
+                    <div class="rb-row"><span>2 ★</span><div class="rb"><div style="width: 0.5%"></div></div><span class="rb-pct">0.5%</span></div>
+                    <div class="rb-row"><span>1 ★</span><div class="rb"><div style="width: 0.5%"></div></div><span class="rb-pct">0.5%</span></div>
+                </div>
+            </div>
+
+            <div class="reviews-grid" id="reviewsGrid">
+                <!-- Reviews injected via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Form -->
+    <section class="booking-section" id="booking">
+        <div class="container">
+            <div class="booking-wrap">
+                <div class="booking-side">
+                    <span class="about-tag">— احجزي موعدكِ —</span>
+                    <h2 class="about-title">Book Your <em>Consultation</em></h2>
+                    <p>جلسة استشارة شخصية مع خبيرتنا في اختيار فستان أحلامكِ. الخدمة مجانية تماماً.</p>
+
+                    <ul class="booking-perks">
+                        <li><i class="fas fa-check"></i> استشارة شخصية مع خبيرة الموضة</li>
+                        <li><i class="fas fa-check"></i> تجربة حتى ٥ فساتين</li>
+                        <li><i class="fas fa-check"></i> مشروبات وترحيب فاخر</li>
+                        <li><i class="fas fa-check"></i> صور احترافية بعد الجلسة</li>
+                    </ul>
+
+                    <div class="booking-contact">
+                        <div class="bc-item">
+                            <i class="fas fa-phone"></i>
+                            <div>
+                                <span>اتصلي بنا</span>
+                                <strong>079-000-0000</strong>
+                            </div>
+                        </div>
+                        <div class="bc-item">
+                            <i class="fab fa-whatsapp"></i>
+                            <div>
+                                <span>واتساب</span>
+                                <strong>079-000-0000</strong>
+                            </div>
+                        </div>
+                        <div class="bc-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <span>العنوان</span>
+                                <strong>شارع الموضة، المدينة</strong>
+                            </div>
+                        </div>
+                        <div class="bc-item">
+                            <i class="far fa-clock"></i>
+                            <div>
+                                <span>أوقات العمل</span>
+                                <strong>يومياً ١٠ص - ١٠م</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form class="booking-form" id="bookingForm">
+                    <h3>نموذج الحجز</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>الاسم الكامل *</label>
+                            <input type="text" name="name" required placeholder="اسمكِ الثلاثي">
+                        </div>
+                        <div class="form-group">
+                            <label>رقم الهاتف *</label>
+                            <input type="tel" name="phone" required placeholder="07X-XXXXXXX">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>البريد الإلكتروني</label>
+                            <input type="email" name="email" placeholder="example@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label>تاريخ المناسبة</label>
+                            <input type="date" name="date">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>نوع الخدمة</label>
+                            <select name="service">
+                                <option value="">اختاري...</option>
+                                <option value="rent">إيجار فستان</option>
+                                <option value="buy">شراء فستان</option>
+                                <option value="custom">تصميم حسب الطلب</option>
+                                <option value="acc">مستلزمات العروس</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>نوع المناسبة</label>
+                            <select name="occasion">
+                                <option value="">اختاري...</option>
+                                <option value="wedding">زفاف</option>
+                                <option value="engagement">خطوبة</option>
+                                <option value="party">حفلة سهرة</option>
+                                <option value="graduation">تخرج</option>
+                                <option value="other">أخرى</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>ملاحظاتكِ</label>
+                        <textarea name="notes" rows="4" placeholder="حدّثينا عن حلمكِ..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary btn-block">
+                        أرسلي الطلب <i class="fas fa-paper-plane"></i>
+                    </button>
+                    <p class="form-note">سنتواصل معكِ خلال ٢٤ ساعة لتأكيد موعدكِ</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="newsletter">
+        <div class="container">
+            <div class="news-card">
+                <span class="news-tag">Newsletter</span>
+                <h3>اشتركي في نشرتنا البريدية</h3>
+                <p>كوني أول من يعرف عن التشكيلات الجديدة والعروض الحصرية</p>
+                <form class="news-form">
+                    <input type="email" placeholder="بريدكِ الإلكتروني" required>
+                    <button type="submit">اشتراك <i class="fas fa-envelope"></i></button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" id="contact">
+        <div class="footer-top">
+            <div class="container footer-grid">
+                <div class="footer-col footer-brand">
+                    <a href="#" class="logo footer-logo">
+                        <span class="logo-script">Dress Shop</span>
+                    </a>
+                    <p>متجر متخصص بفساتين الزفاف والسهرة ومستلزمات العروس الفاخرة. نقدم تجربة تسوق فريدة تمزج بين الأناقة والجودة منذ ٢٠١٥.</p>
+                    <div class="social">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" aria-label="Pinterest"><i class="fab fa-pinterest-p"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h4>INFORMATION</h4>
+                    <ul>
+                        <li><a href="#">من نحن</a></li>
+                        <li><a href="#">التوصيل</a></li>
+                        <li><a href="#">الإرجاع والاستبدال</a></li>
+                        <li><a href="#">الشروط والأحكام</a></li>
+                        <li><a href="#">سياسة الخصوصية</a></li>
+                        <li><a href="#">الأسئلة الشائعة</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>OUR OFFERS</h4>
+                    <ul>
+                        <li><a href="#">تشكيلة جديدة</a></li>
+                        <li><a href="#">الأكثر مبيعاً</a></li>
+                        <li><a href="#">العروض الخاصة</a></li>
+                        <li><a href="#">المصممون</a></li>
+                        <li><a href="#">بطاقات الإهداء</a></li>
+                        <li><a href="#">قصص العرائس</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>YOUR ACCOUNT</h4>
+                    <ul>
+                        <li><a href="#">حسابي</a></li>
+                        <li><a href="#">معلومات شخصية</a></li>
+                        <li><a href="#">عناويني</a></li>
+                        <li><a href="#">تاريخ الطلبات</a></li>
+                        <li><a href="#">قائمة الأمنيات</a></li>
+                        <li><a href="#">النشرة البريدية</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col footer-contact">
+                    <h4>CONTACT US</h4>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> شارع الموضة، مقابل المركز التجاري</li>
+                        <li><i class="fas fa-phone"></i> 079-000-0000</li>
+                        <li><i class="fab fa-whatsapp"></i> 079-000-0000</li>
+                        <li><i class="fas fa-envelope"></i> info@dressshop.com</li>
+                        <li><i class="far fa-clock"></i> يومياً ١٠ص - ١٠م</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <div class="footer-bottom-inner">
+                    <p>© 2026 <strong>Dress Shop</strong> · جميع الحقوق محفوظة · صُنع بحب 💕</p>
+                    <div class="payment">
+                        <span>طرق الدفع:</span>
+                        <i class="fab fa-cc-visa"></i>
+                        <i class="fab fa-cc-mastercard"></i>
+                        <i class="fab fa-cc-amex"></i>
+                        <i class="fab fa-cc-paypal"></i>
+                        <i class="fab fa-cc-apple-pay"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating Actions -->
+    <div class="float-actions">
+        <a href="https://wa.me/0790000000" class="float-btn whatsapp" aria-label="واتساب">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+        <button class="float-btn scroll-top" id="scrollTop" aria-label="للأعلى">
+            <i class="fas fa-chevron-up"></i>
+        </button>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

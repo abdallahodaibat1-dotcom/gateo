@@ -20,6 +20,8 @@ interface FormShape {
   description?: string;
   categoryId?: string;
   subcategoryId?: string;
+  subcategoryIds?: string[];
+  customSubcategories?: string[];
   logo?: string;
   cover?: string;
   gallery?: string[];
@@ -107,13 +109,16 @@ export function IntroWebsitePreview({ form, categories = [], designId, themeColo
             </div>
             <div className="mb-2 flex-1 min-w-0">
               <h4 className="font-bold text-foreground text-base truncate">{form.name || 'اسم العمل'}</h4>
-              <p className="text-xs text-muted truncate">gateo.com/business/{form.slug || '...'}</p>
+              <p className="text-xs text-muted truncate">gateo.com/b/{form.slug || '...'}</p>
             </div>
           </div>
 
           <div className="mt-4 space-y-3">
             {/* Category badges */}
-            {(form.categoryId || form.subcategoryId) && (
+            {(form.categoryId ||
+              form.subcategoryId ||
+              (form.subcategoryIds && form.subcategoryIds.length > 0) ||
+              (form.customSubcategories && form.customSubcategories.length > 0)) && (
               <div className="flex flex-wrap gap-1.5">
                 {form.categoryId && (
                   <span
@@ -126,7 +131,20 @@ export function IntroWebsitePreview({ form, categories = [], designId, themeColo
                     {selectedCategory?.name || form.categoryId}
                   </span>
                 )}
-                {form.subcategoryId && (
+                {form.subcategoryIds && form.subcategoryIds.length > 0 ? (
+                  form.subcategoryIds.map((id) => (
+                    <span
+                      key={id}
+                      className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                      style={{
+                        backgroundColor: 'color-mix(in srgb, var(--theme-secondary) 10%, transparent)',
+                        color: 'var(--theme-secondary)',
+                      }}
+                    >
+                      {selectedCategory?.subcategories?.find((s) => s.id === id)?.name || id}
+                    </span>
+                  ))
+                ) : form.subcategoryId ? (
                   <span
                     className="text-[10px] px-2 py-0.5 rounded-full font-medium"
                     style={{
@@ -136,7 +154,20 @@ export function IntroWebsitePreview({ form, categories = [], designId, themeColo
                   >
                     {selectedCategory?.subcategories?.find((s) => s.id === form.subcategoryId)?.name || form.subcategoryId}
                   </span>
-                )}
+                ) : null}
+                {form.customSubcategories && form.customSubcategories.length > 0 &&
+                  form.customSubcategories.map((name) => (
+                    <span
+                      key={name}
+                      className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                      style={{
+                        backgroundColor: 'color-mix(in srgb, var(--theme-secondary) 10%, transparent)',
+                        color: 'var(--theme-secondary)',
+                      }}
+                    >
+                      {name}
+                    </span>
+                  ))}
               </div>
             )}
 

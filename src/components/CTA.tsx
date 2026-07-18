@@ -29,7 +29,7 @@ export default function CTA() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Link
-                href="/business/apply"
+                href="/business/apply/start"
                 className="flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-surface text-primary font-bold text-lg shadow-lg hover:shadow-xl transition-shadow"
               >
                 سجّل نشاطك التجاري

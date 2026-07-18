@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -11,22 +12,23 @@ import {
   ArrowRight,
   ShoppingBag,
   Check,
-  Share2,
   Tag,
   Store,
 } from 'lucide-react';
 import { useCart } from '@/components/CartProvider';
 import { useWishlist } from '@/components/WishlistProvider';
+import { useRecentlyViewed } from '@/components/RecentlyViewedProvider';
 import { useToast } from '@/components/ui/Toast';
 import { useCurrency } from '@/hooks/useCurrency';
 import { BusinessThemeProvider } from '@/components/business-website/BusinessThemeProvider';
 import { ProductCard } from '@/components/business-website/ProductCard';
 import { TemplateBusiness, TemplateProduct } from '@/components/business-website/template-types';
+const FashionOneProduct = dynamic(() => import('@/components/business-website/fashion-1/FashionOneProduct').then((m) => m.FashionOneProduct));
 
 interface BusinessData extends TemplateBusiness {
   cover?: string | null;
   address?: string | null;
-  workingHours?: any;
+  workingHours?: { day: string; open: string; close: string }[] | Record<string, string> | string | null;
 }
 
 export default function ProductDetailPage() {
@@ -35,6 +37,7 @@ export default function ProductDetailPage() {
   const { format, convert } = useCurrency();
   const { addItem } = useCart();
   const { isInWishlist, toggleItem } = useWishlist();
+  const { addItem: addRecentlyViewed } = useRecentlyViewed();
   const { showToast } = useToast();
 
   const [business, setBusiness] = useState<BusinessData | null>(null);
@@ -67,13 +70,23 @@ export default function ProductDetailPage() {
         .filter((p: TemplateProduct) => p.id !== productId)
         .slice(0, 4);
       setRelatedProducts(related);
+
+      addRecentlyViewed({
+        productId: productData.product.id,
+        businessId: businessData.business.id,
+        businessName: businessData.business.name,
+        businessSlug: businessData.business.slug || businessData.business.id,
+        name: productData.product.name,
+        price: Number(productData.product.price) || 0,
+        image: productData.product.images?.[0]?.url || null,
+      });
     } catch (e) {
       console.error(e);
       router.push(`/business/${id}`);
     } finally {
       setLoading(false);
     }
-  }, [id, productId, router]);
+  }, [id, productId, router, addRecentlyViewed]);
 
   useEffect(() => {
     if (!id || !productId) return;
@@ -95,6 +108,10 @@ export default function ProductDetailPage() {
   }
 
   if (!business || !product) return null;
+
+  if (business.theme?.homeTemplate === 'fashion-1') {
+    return <FashionOneProduct business={business} product={product} relatedProducts={relatedProducts} />;
+  }
 
   const price = Number(product.price) || 0;
   const comparePrice = product.comparePrice ? Number(product.comparePrice) : 0;

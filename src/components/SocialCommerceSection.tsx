@@ -145,7 +145,7 @@ export default function SocialCommerceSection() {
           className="text-center"
         >
           <Link
-            href="/business/apply"
+            href="/business/apply/start"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-lg bg-primary text-white font-bold text-lg shadow-lg shadow-primary/25 hover:bg-primary-light transition-colors"
           >
             انضم إلى مجتمعنا الموثوق

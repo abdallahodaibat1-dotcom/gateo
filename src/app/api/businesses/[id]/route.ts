@@ -76,6 +76,9 @@ export async function GET(
         BusinessFieldValue: {
           include: { DynamicFieldDefinition: true },
         },
+        BusinessAsset: {
+          orderBy: { sortOrder: 'asc' },
+        },
         Review: {
           orderBy: { createdAt: 'desc' },
           take: 6,
@@ -185,5 +188,35 @@ export async function PUT(
     }
     console.error('PUT /api/businesses/[id] error:', error);
     return NextResponse.json({ error: 'فشل في تحديث بيانات العمل' }, { status: 500 });
+  }
+}
+
+// DELETE /api/businesses/[id] - Delete business (owner only)
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'يجب تسجيل الدخول' }, { status: 401 });
+  }
+
+  const { id } = await params;
+
+  try {
+    const business = await prisma.business.findUnique({ where: { id } });
+    if (!business) {
+      return NextResponse.json({ error: 'العمل غير موجود' }, { status: 404 });
+    }
+    if (business.userId !== session.user.id && session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 403 });
+    }
+
+    await prisma.business.delete({ where: { id } });
+
+    return NextResponse.json({ success: true, message: 'تم حذف العمل بنجاح' });
+  } catch (error) {
+    console.error('DELETE /api/businesses/[id] error:', error);
+    return NextResponse.json({ error: 'فشل في حذف العمل' }, { status: 500 });
   }
 }

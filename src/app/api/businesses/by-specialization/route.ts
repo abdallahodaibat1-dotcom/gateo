@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getSpecializationGroup } from '@/lib/specializations';
+import { serializeBusiness } from '@/lib/business-serializer';
 
 const VERIFIED_BONUS = 20;
 
@@ -95,7 +96,11 @@ export async function GET(req: NextRequest) {
         take: limit,
         include: {
           Category: { select: { id: true, name: true } },
-          Subcategory: { select: { id: true, name: true } },
+          BusinessSubcategory: {
+            include: {
+              Subcategory: { select: { id: true, name: true, slug: true } },
+            },
+          },
           Country: { select: { id: true, name: true } },
           _count: {
             select: { Booking: true },
@@ -105,7 +110,7 @@ export async function GET(req: NextRequest) {
       prisma.business.count({ where }),
     ]);
 
-    const typedBusinesses = businesses as unknown as BusinessWithCounts[];
+    const typedBusinesses = businesses.map(serializeBusiness) as BusinessWithCounts[];
 
     const businessesWithScore = typedBusinesses.map((business) => ({
       ...business,

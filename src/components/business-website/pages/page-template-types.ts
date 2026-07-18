@@ -7,6 +7,7 @@ export interface PageTemplateProps {
     slug: string;
     title: string;
     content: string | null;
+    isHomePage: boolean;
     sections?: any;
     pageTemplate?: string;
   };

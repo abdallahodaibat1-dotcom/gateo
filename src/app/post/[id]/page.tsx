@@ -33,7 +33,9 @@ interface Post {
   isSaved: boolean;
   user: { id: string; name: string | null; avatar: string | null } | null;
   business: { id: string; name: string | null; logo: string | null } | null;
-  _count: { likes: number; comments: number };
+  _count: { likes: number; comments: number; views: number; shares: number };
+  views: number;
+  shares: number;
 }
 
 export default function PostDetailPage() {
@@ -56,7 +58,22 @@ export default function PostDetailPage() {
     if (!id) return;
     fetchPost();
     fetchComments();
+    trackView();
   }, [id]);
+
+  const trackView = () => {
+    if (typeof window === 'undefined') return;
+    try {
+      const viewed = JSON.parse(localStorage.getItem('viewed_posts') || '[]') as string[];
+      if (viewed.includes(id)) return;
+      viewed.push(id);
+      localStorage.setItem('viewed_posts', JSON.stringify(viewed));
+      fetch(`/api/posts/${id}/view`, { method: 'POST' }).catch(() => {});
+      setPost((prev) => (prev ? { ...prev, views: prev.views + 1, _count: { ...prev._count, views: prev._count.views + 1 } } : prev));
+    } catch {
+      // ignore
+    }
+  };
 
   const fetchPost = async () => {
     try {
@@ -298,14 +315,14 @@ export default function PostDetailPage() {
                 <div key={comment.id} className="py-3">
                   <div className="flex gap-3">
                     <img
-                      src={comment.user.avatar || '/logo/favicon.svg'}
+                      src={comment.user?.avatar || '/logo/favicon.svg'}
                       alt=""
                       className="w-8 h-8 rounded-full object-cover border border-border flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="inline-block">
                         <div className="bg-slate-50 rounded-2xl rounded-tr-sm px-4 py-2 border border-border">
-                          <div className="font-bold text-sm text-foreground">{comment.user.name || 'مستخدم'}</div>
+                          <div className="font-bold text-sm text-foreground">{comment.user?.name || 'مستخدم'}</div>
                           <p className="text-sm text-foreground mt-0.5">{comment.content}</p>
                         </div>
                       </div>
@@ -347,13 +364,13 @@ export default function PostDetailPage() {
                                 className="w-6 h-6 rounded-full object-cover border border-border flex-shrink-0 mt-1"
                               />
                               <div className="flex-1 relative">
-                                <label htmlFor={`reply-input-${comment.id}`} className="sr-only">رد على {comment.user.name || 'مستخدم'}</label>
+                                <label htmlFor={`reply-input-${comment.id}`} className="sr-only">رد على {comment.user?.name || 'مستخدم'}</label>
                                 <textarea
                                   id={`reply-input-${comment.id}`}
                                   ref={replyInputRef}
                                   value={replyText}
                                   onChange={(e) => setReplyText(e.target.value)}
-                                  placeholder={`رد على ${comment.user.name || 'مستخدم'}...`}
+                                  placeholder={`رد على ${comment.user?.name || 'مستخدم'}...`}
                                   rows={1}
                                   autoFocus
                                   className="w-full resize-none bg-surface border border-border rounded-md text-sm text-foreground placeholder:text-muted py-1.5 px-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
@@ -421,13 +438,13 @@ export default function PostDetailPage() {
                                 {comment.replies.map((reply) => (
                                   <div key={reply.id} className="flex gap-2">
                                     <img
-                                      src={reply.user.avatar || '/logo/favicon.svg'}
+                                      src={reply.user?.avatar || '/logo/favicon.svg'}
                                       alt=""
                                       className="w-6 h-6 rounded-full object-cover border border-border flex-shrink-0"
                                     />
                                     <div className="flex-1">
                                       <div className="bg-slate-50 rounded-2xl rounded-tr-sm px-3 py-1.5 inline-block border border-border">
-                                        <div className="font-bold text-xs text-foreground">{reply.user.name || 'مستخدم'}</div>
+                                        <div className="font-bold text-xs text-foreground">{reply.user?.name || 'مستخدم'}</div>
                                         <p className="text-xs text-foreground mt-0.5">{reply.content}</p>
                                       </div>
                                       <div className="flex items-center gap-3 mt-0.5 mr-2">

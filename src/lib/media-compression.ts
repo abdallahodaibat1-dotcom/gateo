@@ -217,9 +217,11 @@ export async function compressVideo(
     throw new Error('الملف ليس فيديو');
   }
 
-  // Skip compression for small videos that are already MP4 and under the limit.
-  const skipThresholdBytes = 25 * 1024 * 1024; // 25MB
-  if (file.size < skipThresholdBytes && file.type === 'video/mp4') {
+  // Skip browser-side compression for MP4 files under the server limit.
+  // Server-side remuxing/transcoding with native ffmpeg is much faster than
+  // FFmpeg.wasm in the browser, and it avoids long waits before upload.
+  const SERVER_MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
+  if (file.type === 'video/mp4' && file.size <= SERVER_MAX_VIDEO_SIZE) {
     return file;
   }
 

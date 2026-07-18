@@ -9,7 +9,7 @@ export function serializeBusiness(business: any): any {
 
   const {
     Category,
-    Subcategory,
+    BusinessSubcategory,
     Country,
     User,
     Service,
@@ -17,6 +17,7 @@ export function serializeBusiness(business: any): any {
     Post,
     BusinessTheme,
     BusinessPage,
+    BusinessAsset,
     BusinessFieldValue,
     Review,
     Booking,
@@ -24,10 +25,23 @@ export function serializeBusiness(business: any): any {
     ...rest
   } = business;
 
+  const subcategories = (BusinessSubcategory ?? business.businessSubcategories ?? [])
+    .filter((item: any) => item.subcategoryId && item.Subcategory)
+    .map((item: any) => item.Subcategory)
+    .filter(Boolean);
+
+  const customSubcategories = (BusinessSubcategory ?? business.businessSubcategories ?? [])
+    .filter((item: any) => item.customName)
+    .map((item: any) => item.customName)
+    .filter(Boolean);
+
   return {
     ...rest,
     category: Category ?? business.category,
-    subcategory: Subcategory ?? business.subcategory,
+    subcategories,
+    customSubcategories,
+    subcategory: subcategories[0] ?? business.subcategory ?? null,
+    customSubcategory: customSubcategories[0] ?? business.customSubcategory ?? null,
     country: Country ?? business.country,
     user: User ?? business.user,
     services: Service ?? business.services,
@@ -35,16 +49,24 @@ export function serializeBusiness(business: any): any {
       ...product,
       images: parseJson(product.images),
     })),
-    posts: Post ?? business.posts,
+    posts: (Post ?? business.posts)?.map((post: any) => ({
+      ...post,
+      _count: {
+        likes: post._count?.Like || 0,
+        comments: post._count?.Comment || 0,
+        views: post.views || 0,
+        shares: post.shares || 0,
+      },
+    })),
     theme: BusinessTheme
       ? { ...BusinessTheme, sections: parseJson(BusinessTheme.sections) }
       : business.theme,
     pages: BusinessPage ?? business.pages,
+    assets: BusinessAsset ?? business.assets ?? [],
     fieldValues: BusinessFieldValue ?? business.fieldValues,
     reviews: Review ?? business.reviews,
     bookings: Booking ?? business.bookings,
     listings: MarketplaceListing ?? business.listings,
-    // Prisma/MySQL may return JSON fields as strings
     images: parseJson(business.images),
     workingHours: parseJson(business.workingHours),
     specializations: parseJson(business.specializations),

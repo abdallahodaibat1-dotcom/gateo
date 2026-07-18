@@ -57,7 +57,7 @@ function suggestDesignId(
     .map((s) => (s as string).toLowerCase()) as string[];
 
   const pool = websiteType
-    ? ALL_DESIGNS.filter((d) => d.websiteType === websiteType || d.websiteType === 'BOTH')
+    ? ALL_DESIGNS.filter((d) => d.websiteType === websiteType)
     : ALL_DESIGNS;
 
   for (const design of pool) {
@@ -96,17 +96,43 @@ export function DesignLibrarySelector({
     }
   }, [websiteType]);
 
+  const activityTokens = useMemo(() => {
+    return [categoryName, ...(subcategoryName ? subcategoryName.split(' / ') : [])]
+      .filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
+      .map((s) => s.trim().toLowerCase());
+  }, [categoryName, subcategoryName]);
+
+  const matchesSelectedActivity = (design: WebsiteDesign) => {
+    if (activityTokens.length === 0) return true;
+    return design.categoryTags.some((tag) => {
+      const lowerTag = tag.toLowerCase();
+      return activityTokens.some((token) => lowerTag.includes(token) || token.includes(lowerTag));
+    });
+  };
+
+  const matchingDesigns = useMemo(() => {
+    return ALL_DESIGNS.filter((design) => {
+      const matchesType = websiteType
+        ? design.websiteType === websiteType
+        : typeFilter === 'ALL' ||
+          design.websiteType === typeFilter ||
+          design.websiteType === 'BOTH';
+
+      return matchesType && matchesSelectedActivity(design);
+    });
+  }, [websiteType, typeFilter, activityTokens]);
+
   const styles = useMemo(
-    () => Array.from(new Set(ALL_DESIGNS.map((d) => d.style).filter(Boolean))) as string[],
-    []
+    () => Array.from(new Set(matchingDesigns.map((d) => d.style).filter(Boolean))) as string[],
+    [matchingDesigns]
   );
   const sources = useMemo(
-    () => Array.from(new Set(ALL_DESIGNS.map((d) => d.source).filter(Boolean))) as string[],
-    []
+    () => Array.from(new Set(matchingDesigns.map((d) => d.source).filter(Boolean))) as string[],
+    [matchingDesigns]
   );
   const categories = useMemo(() => {
     const counts = new Map<string, number>();
-    ALL_DESIGNS.forEach((d) => {
+    matchingDesigns.forEach((d) => {
       d.categoryTags.forEach((tag) => {
         counts.set(tag, (counts.get(tag) || 0) + 1);
       });
@@ -115,10 +141,10 @@ export function DesignLibrarySelector({
       .sort((a, b) => b[1] - a[1])
       .slice(0, 12)
       .map(([tag]) => tag);
-  }, []);
+  }, [matchingDesigns]);
 
   const filteredDesigns = useMemo(() => {
-    return ALL_DESIGNS.filter((design) => {
+    return matchingDesigns.filter((design) => {
       const matchesQuery =
         !query.trim() ||
         design.nameAr.toLowerCase().includes(query.toLowerCase()) ||
@@ -126,20 +152,15 @@ export function DesignLibrarySelector({
         (design.descriptionAr || '').toLowerCase().includes(query.toLowerCase()) ||
         design.categoryTags.some((t) => t.toLowerCase().includes(query.toLowerCase()));
 
-      const matchesType =
-        typeFilter === 'ALL' ||
-        design.websiteType === typeFilter ||
-        design.websiteType === 'BOTH';
-
-      const matchesCategory =
+      const matchesCategoryFilter =
         !categoryFilter || design.categoryTags.some((t) => t === categoryFilter);
 
       const matchesStyle = !styleFilter || design.style === styleFilter;
       const matchesSource = !sourceFilter || design.source === sourceFilter;
 
-      return matchesQuery && matchesType && matchesCategory && matchesStyle && matchesSource;
+      return matchesQuery && matchesCategoryFilter && matchesStyle && matchesSource;
     });
-  }, [query, typeFilter, categoryFilter, styleFilter, sourceFilter]);
+  }, [matchingDesigns, query, categoryFilter, styleFilter, sourceFilter]);
 
   const handleAiSuggest = () => {
     setAiSuggesting(true);
@@ -166,19 +187,23 @@ export function DesignLibrarySelector({
             مكتبة تصاميم متكاملة تتناسب مع نشاطك. كل تصميم يشمل الألوان والخطوط وتخطيط الصفحة الرئيسية.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleAiSuggest}
-          disabled={aiSuggesting}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-medium shadow-sm hover:shadow-md transition-all disabled:opacity-60"
-        >
-          {aiSuggesting ? (
-            <Sparkles className="w-4 h-4 animate-spin" />
-          ) : (
-            <Wand2 className="w-4 h-4" />
-          )}
-          اقتراح ذكي حسب النشاط
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleAiSuggest}
+            disabled={aiSuggesting}
+            aria-label="اضغط هنا للاختيار التلقائي"
+            title="اضغط هنا للاختيار التلقائي"
+            className="flex items-center justify-center px-3 py-2.5 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm hover:shadow-md transition-all disabled:opacity-60"
+          >
+            {aiSuggesting ? (
+              <Sparkles className="w-4 h-4 animate-spin" />
+            ) : (
+              <Wand2 className="w-4 h-4" />
+            )}
+          </button>
+          <span className="text-xs font-medium text-primary cursor-pointer hover:underline whitespace-nowrap">اضغط هنا للاختيار التلقائي</span>
+        </div>
       </div>
 
       {/* Selected banner */}
@@ -229,44 +254,46 @@ export function DesignLibrarySelector({
         )}
       </div>
 
-      {/* Type tabs */}
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setTypeFilter('ALL')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-            typeFilter === 'ALL'
-              ? 'bg-primary text-white'
-              : 'bg-slate-100 text-muted hover:bg-slate-200'
-          }`}
-        >
-          الكل
-        </button>
-        <button
-          type="button"
-          onClick={() => setTypeFilter('INTRO')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ${
-            typeFilter === 'INTRO'
-              ? 'bg-primary text-white'
-              : 'bg-slate-100 text-muted hover:bg-slate-200'
-          }`}
-        >
-          <Globe className="w-3.5 h-3.5" />
-          تعريفي
-        </button>
-        <button
-          type="button"
-          onClick={() => setTypeFilter('STORE')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ${
-            typeFilter === 'STORE'
-              ? 'bg-primary text-white'
-              : 'bg-slate-100 text-muted hover:bg-slate-200'
-          }`}
-        >
-          <Store className="w-3.5 h-3.5" />
-          متاجر
-        </button>
-      </div>
+      {!websiteType && (
+        /* Type tabs */
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setTypeFilter('ALL')}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              typeFilter === 'ALL'
+                ? 'bg-primary text-white'
+                : 'bg-slate-100 text-muted hover:bg-slate-200'
+            }`}
+          >
+            الكل
+          </button>
+          <button
+            type="button"
+            onClick={() => setTypeFilter('INTRO')}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ${
+              typeFilter === 'INTRO'
+                ? 'bg-primary text-white'
+                : 'bg-slate-100 text-muted hover:bg-slate-200'
+            }`}
+          >
+            <Globe className="w-3.5 h-3.5" />
+            تعريفي
+          </button>
+          <button
+            type="button"
+            onClick={() => setTypeFilter('STORE')}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ${
+              typeFilter === 'STORE'
+                ? 'bg-primary text-white'
+                : 'bg-slate-100 text-muted hover:bg-slate-200'
+            }`}
+          >
+            <Store className="w-3.5 h-3.5" />
+            متاجر
+          </button>
+        </div>
+      )}
 
       {/* Category chips */}
       <div className="flex flex-wrap items-center gap-2">
@@ -379,10 +406,12 @@ export function DesignLibrarySelector({
                     />
                   )}
                   <div className="absolute top-2 right-2 flex gap-1.5">
-                    <span className="text-[10px] bg-black/40 text-white px-2 py-0.5 rounded backdrop-blur-sm flex items-center gap-1">
-                      <TypeIcon className="w-3 h-3" />
-                      {TYPE_LABELS[design.websiteType]}
-                    </span>
+                    {!websiteType && (
+                      <span className="text-[10px] bg-black/40 text-white px-2 py-0.5 rounded backdrop-blur-sm flex items-center gap-1">
+                        <TypeIcon className="w-3 h-3" />
+                        {TYPE_LABELS[design.websiteType]}
+                      </span>
+                    )}
                     {design.source && (
                       <span className="text-[10px] bg-white/90 text-foreground px-2 py-0.5 rounded shadow-sm">
                         {design.source}

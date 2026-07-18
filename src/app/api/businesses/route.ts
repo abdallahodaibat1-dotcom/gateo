@@ -64,7 +64,11 @@ export async function GET(req: NextRequest) {
       take: takeLimit,
       include: {
         Category: { select: { id: true, name: true } },
-        Subcategory: { select: { id: true, name: true } },
+        BusinessSubcategory: {
+          include: {
+            Subcategory: { select: { id: true, name: true, slug: true } },
+          },
+        },
         User: { select: { id: true, name: true, avatar: true } },
         _count: {
           select: {

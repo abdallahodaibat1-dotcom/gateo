@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
       orderBy: { sortOrder: 'asc' },
       include: {
         Category: { select: { id: true, name: true } },
-        _count: { select: { Business: true } },
+        _count: { select: { BusinessSubcategory: true } },
       },
     });
 

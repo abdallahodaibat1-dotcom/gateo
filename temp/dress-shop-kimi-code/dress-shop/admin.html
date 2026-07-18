@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم Dress Shop · Store Builder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #dbeafe;
+            --bg: #f8fafc;
+            --bg-white: #ffffff;
+            --bg-soft: #f1f5f9;
+            --text: #0f172a;
+            --text-soft: #475569;
+            --text-light: #94a3b8;
+            --border: #e2e8f0;
+            --border-soft: #f1f5f9;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gold: #c5a572;
+            --gold-deep: #a4844c;
+            --pink: #fce7f3;
+        }
+
+        body {
+            font-family: 'Tajawal', 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Top Header */
+        .top-header {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .top-header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--gold-deep), var(--gold));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 18px;
+            font-family: 'Inter', serif;
+        }
+
+        .brand-text h1 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .brand-text p {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .top-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-soft);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            background: var(--bg-soft);
+            color: var(--text);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-soft);
+            padding: 8px 12px;
+        }
+
+        .btn-ghost:hover {
+            background: var(--bg-soft);
+        }
+
+        /* Main Layout */
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            min-height: calc(100vh - 65px);
+        }
+
+        /* Sidebar - Steps */
+        .sidebar {
+            background: var(--bg-white);
+            border-left: 1px solid var(--border);
+            padding: 24px 16px;
+            position: sticky;
+            top: 65px;
+            height: calc(100vh - 65px);
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .sidebar-sub {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 24px;
+        }
+
+        .steps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .step-item:hover {
+            background: var(--bg-soft);
+        }
+
+        .step-item.active {
+            background: var(--primary-light);
+            border-color: var(--primary);
+        }
+
+        .step-check {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--success-light);
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+            border: 2px solid transparent;
+        }
+
+        .step-item.completed .step-check {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .step-item.current .step-check {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .step-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .step-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .step-desc {
+            font-size: 11px;
+            color: var(--text-light);
+        }
+
+        .step-item.active .step-name {
+            color: var(--primary-dark);
+        }
+
+        .step-item.active .step-desc {
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 32px;
+            overflow-x: hidden;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .content-title h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .content-title p {
+            font-size: 14px;
+            color: var(--text-soft);
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 8px;
+            background: var(--bg-soft);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            transition: width 0.4s;
+            border-radius: 4px;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: var(--text-soft);
+            margin-top: 4px;
+            display: block;
+        }
+
+        /* Form Section */
+        .form-section {
+            background: var(--bg-white);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .form-section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-soft);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-section-title i {
+            color: var(--primary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form-row.three {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-label .required {
+            color: var(--danger);
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--text);
+            background: var(--bg-white);
+            transition: all 0.2s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        .form-hint {
+            font-size: 11px;
+            color: var(--text-light);
+        }
+
+        /* Image Upload */
+        .image-upload {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-soft);
+        }
+
+        .image-upload:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .image-upload.has-image {
+            padding: 8px;
+            background: var(--bg-white);
+            border-style: solid;
+        }
+
+        .image-upload i {
+            font-size: 32px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .image-upload p {
+            font-size: 13px;
+            color: var(--text-soft);
+        }
+
+        .image-upload input { display: none; }
+
+        .image-preview {
+            width: 100%;
+            aspect-ratio: 4/3;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-remove {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(239, 68, 68, 0.9);
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* Image Grid */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .image-card {
+            aspect-ratio: 1/1;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid var(--border);
+            cursor: pointer;
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-card .image-remove {
+            width: 24px;
+            height: 24px;
+            font-size: 10px;
+        }
+
+        /* Color Picker */
+        .color-picker-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-picker-group input[type="color"] {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            padding: 4px;
+            background: var(--bg-white);
+        }
+
+        .color-picker-group input[type="text"] {
+            flex: 1;
+        }
+
+        /* Product Card Editor */
+        .product-editor {
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            background: var(--bg-soft);
+        }
+
+        .product-editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .product-editor-title {
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .product-editor-title .badge-num {
+            background: var(--primary);
+            color: #fff;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        /* List Items */
+        .list-item {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background: var(--bg-white);
+        }
+
+        .list-item-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .list-item-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .list-item-actions button {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-white);
+            color: var(--text-soft);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .list-item-actions button:hover {
+            background: var(--bg-soft);
+            color: var(--text);
+        }
+
+        .list-item-actions .delete:hover {
+            background: #fee2e2;
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        /* Buttons */
+        .btn-add {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed var(--border);
+            border-radius: 10px;
+            background: transparent;
+            color: var(--text-soft);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .btn-add:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        /* Footer Nav */
+        .content-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Toggle Switch */
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-soft);
+        }
+
+        .toggle-group:last-child { border-bottom: none; }
+
+        .toggle-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle-switch.active {
+            background: var(--success);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(-20px);
+        }
+
+        /* Tags/Checkboxes */
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+
+        .checkbox-item input { display: none; }
+
+        .checkbox-item.checked {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary-dark);
+        }
+
+        /* Preview Box */
+        .preview-box {
+            background: linear-gradient(135deg, #eff6ff, #fef3c7);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .preview-box i {
+            font-size: 32px;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .preview-box p {
+            font-size: 14px;
+            color: var(--text-soft);
+        }
+
+        /* Success Box */
+        .success-box {
+            background: var(--success-light);
+            border: 1px solid var(--success);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .success-box i {
+            color: var(--success);
+            font-size: 20px;
+        }
+
+        .success-box p {
+            font-size: 13px;
+            color: #065f46;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--text);
+            color: #fff;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 9999;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal.show { opacity: 1; visibility: visible; }
+
+        .modal-content {
+            background: #fff;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+
+        .modal.show .modal-content { transform: scale(1); }
+
+        .modal h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        /* Tabs inside content */
+        .inner-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-soft);
+            padding: 4px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+        }
+
+        .inner-tab {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-soft);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .inner-tab.active {
+            background: #fff;
+            color: var(--primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        /* Code output */
+        .code-output {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Monaco', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .admin-layout { grid-template-columns: 1fr; }
+            .sidebar { position: static; height: auto; border-left: none; border-bottom: 1px solid var(--border); }
+            .form-row, .form-row.three { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .main-content { padding: 16px; }
+            .form-section { padding: 20px; }
+            .top-header-actions .btn span { display: none; }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-section { animation: fadeInUp 0.4s ease; }
+    </style>
+</head>
+<body>
+
+    <!-- Top Header -->
+    <header class="top-header">
+        <div class="top-header-left">
+            <div class="brand-logo">D</div>
+            <div class="brand-text">
+                <h1>باني متجر Dress Shop</h1>
+                <p>أنشئي وأديري موقعكِ بكل سهولة</p>
+            </div>
+        </div>
+        <div class="top-header-actions">
+            <button class="btn btn-ghost" id="loadDataBtn" title="تحميل البيانات">
+                <i class="fas fa-folder-open"></i> <span>تحميل</span>
+            </button>
+            <button class="btn btn-outline" id="exportBtn">
+                <i class="fas fa-download"></i> <span>تصدير البيانات</span>
+            </button>
+            <button class="btn btn-success" id="saveBtn">
+                <i class="fas fa-save"></i> <span>حفظ</span>
+            </button>
+            <button class="btn btn-primary" id="previewBtn" onclick="window.open('index.html', '_blank')">
+                <i class="fas fa-external-link-alt"></i> <span>معاينة الموقع</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="admin-layout">
+
+        <!-- Sidebar with Steps -->
+        <aside class="sidebar">
+            <div class="sidebar-title">خطوات الإنشاء</div>
+            <div class="sidebar-sub">11 خطوة لإكمال موقعكِ</div>
+
+            <div class="steps-list" id="stepsList">
+                <!-- Steps injected via JS -->
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-header">
+                <div class="content-title">
+                    <h2 id="stepTitle">المعلومات الأساسية</h2>
+                    <p id="stepSubtitle">حدّثينا عن متجركِ الأساسي</p>
+                </div>
+                <div style="text-align: left;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 9%"></div>
+                    </div>
+                    <span class="progress-text" id="progressText">1 من 11 خطوة</span>
+                </div>
+            </div>
+
+            <!-- Step Content Area -->
+            <div id="stepContent">
+                <!-- Steps content injected via JS -->
+            </div>
+
+            <!-- Footer Navigation -->
+            <div class="content-footer">
+                <button class="btn btn-outline" id="prevBtn">
+                    <i class="fas fa-arrow-right"></i> السابق
+                </button>
+                <button class="btn btn-primary" id="nextBtn">
+                    التالي <i class="fas fa-arrow-left"></i>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content" id="modalContent"></div>
+    </div>
+
+    <script>
+        // ============================
+        // Store Data
+        // ============================
+        const defaultData = {
+            basicInfo: {
+                storeName: 'Dress Shop',
+                storeNameEn: 'Dress Shop',
+                slogan: 'فساتين سهرة وأعراس ومستلزمات العروس',
+                sloganEn: 'Wedding Dress Fashion',
+                description: 'متجر متخصص بفساتين الزفاف والسهرة ومستلزمات العروس الفاخرة. نقدم تجربة تسوق فريدة تمزج بين الأناقة والجودة منذ ٢٠١٥.',
+                email: 'info@dressshop.com',
+                phone: '079-000-0000',
+                whatsapp: '079-000-0000',
+                address: 'شارع الموضة، المدينة',
+                currency: 'USD',
+                language: 'AR'
+            },
+            branding: {
+                primaryColor: '#c5a572',
+                primaryDeep: '#a4844c',
+                accentColor: '#d4a89e',
+                bgColor: '#faf6f0',
+                textColor: '#2a2a2a',
+                logoStyle: 'script',
+                fontHeading: 'Pinyon Script',
+                fontBody: 'Tajawal'
+            },
+            hero: {
+                slides: [
+                    { title: 'Wedding Dress', titleAr: 'فستان الزفاف', subtitle: 'تشكيلة حصرية من فساتين الزفاف الفاخرة', image: 'images/wedding/2.jpg', cta: 'اكتشفي التشكيلة' },
+                    { title: 'Off Shoulder', titleAr: 'كتف مكشوف', subtitle: 'فساتين سهرة بكتف مكشوف، تجمع بين الجرأة والأنوثة', image: 'images/evening/red/5.jpg', cta: 'تسوّقي الآن' },
+                    { title: 'Seize Your Moment', titleAr: 'لحظتك المميزة', subtitle: 'اجعلي يوم زفافكِ ذكرى لا تُنسى', image: 'images/wedding/princess/5.jpg', cta: 'شاهدي التشكيلة' }
+                ],
+                stats: {
+                    products: 850,
+                    brides: 2400,
+                    rating: 4.9
+                }
+            },
+            categories: [
+                { id: 1, name: 'Bridal Shoes', nameAr: 'أحذية العروس', image: 'images/accessories/5.jpg', link: 'shop.html?cat=accessories' },
+                { id: 2, name: 'Wedding Bouquets', nameAr: 'باقات الزفاف', image: 'images/accessories/bouquet/2.jpg', link: 'shop.html?cat=accessories' },
+                { id: 3, name: 'Bridal Jewelry', nameAr: 'مجوهرات العروس', image: 'images/accessories/3.jpg', link: 'shop.html?cat=accessories' }
+            ],
+            products: [
+                { id: 1, name: 'NUYASA MIUAYSE', desc: 'فستان زفاف فاخر', category: 'wedding', price: 1800, rentPrice: 350, image: 'images/wedding/0.jpg', badge: 'new', rating: 5, reviews: 128, inStock: true, rentAvailable: true, saleAvailable: true },
+                { id: 2, name: 'MIUAYSE', desc: 'فستان زفاف كلاسيكي', category: 'wedding', price: 2100, oldPrice: 2400, rentPrice: 280, image: 'images/wedding/2.jpg', badge: 'sale', rating: 4.9, reviews: 95, inStock: true, rentAvailable: true, saleAvailable: true },
+                { id: 3, name: 'KYTRAS MUAST', desc: 'فستان أميرة منفوش', category: 'wedding', price: 2100, rentPrice: 380, image: 'images/wedding/princess/5.jpg', badge: '', rating: 5, reviews: 215, inStock: true, rentAvailable: true, saleAvailable: true }
+            ],
+            services: [
+                { id: 1, icon: 'fa-tshirt', title: 'الإيجار الفاخر', desc: 'خزّانة فساتين فاخرة متجددة، خدمة تأجير شاملة مع التنظيف والكي.', enabled: true },
+                { id: 2, icon: 'fa-gem', title: 'البيع المباشر', desc: 'اقتني فستان أحلامكِ للأبد، مع ضمان الجودة والتعديل المجاني.', enabled: true },
+                { id: 3, icon: 'fa-magic', title: 'التصميم حسب الطلب', desc: 'مصممتنا تترجم حلمكِ إلى واقع، من الفكرة حتى الفستان النهائي.', enabled: true },
+                { id: 4, icon: 'fa-truck', title: 'التوصيل المجاني', desc: 'خدمة توصيل آمنة لكل أنحاء المدينة مع تأمين شامل.', enabled: true }
+            ],
+            about: {
+                title: 'A Boutique',
+                titleAr: 'بوتيك',
+                subtitle: 'for the Modern Bride',
+                subtitleAr: 'للعروس العصرية',
+                description: 'منذ عام ٢٠١٥ ونحن في Dress Shop نؤمن بأن كل عروس تستحق إطلالة استثنائية. نمزج بين الأناقة الكلاسيكية والذوق العصري لنقدم لكِ تشكيلة فريدة.',
+                image: 'images/wedding/princess/0.jpg',
+                establishedYear: 2015,
+                stats: {
+                    products: '850+',
+                    brides: '2400+',
+                    rating: '4.9★'
+                }
+            },
+            reviews: [
+                { id: 1, name: 'سارة الخوري', role: 'عروس · عمّان', text: 'تجربتي مع Dress Shop كانت أحلى من أحلامي! الفستان كان مثالي والخادمات كنّ رائعات.', rating: 5, initial: 'س', approved: true },
+                { id: 2, name: 'نور الحريري', role: 'عروس · بيروت', text: 'استأجرت فستان سهرة لمناسبة خطوبتي، الفستان كان بحالة ممتازة.', rating: 5, initial: 'ن', approved: true },
+                { id: 3, name: 'رنا المصري', role: 'عروس · دمشق', text: 'اشتريت فستان عرسي من عندهم، والتعديلات كانت مجانية والاحترافية عالية.', rating: 5, initial: 'ر', approved: true }
+            ],
+            contact: {
+                phone: '079-000-0000',
+                whatsapp: '079-000-0000',
+                email: 'info@dressshop.com',
+                address: 'شارع الموضة، المدينة',
+                workingHours: 'يومياً ١٠ص - ١٠م',
+                bookingEnabled: true
+            },
+            footer: {
+                showSocial: true,
+                showPayment: true,
+                socialLinks: {
+                    facebook: 'https://facebook.com/dressshop',
+                    instagram: 'https://instagram.com/dressshop',
+                    tiktok: 'https://tiktok.com/@dressshop',
+                    pinterest: 'https://pinterest.com/dressshop',
+                    youtube: 'https://youtube.com/@dressshop'
+                },
+                copyright: '© 2026 Dress Shop · جميع الحقوق محفوظة · صُنع بحب 💕'
+            },
+            seo: {
+                metaTitle: 'Dress Shop · Wedding Dress Fashion',
+                metaDescription: 'متجر متخصص بفساتين الزفاف والسهرة ومستلزمات العروس الفاخرة',
+                keywords: 'فساتين زفاف، فساتين سهرة، مستلزمات عروس، إيجار فساتين'
+            }
+        };
+
+        // ============================
+        // Steps Configuration
+        // ============================
+        const steps = [
+            { id: 'basicInfo', name: 'المعلومات الأساسية', desc: 'اسم المتجر والشعار', icon: 'fa-info-circle', completed: false },
+            { id: 'branding', name: 'هوية العلامة', desc: 'الألوان والخطوط', icon: 'fa-palette', completed: false },
+            { id: 'hero', name: 'القسم الرئيسي', desc: 'صور وعناوين Hero', icon: 'fa-image', completed: false },
+            { id: 'categories', name: 'التصنيفات', desc: 'الأقسام الثلاثة', icon: 'fa-th-large', completed: false },
+            { id: 'products', name: 'المنتجات', desc: 'فساتين للبيع والإيجار', icon: 'fa-tshirt', completed: false },
+            { id: 'services', name: 'الخدمات', desc: 'خدمات المتجر', icon: 'fa-concierge-bell', completed: false },
+            { id: 'about', name: 'من نحن', desc: 'قصة المتجر', icon: 'fa-book-open', completed: false },
+            { id: 'reviews', name: 'التقييمات', desc: 'آراء العميلات', icon: 'fa-star', completed: false },
+            { id: 'contact', name: 'التواصل والحجز', desc: 'بيانات الاتصال', icon: 'fa-address-book', completed: false },
+            { id: 'footer', name: 'الفوتر والسوشيال', desc: 'روابط السوشيال ميديا', icon: 'fa-link', completed: false },
+            { id: 'publish', name: 'المراجعة والنشر', desc: 'تأكيد وتصدير', icon: 'fa-rocket', completed: false }
+        ];
+
+        // ============================
+        // State
+        // ============================
+        let currentStep = 0;
+        let storeData = JSON.parse(JSON.stringify(defaultData));
+
+        // Load from localStorage
+        const savedData = localStorage.getItem('dressShopData');
+        if (savedData) {
+            try {
+                storeData = JSON.parse(savedData);
+                // Mark completed steps based on data
+                steps.forEach((s, i) => s.completed = i < 10);
+            } catch (e) {
+                console.error('Failed to load saved data', e);
+            }
+        }
+
+        // ============================
+        // Render Sidebar Steps
+        // ============================
+        function renderSteps() {
+            const list = document.getElementById('stepsList');
+            list.innerHTML = steps.map((s, i) => `
+                <div class="step-item ${i === currentStep ? 'active' : ''} ${s.completed ? 'completed' : ''} ${i === currentStep ? 'current' : ''}" data-step="${i}">
+                    <div class="step-check">
+                        ${s.completed ? '<i class="fas fa-check"></i>' : (i + 1)}
+                    </div>
+                    <div class="step-info">
+                        <div class="step-name">${s.name}</div>
+                        <div class="step-desc">${s.desc}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            list.querySelectorAll('.step-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const step = parseInt(item.dataset.step);
+                    goToStep(step);
+                });
+            });
+        }
+
+        // ============================
+        // Step Navigation
+        // ============================
+        function goToStep(index) {
+            if (index < 0 || index >= steps.length) return;
+            currentStep = index;
+            steps[currentStep].completed = true;
+            renderSteps();
+            renderStepContent();
+            updateProgress();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateProgress() {
+            const progress = ((currentStep + 1) / steps.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${currentStep + 1} من ${steps.length} خطوة`;
+        }
+
+        // ============================
+        // Render Step Content
+        // ============================
+        function renderStepContent() {
+            const step = steps[currentStep];
+            document.getElementById('stepTitle').textContent = step.name;
+            document.getElementById('stepSubtitle').textContent = step.desc;
+
+            const content = document.getElementById('stepContent');
+            const renderers = {
+                basicInfo: renderBasicInfo,
+                branding: renderBranding,
+                hero: renderHero,
+                categories: renderCategories,
+                products: renderProducts,
+                services: renderServices,
+                about: renderAbout,
+                reviews: renderReviews,
+                contact: renderContact,
+                footer: renderFooter,
+                publish: renderPublish
+            };
+
+            content.innerHTML = renderers[step.id]();
+
+            // Attach event listeners
+            attachListeners();
+
+            // Update buttons
+            document.getElementById('prevBtn').disabled = currentStep === 0;
+            document.getElementById('prevBtn').style.opacity = currentStep === 0 ? '0.5' : '1';
+            document.getElementById('nextBtn').innerHTML = currentStep === steps.length - 1
+                ? 'إنهاء <i class="fas fa-check"></i>'
+                : 'التالي <i class="fas fa-arrow-left"></i>';
+        }
+
+        // ============================
+        // Step 1: Basic Info
+        // ============================
+        function renderBasicInfo() {
+            const d = storeData.basicInfo;
+            return `
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-store"></i> معلومات المتجر
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">اسم المتجر (عربي) <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="storeNameAr" value="${d.storeName}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">اسم المتجر (إنجليزي) <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="storeNameEn" value="${d.storeNameEn}" dir="ltr">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">الشعار (عربي)</label>
+                            <input type="text" class="form-input" id="sloganAr" value="${d.slogan}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">الشعار (إنجليزي)</label>
+                            <input type="text" class="form-input" id="sloganEn" value="${d.sloganEn}" dir="ltr">
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label class="form-label">وصف المتجر</label>
+                            <textarea class="form-textarea" id="description">${d.description}</textarea>
+                            <span class="form-hint">سيظهر في قسم "من نحن" والـ Footer</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-phone"></i> بيانات الاتصال
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">رقم الهاتف <span class="required">*</span></label>
+                            <input type="tel" class="form-input" id="phone" value="${d.phone}" dir="ltr">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">رقم الواتساب</label>
+                            <input type="tel" class="form-input" id="whatsapp" value="${d.whatsapp}" dir="ltr">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">البريد الإلكتروني</label>
+                            <input type="email" class="form-input" id="email" value="${d.email}" dir="ltr">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">العنوان</label>
+                            <input type="text" class="form-input" id="address" value="${d.address}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">العملة الأساسية</label>
+                            <select class="form-select" id="currency">
+                                <option value="USD" ${d.currency === 'USD' ? 'selected' : ''}>USD $ - دولار</option>
+                                <option value="SAR" ${d.currency === 'SAR' ? 'selected' : ''}>SAR - ريال سعودي</option>
+                                <option value="AED" ${d.currency === 'AED' ? 'selected' : ''}>AED - درهم إماراتي</option>
+                                <option value="JOD" ${d.currency === 'JOD' ? 'selected' : ''}>JOD - دينار أردني</option>
+                                <option value="EGP" ${d.currency === 'EGP' ? 'selected' : ''}>EGP - جنيه مصري</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">اللغة الأساسية</label>
+                            <select class="form-select" id="language">
+                                <option value="AR" ${d.language === 'AR' ? 'selected' : ''}>العربية</option>
+                                <option value="EN" ${d.language === 'EN' ? 'selected' : ''}>English</option>
+                                <option value="FR" ${d.language === 'FR' ? 'selected' : ''}>Français</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================
+        // Step 2: Branding
+        // ============================
+        function renderBranding() {
+            const d = storeData.branding;
+            return `
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-palette"></i> ألوان الموقع
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">اللون الأساسي (Primary)</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="primaryColor" value="${d.primaryColor}">
+                                <input type="text" class="form-input" id="primaryColorText" value="${d.primaryColor}" dir="ltr">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">اللون العميق (Deep)</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="primaryDeep" value="${d.primaryDeep}">
+                                <input type="text" class="form-input" id="primaryDeepText" value="${d.primaryDeep}" dir="ltr">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">اللون المميز (Accent)</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="accentColor" value="${d.accentColor}">
+                                <input type="text" class="form-input" id="accentColorText" value="${d.accentColor}" dir="ltr">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">لون الخلفية</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="bgColor" value="${d.bgColor}">
+                                <input type="text" class="form-input" id="bgColorText" value="${d.bgColor}" dir="ltr">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-font"></i> الخطوط
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">خط العناوين (Heading)</label>
+                            <select class="form-select" id="fontHeading">
+                                <option ${d.fontHeading === 'Pinyon Script' ? 'selected' : ''}>Pinyon Script</option>
+                                <option ${d.fontHeading === 'Cormorant Garamond' ? 'selected' : ''}>Cormorant Garamond</option>
+                                <option ${d.fontHeading === 'Playfair Display' ? 'selected' : ''}>Playfair Display</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">خط النص (Body)</label>
+                            <select class="form-select" id="fontBody">
+                                <option ${d.fontBody === 'Tajawal' ? 'selected' : ''}>Tajawal (عربي)</option>
+                                <option ${d.fontBody === 'Cairo' ? 'selected' : ''}>Cairo (عربي)</option>
+                                <option ${d.fontBody === 'Almarai' ? 'selected' : ''}>Almarai (عربي)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================
+        // Step 3: Hero
+        // ============================
+        function renderHero() {
+            const d = storeData.hero;
+            return `
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-image"></i> صور الـ Hero Slider
+                    </div>
+                    ${d.slides.map((s, i) => `
+                        <div class="product-editor">
+                            <div class="product-editor-header">
+                                <div class="product-editor-title">
+                                    <span class="badge-num">${i + 1}</span>
+                                    شريحة ${i + 1}
+                                </div>
+                                ${d.slides.length > 1 ? `<button class="btn btn-outline" onclick="removeSlide(${i})" style="padding:6px 12px;font-size:12px;"><i class="fas fa-trash"></i> حذف</button>` : ''}
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">العنوان الإنجليزي (Script)</label>
+                                    <input type="text" class="form-input" id="slideTitle${i}" value="${s.title}" dir="ltr">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">العنوان العربي</label>
+                                    <input type="text" class="form-input" id="slideTitleAr${i}" value="${s.titleAr}">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">الوصف</label>
+                                    <input type="text" class="form-input" id="slideSub${i}" value="${s.subtitle}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">نص الزر</label>
+                                    <input type="text" class="form-input" id="slideCta${i}" value="${s.cta}">
+                                </div>
+                            </div>
+                            <div class="form-row full">
+                                <div class="form-group">
+                                    <label class="form-label">صورة الخلفية</label>
+                                    <input type="text" class="form-input" id="slideImg${i}" value="${s.image}" dir="ltr" placeholder="images/wedding/xxx.jpg">
+                                    <span class="form-hint">أدخلي مسار الصورة من مجلد images/</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                    <button class="btn-add" onclick="addSlide()">
+                        <i class="fas fa-plus"></i> إضافة شريحة جديدة
+                    </button>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-chart-bar"></i> الإحصائيات
+                    </div>
+                    <div class="form-row three">
+                        <div class="form-group">
+                            <label class="form-label">عدد المنتجات</label>
+                            <input type="number" class="form-input" id="statProducts" value="${d.stats.products}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">عدد العرائس</label>
+                            <input type="number" class="form-input" id="statBrides" value="${d.stats.brides}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">التقييم</label>
+                            <input type="number" step="0.1" class="form-input" id="statRating" value="${d.stats.rating}">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================
+        // Step 4: Categories
+        // ============================
+        function renderCategories() {
+            const d = storeData.categories;
+            return `
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-th-large"></i> التصنيفات الثلاثة الرئيسية
+                    </div>
+                    <span class="form-hint" style="display:block;margin-bottom:16px;">
+                        تظهر هذه التصنيفات في الصفحة الرئيسية بعد الـ Hero
+                    </span>
+                    ${d.map((c, i) => `
+                        <div class="list-item">
+                            <div style="width:80px;height:80px;border-radius:8px;overflow:hidden;flex-shrink:0;">
+                                <img src="${c.image}" alt="" style="width:100%;height:100%;object-fit:cover;">
+                            </div>
+                            <div class="list-item-content">
+                                <div class="form-row" style="margin-bottom:8px;">
+                                    <input type="text" class="form-input" id="catName${i}" value="${c.name}" placeholder="الاسم الإنجليزي" dir="ltr" style="font-size:13px;padding:6px 10px;">
+                                    <input type="text" class="form-input" id="catNameAr${i}" value="${c.nameAr}" placeholder="الاسم العربي" style="font-size:13px;padding:6px 10px;">
+                                </div>
+                                <input type="text" class="form-input" id="catImage${i}" value="${c.image}" placeholder="مسار الصورة" dir="ltr" style="font-size:12px;padding:6px 10px;">
+                            </div>
+                            <div class="list-item-actions">
+                                <button onclick="previewCategory(${i})" title="معاينة"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // ============================
+        // Step 5: Products
+        // ============================
+        function renderProducts() {
+            const d = storeData.products;
+            return `
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-tshirt"></i> إدارة المنتجات
+                        <span style="margin-right:auto;font-size:13px;color:var(--text-light);font-weight:400;">(${d.length} منتج)</span>
+                    </div>
+
+                    <div class="inner-tabs">
+                        <div class="inner-tab active" data-tab="all">الكل (${d.length})</div>
+                        <div class="inner-tab" data-tab="wedding">أعراس (${d.filter(p=>p.category==='wedding').length})</div>
+                        <div class="inner-tab" data-tab="evening">سهرة (${d.filter(p=>p.category==='evening').length})</div>
+                        <div class="inner-tab" data-tab="accessories">مستلزمات (${d.filter(p=>p.category==='accessories').length})</div>
+                    </div>
+
+                    <div id="productsList">
+                        ${d.map((p, i) => `
+                            <div class="product-editor" data-cat="${p.category}">
+                                <div class="product-editor-header">
+                                    <div class="product-editor-title">
+                                        <span class="badge-num">${i + 1}</span>
+                                        ${p.name}
+                                    </div>
+                                    <div class="list-item-actions">
+                                        <button onclick="duplicateProduct(${i})" title="تكرار"><i class="fas fa-copy"></i></button>
+                                        <button class="delete" onclick="deleteProduct(${i})" title="حذف"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                                <div style="display:grid;grid-template-columns:120px 1fr;gap:16px;">
+                                    <div class="image-upload has-image" style="padding:0;aspect-ratio:1/1;">
+                                        <div class="image-preview">
+                                            <img src="${p.image}" id="prodImg${i}" alt="">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label class="form-label">اسم المنتج</label>
+                                                <input type="text" class="form-input" id="prodName${i}" value="${p.name}" dir="ltr">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">التصنيف</label>
+                                                <select class="form-select" id="prodCat${i}">
+                                                    <option value="wedding" ${p.category==='wedding'?'selected':''}>زفاف</option>
+                                                    <option value="evening" ${p.category==='evening'?'selected':''}>سهرة</option>
+                                                    <option value="accessories" ${p.category==='accessories'?'selected':''}>مستلزمات</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">الوصف</label>
+                                            <input type="text" class="form-input" id="prodDesc${i}" value="${p.desc}">
+                                        </div>
+                                        <div class="form-row three" style="margin-bottom:0;">
+                                            <div class="form-group">
+                                                <label class="form-label">سعر البيع ($)</label>
+                                                <input type="number" class="form-input" id="prodPrice${i}" value="${p.price}" dir="ltr">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">سعر الإيجار/يوم</label>
+                                                <input type="number" class="form-input" id="prodRent${i}" value="${p.rentPrice}" dir="ltr">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">الشارة</label>
+                                                <select class="form-select" id="prodBadge${i}">
+                                                    <option value="" ${!p.badge?'selected':''}>لا شيء</option>
+                                                    <option value="new" ${p.badge==='new'?'selected':''}>New!</option>
+                                                    <option value="sale" ${p.badge==='sale'?'selected':''}>Sale</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" style="margin-top:8px;">
+                                            <label class="form-label">مسار الصورة</label>
+                                            <input type="text" class="form-input" id="prodImage${i}" value="${p.image}" dir="ltr" onchange="document.getElementById('prodImg${i}').src=this.value">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="btn-add" onclick="addProduct()">
+                        <i class="fas fa-plus"></i> إضافة منتج جديد
+                    </button>
+                </div>
+            `;
+        }
+
+        // ============================
+        // Step 6: Services
+        // ============================
+        function renderServices() {
+            const d = storeData.services;
+            return `
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-concierge-bell"></i> خدمات المتجر
+                    </div>
+                    ${d.map((s, i) => `
+                        <div class="list-item" style="display:block;">
+                            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                                <div class="toggle-switch ${s.enabled?'active':''}" onclick="toggleService(${i}, this)"></div>
+                                <strong>${s.title}</strong>
+                                <div style="margin-right:auto;">
+                                    <button class="btn btn-outline" onclick="removeService(${i})" style="padding:6px 12px;font-size:12px;"><i class="fas fa-trash"></i> حذف</button>
+                                </div>
+                            </div>
+                            <div class="form-row three">
+                                <div class="form-group">
+                                    <label class="form-label">الأيقونة</label>
+                                    <select class="form-select" id="svcIcon${i}">
+                                        <option ${s.icon==='fa-tshirt'?'selected':''}>fa-tshirt</option>
+                                        <option ${s.icon==='fa-gem'?'selected':''}>fa-gem</option>
+                                        <option ${s.icon==='fa-magic'?'selected':''}>fa-magic</option>
+                                        <option ${s.icon==='fa-truck'?'selected':''}>fa-truck</option>
+                                        <option ${s.icon==='fa-crown'?'selected':''}>fa-crown</option>
+                                        <option ${s.icon==='fa-ring'?'selected':''}>fa-ring</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">العنوان</label>
+                                    <input type="text" class="form-input" id="svcTitle${i}" value="${s.title}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">الوصف</label>
+                                    <input type="text" class="form-input" id="svcDesc${i}" value="${s.desc}">
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                    <button class="btn-add" onclick="addService()">
+                        <i class="fas fa-plus"></i> إضافة خدمة
+                    </button>
+                </div>
+            `;
+        }
+
+        // ============================
+        // Step 7: About
+        // ============================
+        function renderAbout() {
+            const d = storeData.about;
+            return `
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-book-open"></i> قسم "من نحن"
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">العنوان الإنجليزي (Script)</label>
+                            <input type="text" class="form-input" id="aboutTitleEn" value="${d.title}" dir="ltr">
+                            <span class="form-hint">سيظهر بخط Pinyon Script</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">العنوان العربي</label>
+                            <input type="text" class="form-input" id="aboutTitleAr" value="${d.titleAr}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">العنوان الفرعي (EN)</label>
+                            <input type="text" class="form-input" id="aboutSubEn" value="${d.subtitle}" dir="ltr">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">العنوان الفرعي (AR)</label>
+                            <input type="text" class="form-input" id="aboutSubAr" value="${d.subtitleAr}">
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label class="form-label">الوصف</label>
+                            <textarea class="form-textarea" id="aboutDesc">${d.description}</textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">سنة التأسيس</label>
+                            <input type="number" class="form-input" id="aboutYear" value="${d.establishedYear}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">صورة القسم</label>
+                            <input type="text" class="form-input" id="aboutImage" value="${d.image}" dir="ltr">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-chart-line"></i> الإحصائيات (3 أرقام)
+                    </div>
+                    <div class="form-row three">
+                        <div class="form-group">
+                            <label class="form-label">المنتجات</label>
+                            <input type="text" class="form-input" id="aboutStat1" value="${d.stats.products}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">العرائس</label>
+                            <input type="text" class="form-input" id="aboutStat2" value="${d.stats.brides}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">التقييم</label>
+                            <input type="text" class="form-input" id="aboutStat3" value="${d.stats.rating}">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================
+        // Step 8: Reviews
+        // ============================
+        function renderReviews() {
+            const d = storeData.reviews;
+            return `
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-star"></i> آراء العميلات (${d.length} تقييم)
+                    </div>
+                    ${d.map((r, i) => `
+                        <div class="list-item" style="display:block;">
+                            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                                <div class="toggle-switch ${r.approved?'active':''}" onclick="toggleReview(${i}, this)"></div>
+                                <div style="width:40px;height:40px;border-radius:50%;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;">${r.initial}</div>
+                                <strong>${r.name}</strong>
+                                <span style="color:var(--text-light);font-size:13px;">${'★'.repeat(r.rating)}</span>
+                                <div style="margin-right:auto;">
+                                    <button class="btn btn-outline" onclick="removeReview(${i})" style="padding:6px 12px;font-size:12px;"><i class="fas fa-trash"></i> حذف</button>
+                                </div>
+                            </div>
+                            <div class="form-row three">
+                                <div class="form-group">
+                                    <label class="form-label">الاسم</label>
+                                    <input type="text" class="form-input" id="revName${i}" value="${r.name}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">الدور / الموقع</label>
+                                    <input type="text" class="form-input" id="revRole${i}" value="${r.role}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">التقييم</label>
+                                    <select class="form-select" id="revRating${i}">
+                                        <option value="5" ${r.rating===5?'selected':''}>5 نجوم</option>
+                                        <option value="4" ${r.rating===4?'selected':''}>4 نجوم</option>
+                                        <option value="3" ${r.rating===3?'selected':''}>3 نجوم</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top:8px;">
+                                <label class="form-label">نص التقييم</label>
+                                <textarea class="form-textarea" id="revText${i}" style="min-height:60px;">${r.text}</textarea>
+                            </div>
+                        </div>
+                    `).join('')}
+                    <button class="btn-add" onclick="addReview()">
+                        <i class="fas fa-plus"></i> إضافة تقييم جديد
+                    </button>
+                </div>
+            `;
+        }
+
+        // ============================
+        // Step 9: Contact
+        // ============================
+        function renderContact() {
+            const d = storeData.contact;
+            return `
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-address-book"></i> معلومات التواصل
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">رقم الهاتف</label>
+                            <input type="tel" class="form-input" id="contactPhone" value="${d.phone}" dir="ltr">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">رقم الواتساب</label>
+                            <input type="tel" class="form-input" id="contactWhatsapp" value="${d.whatsapp}" dir="ltr">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">البريد الإلكتروني</label>
+                            <input type="email" class="form-input" id="contactEmail" value="${d.email}" dir="ltr">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">أوقات العمل</label>
+                            <input type="text" class="form-input" id="contactHours" value="${d.workingHours}">
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label class="form-label">العنوان الكامل</label>
+                            <textarea class="form-textarea" id="contactAddress" style="min-height:60px;">${d.address}</textarea>
+                        </div>
+                    </div>
+                    <div class="toggle-group">
+                        <span class="toggle-label">تفعيل نموذج الحجز</span>
+                        <div class="toggle-switch ${d.bookingEnabled?'active':''}" onclick="toggleBooking(this)"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================
+        // Step 10: Footer
+        // ============================
+        function renderFooter() {
+            const d = storeData.footer;
+            return `
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-link"></i> روابط السوشيال ميديا
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label"><i class="fab fa-facebook-f"></i> Facebook</label>
+                            <input type="url" class="form-input" id="socialFb" value="${d.socialLinks.facebook}" dir="ltr">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><i class="fab fa-instagram"></i> Instagram</label>
+                            <input type="url" class="form-input" id="socialIg" value="${d.socialLinks.instagram}" dir="ltr">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label"><i class="fab fa-tiktok"></i> TikTok</label>
+                            <input type="url" class="form-input" id="socialTt" value="${d.socialLinks.tiktok}" dir="ltr">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><i class="fab fa-pinterest-p"></i> Pinterest</label>
+                            <input type="url" class="form-input" id="socialPi" value="${d.socialLinks.pinterest}" dir="ltr">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-copyright"></i> الفوتر
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label class="form-label">نص حقوق الملكية</label>
+                            <input type="text" class="form-input" id="footerCopyright" value="${d.copyright}">
+                        </div>
+                    </div>
+                    <div class="toggle-group">
+                        <span class="toggle-label">عرض روابط السوشيال</span>
+                        <div class="toggle-switch ${d.showSocial?'active':''}" onclick="toggleFooterSocial(this)"></div>
+                    </div>
+                    <div class="toggle-group">
+                        <span class="toggle-label">عرض طرق الدفع</span>
+                        <div class="toggle-switch ${d.showPayment?'active':''}" onclick="toggleFooterPayment(this)"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================
+        // Step 11: Publish
+        // ============================
+        function renderPublish() {
+            return `
+                <div class="success-box">
+                    <i class="fas fa-check-circle"></i>
+                    <p>ممتاز! جميع البيانات جاهزة. اضغطي على زر "تصدير البيانات" لتحميل ملف JSON أو "معاينة الموقع" لرؤية النتيجة.</p>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-list-check"></i> ملخص الإعدادات
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <strong>اسم المتجر:</strong>
+                            <p style="color:var(--text-soft);">${storeData.basicInfo.storeName}</p>
+                        </div>
+                        <div class="form-group">
+                            <strong>عدد المنتجات:</strong>
+                            <p style="color:var(--text-soft);">${storeData.products.length}</p>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <strong>عدد الخدمات:</strong>
+                            <p style="color:var(--text-soft);">${storeData.services.length}</p>
+                        </div>
+                        <div class="form-group">
+                            <strong>عدد التقييمات:</strong>
+                            <p style="color:var(--text-soft);">${storeData.reviews.length}</p>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <strong>اللون الأساسي:</strong>
+                            <p style="color:${storeData.branding.primaryColor};font-weight:700;">${storeData.branding.primaryColor}</p>
+                        </div>
+                        <div class="form-group">
+                            <strong>خط العناوين:</strong>
+                            <p style="color:var(--text-soft);">${storeData.branding.fontHeading}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-rocket"></i> تصدير ونشر
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;">
+                        <button class="btn btn-success" onclick="exportData()" style="padding:20px;font-size:14px;flex-direction:column;height:auto;">
+                            <i class="fas fa-download" style="font-size:24px;margin-bottom:8px;"></i>
+                            <strong>تصدير البيانات JSON</strong>
+                            <small style="font-weight:400;opacity:0.8;">للاستخدام في الموقع</small>
+                        </button>
+                        <button class="btn btn-primary" onclick="copyDataToClipboard()" style="padding:20px;font-size:14px;flex-direction:column;height:auto;">
+                            <i class="fas fa-copy" style="font-size:24px;margin-bottom:8px;"></i>
+                            <strong>نسخ الكود</strong>
+                            <small style="font-weight:400;opacity:0.8;">للصق في Kimi</small>
+                        </button>
+                        <button class="btn btn-outline" onclick="window.open('index.html', '_blank')" style="padding:20px;font-size:14px;flex-direction:column;height:auto;color:var(--text);">
+                            <i class="fas fa-external-link-alt" style="font-size:24px;margin-bottom:8px;color:var(--primary);"></i>
+                            <strong>معاينة الموقع</strong>
+                            <small style="font-weight:400;">فتح في تبويب جديد</small>
+                        </button>
+                        <button class="btn btn-outline" onclick="resetData()" style="padding:20px;font-size:14px;flex-direction:column;height:auto;color:var(--danger);border-color:var(--danger);">
+                            <i class="fas fa-undo" style="font-size:24px;margin-bottom:8px;"></i>
+                            <strong>إعادة تعيين</strong>
+                            <small style="font-weight:400;">العودة للبيانات الافتراضية</small>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="preview-box">
+                    <i class="fas fa-info-circle"></i>
+                    <p><strong>ملاحظة:</strong> البيانات تُحفظ تلقائياً في متصفحكِ (localStorage). لتطبيقها على الموقع الفعلي، صدّريها كملف JSON وأعطيها لـ Kimi أو للمطور.</p>
+                </div>
+            `;
+        }
+
+        // ============================
+        // Helper Functions
+        // ============================
+        function addSlide() {
+            storeData.hero.slides.push({ title: 'New Slide', titleAr: 'شريحة جديدة', subtitle: 'وصف الشريحة', image: 'images/wedding/0.jpg', cta: 'اكتشفي' });
+            renderStepContent();
+        }
+
+        function removeSlide(i) {
+            if (storeData.hero.slides.length <= 1) return;
+            storeData.hero.slides.splice(i, 1);
+            renderStepContent();
+        }
+
+        function addProduct() {
+            const newId = Math.max(...storeData.products.map(p => p.id)) + 1;
+            storeData.products.push({
+                id: newId, name: 'New Product', desc: 'وصف المنتج', category: 'wedding',
+                price: 1000, rentPrice: 200, image: 'images/wedding/0.jpg', badge: 'new',
+                rating: 5, reviews: 0, inStock: true, rentAvailable: true, saleAvailable: true
+            });
+            renderStepContent();
+        }
+
+        function duplicateProduct(i) {
+            const copy = JSON.parse(JSON.stringify(storeData.products[i]));
+            copy.id = Math.max(...storeData.products.map(p => p.id)) + 1;
+            copy.name += ' (نسخة)';
+            storeData.products.splice(i + 1, 0, copy);
+            renderStepContent();
+        }
+
+        function deleteProduct(i) {
+            if (confirm('هل أنتِ متأكدة من حذف هذا المنتج؟')) {
+                storeData.products.splice(i, 1);
+                renderStepContent();
+            }
+        }
+
+        function previewCategory(i) {
+            window.open(storeData.categories[i].image, '_blank');
+        }
+
+        function addService() {
+            const newId = Math.max(...storeData.services.map(s => s.id)) + 1;
+            storeData.services.push({ id: newId, icon: 'fa-tshirt', title: 'خدمة جديدة', desc: 'وصف الخدمة', enabled: true });
+            renderStepContent();
+        }
+
+        function removeService(i) {
+            storeData.services.splice(i, 1);
+            renderStepContent();
+        }
+
+        function toggleService(i, el) {
+            storeData.services[i].enabled = !storeData.services[i].enabled;
+            el.classList.toggle('active');
+        }
+
+        function addReview() {
+            const newId = Math.max(...storeData.reviews.map(r => r.id)) + 1;
+            storeData.reviews.push({ id: newId, name: 'اسم العميلة', role: 'عروس · المدينة', text: 'نص التقييم', rating: 5, initial: 'ع', approved: true });
+            renderStepContent();
+        }
+
+        function removeReview(i) {
+            storeData.reviews.splice(i, 1);
+            renderStepContent();
+        }
+
+        function toggleReview(i, el) {
+            storeData.reviews[i].approved = !storeData.reviews[i].approved;
+            el.classList.toggle('active');
+        }
+
+        function toggleBooking(el) {
+            storeData.contact.bookingEnabled = !storeData.contact.bookingEnabled;
+            el.classList.toggle('active');
+        }
+
+        function toggleFooterSocial(el) {
+            storeData.footer.showSocial = !storeData.footer.showSocial;
+            el.classList.toggle('active');
+        }
+
+        function toggleFooterPayment(el) {
+            storeData.footer.showPayment = !storeData.footer.showPayment;
+            el.classList.toggle('active');
+        }
+
+        // ============================
+        // Save / Export / Reset
+        // ============================
+        function saveData() {
+            localStorage.setItem('dressShopData', JSON.stringify(storeData));
+            showToast('تم حفظ البيانات بنجاح ✓', 'success');
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(storeData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dress-shop-data-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('تم تصدير الملف ✓', 'success');
+        }
+
+        function copyDataToClipboard() {
+            const dataStr = JSON.stringify(storeData, null, 2);
+            navigator.clipboard.writeText(dataStr).then(() => {
+                showToast('تم نسخ البيانات ✓', 'success');
+            }).catch(() => {
+                // Fallback
+                const ta = document.createElement('textarea');
+                ta.value = dataStr;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast('تم نسخ البيانات ✓', 'success');
+            });
+        }
+
+        function resetData() {
+            if (confirm('سيتم حذف جميع التعديلات والعودة للإعدادات الافتراضية. متابعة؟')) {
+                localStorage.removeItem('dressShopData');
+                storeData = JSON.parse(JSON.stringify(defaultData));
+                currentStep = 0;
+                steps.forEach((s, i) => s.completed = i === 0);
+                renderSteps();
+                renderStepContent();
+                showToast('تم إعادة التعيين', 'success');
+            }
+        }
+
+        function showToast(message, type = '') {
+            const toast = document.getElementById('toast');
+            clearTimeout(window.toastTimeout);
+            toast.className = 'toast ' + type;
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i> ${message}`;
+            toast.classList.add('show');
+            window.toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ============================
+        // Attach Event Listeners
+        // ============================
+        function attachListeners() {
+            // Color picker sync
+            const colorPairs = [
+                ['primaryColor', 'primaryColorText'],
+                ['primaryDeep', 'primaryDeepText'],
+                ['accentColor', 'accentColorText'],
+                ['bgColor', 'bgColorText']
+            ];
+            colorPairs.forEach(([a, b]) => {
+                const c1 = document.getElementById(a);
+                const c2 = document.getElementById(b);
+                if (c1 && c2) {
+                    c1.addEventListener('input', () => c2.value = c1.value);
+                    c2.addEventListener('input', () => c1.value = c2.value);
+                }
+            });
+
+            // Inner tabs (products)
+            document.querySelectorAll('.inner-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    const cat = tab.dataset.tab;
+                    document.querySelectorAll('#productsList .product-editor').forEach(el => {
+                        el.style.display = (cat === 'all' || el.dataset.cat === cat) ? '' : 'none';
+                    });
+                });
+            });
+        }
+
+        // ============================
+        // Navigation Buttons
+        // ============================
+        document.getElementById('prevBtn').addEventListener('click', () => goToStep(currentStep - 1));
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            // Save current step data
+            saveCurrentStepData();
+            if (currentStep === steps.length - 1) {
+                saveData();
+                showToast('تم إنهاء جميع الخطوات بنجاح 🎉', 'success');
+            } else {
+                goToStep(currentStep + 1);
+            }
+        });
+
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            saveCurrentStepData();
+            saveData();
+        });
+
+        document.getElementById('exportBtn').addEventListener('click', exportData);
+        document.getElementById('loadDataBtn').addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        storeData = JSON.parse(ev.target.result);
+                        localStorage.setItem('dressShopData', JSON.stringify(storeData));
+                        steps.forEach((s, i) => s.completed = true);
+                        renderSteps();
+                        renderStepContent();
+                        showToast('تم تحميل البيانات ✓', 'success');
+                    } catch (err) {
+                        showToast('ملف غير صالح', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        });
+
+        function saveCurrentStepData() {
+            const step = steps[currentStep];
+            switch (step.id) {
+                case 'basicInfo':
+                    storeData.basicInfo.storeName = val('storeNameAr') || storeData.basicInfo.storeName;
+                    storeData.basicInfo.storeNameEn = val('storeNameEn') || storeData.basicInfo.storeNameEn;
+                    storeData.basicInfo.slogan = val('sloganAr');
+                    storeData.basicInfo.sloganEn = val('sloganEn');
+                    storeData.basicInfo.description = val('description');
+                    storeData.basicInfo.phone = val('phone');
+                    storeData.basicInfo.whatsapp = val('whatsapp');
+                    storeData.basicInfo.email = val('email');
+                    storeData.basicInfo.address = val('address');
+                    storeData.basicInfo.currency = val('currency');
+                    storeData.basicInfo.language = val('language');
+                    break;
+                case 'branding':
+                    storeData.branding.primaryColor = val('primaryColorText') || val('primaryColor');
+                    storeData.branding.primaryDeep = val('primaryDeepText') || val('primaryDeep');
+                    storeData.branding.accentColor = val('accentColorText') || val('accentColor');
+                    storeData.branding.bgColor = val('bgColorText') || val('bgColor');
+                    storeData.branding.fontHeading = val('fontHeading');
+                    storeData.branding.fontBody = val('fontBody');
+                    break;
+                case 'hero':
+                    storeData.hero.slides.forEach((s, i) => {
+                        s.title = val(`slideTitle${i}`) || s.title;
+                        s.titleAr = val(`slideTitleAr${i}`) || s.titleAr;
+                        s.subtitle = val(`slideSub${i}`) || s.subtitle;
+                        s.cta = val(`slideCta${i}`) || s.cta;
+                        s.image = val(`slideImg${i}`) || s.image;
+                    });
+                    storeData.hero.stats.products = parseInt(val('statProducts')) || storeData.hero.stats.products;
+                    storeData.hero.stats.brides = parseInt(val('statBrides')) || storeData.hero.stats.brides;
+                    storeData.hero.stats.rating = parseFloat(val('statRating')) || storeData.hero.stats.rating;
+                    break;
+                case 'categories':
+                    storeData.categories.forEach((c, i) => {
+                        c.name = val(`catName${i}`) || c.name;
+                        c.nameAr = val(`catNameAr${i}`) || c.nameAr;
+                        c.image = val(`catImage${i}`) || c.image;
+                    });
+                    break;
+                case 'products':
+                    storeData.products.forEach((p, i) => {
+                        p.name = val(`prodName${i}`) || p.name;
+                        p.desc = val(`prodDesc${i}`) || p.desc;
+                        p.category = val(`prodCat${i}`) || p.category;
+                        p.price = parseInt(val(`prodPrice${i}`)) || p.price;
+                        p.rentPrice = parseInt(val(`prodRent${i}`)) || p.rentPrice;
+                        p.badge = val(`prodBadge${i}`);
+                        p.image = val(`prodImage${i}`) || p.image;
+                    });
+                    break;
+                case 'services':
+                    storeData.services.forEach((s, i) => {
+                        s.icon = val(`svcIcon${i}`) || s.icon;
+                        s.title = val(`svcTitle${i}`) || s.title;
+                        s.desc = val(`svcDesc${i}`) || s.desc;
+                    });
+                    break;
+                case 'about':
+                    storeData.about.title = val('aboutTitleEn') || storeData.about.title;
+                    storeData.about.titleAr = val('aboutTitleAr');
+                    storeData.about.subtitle = val('aboutSubEn');
+                    storeData.about.subtitleAr = val('aboutSubAr');
+                    storeData.about.description = val('aboutDesc');
+                    storeData.about.establishedYear = parseInt(val('aboutYear'));
+                    storeData.about.image = val('aboutImage');
+                    storeData.about.stats.products = val('aboutStat1');
+                    storeData.about.stats.brides = val('aboutStat2');
+                    storeData.about.stats.rating = val('aboutStat3');
+                    break;
+                case 'reviews':
+                    storeData.reviews.forEach((r, i) => {
+                        r.name = val(`revName${i}`) || r.name;
+                        r.role = val(`revRole${i}`);
+                        r.rating = parseInt(val(`revRating${i}`)) || 5;
+                        r.text = val(`revText${i}`);
+                    });
+                    break;
+                case 'contact':
+                    storeData.contact.phone = val('contactPhone');
+                    storeData.contact.whatsapp = val('contactWhatsapp');
+                    storeData.contact.email = val('contactEmail');
+                    storeData.contact.workingHours = val('contactHours');
+                    storeData.contact.address = val('contactAddress');
+                    break;
+                case 'footer':
+                    storeData.footer.socialLinks.facebook = val('socialFb');
+                    storeData.footer.socialLinks.instagram = val('socialIg');
+                    storeData.footer.socialLinks.tiktok = val('socialTt');
+                    storeData.footer.socialLinks.pinterest = val('socialPi');
+                    storeData.footer.copyright = val('footerCopyright');
+                    break;
+            }
+        }
+
+        function val(id) {
+            const el = document.getElementById(id);
+            return el ? el.value : null;
+        }
+
+        // Init
+        renderSteps();
+        renderStepContent();
+    </script>
+</body>
+</html>

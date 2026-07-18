@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { serializeBusiness } from '@/lib/business-serializer';
 import { getCurrentUser, badRequest, serverError } from '@/lib/api-utils';
 
 // GET /api/search - Global search across users, businesses, posts, and groups
@@ -74,11 +75,15 @@ export async function GET(req: NextRequest) {
         take: limit,
         include: {
           Category: { select: { id: true, name: true } },
-          Subcategory: { select: { id: true, name: true } },
+          BusinessSubcategory: {
+            include: {
+              Subcategory: { select: { id: true, name: true, slug: true } },
+            },
+          },
           _count: { select: { Review: true } },
         },
       });
-      results.businesses = businesses;
+      results.businesses = businesses.map(serializeBusiness);
     }
 
     if (searchTypes.includes('posts')) {
@@ -122,7 +127,14 @@ export async function GET(req: NextRequest) {
         }));
       }
 
-      results.posts = postsWithStatus;
+      results.posts = postsWithStatus.map((p) => ({
+        ...p,
+        user: p.User,
+        business: p.Business,
+        _count: { likes: (p._count as any).Like, comments: (p._count as any).Comment, views: p.views, shares: p.shares },
+        User: undefined,
+        Business: undefined,
+      }));
     }
 
     if (searchTypes.includes('groups')) {

@@ -35,7 +35,7 @@ export async function GET(
 
     if (countryId) where.countryId = countryId;
     if (city) where.city = { contains: city };
-    if (subcategoryId) where.subcategoryId = subcategoryId;
+    if (subcategoryId) where.BusinessSubcategory = { some: { subcategoryId: { equals: subcategoryId } } };
     if (verifiedOnly) where.isVerified = true;
 
     let orderBy: any = { avgRating: 'desc' };
@@ -63,7 +63,7 @@ export async function GET(
       take: limit * 2, // fetch more for nearest sorting
       include: {
         Category: { select: { id: true, name: true } },
-        Subcategory: { select: { id: true, name: true } },
+        BusinessSubcategory: { include: { Subcategory: { select: { id: true, name: true, slug: true } } } },
         _count: { select: { Review: true, Booking: true } },
       },
     });

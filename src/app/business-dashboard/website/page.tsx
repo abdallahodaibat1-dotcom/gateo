@@ -56,7 +56,7 @@ export default function WebsiteDashboardPage() {
       const businessRes = await fetch('/api/businesses/my');
       if (!businessRes.ok) {
         if (businessRes.status === 404) {
-          router.push('/business/apply');
+          router.push('/business/apply/start');
           return;
         }
         throw new Error('فشل في جلب بيانات النشاط');
@@ -140,7 +140,7 @@ export default function WebsiteDashboardPage() {
 
   if (!business) return null;
 
-  const publicUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/business/${business.slug}`;
+  const publicUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/b/${business.slug}`;
 
   return (
     <div className="space-y-6">

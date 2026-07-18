@@ -182,7 +182,7 @@ async function applyStore(jar: CookieJar) {
     slug: TEST_SLUG,
     description: 'متجر أزياء تجريبي مستوحى من قالب Porto Shop1 الأصلي. نقدم تشكيلة واسعة من الأزياء والإكسسوارات والأحذية بجودة عالية وأسعار مميزة.',
     categoryId: category.id,
-    subcategoryId: subcategory?.id || undefined,
+    subcategoryIds: subcategory ? [subcategory.id] : [],
     acceptedTerms: true,
     websiteType: 'STORE',
     designId: 'store-porto-shop1',

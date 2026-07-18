@@ -205,6 +205,7 @@ async function generateBusinesses(users: any[], categories: any[], categoryMap: 
   ];
 
   const businessInputs: any[] = [];
+  const businessSubcategoryMap = new Map<string, string>();
   const usedOwners = new Set<string>();
   let ownerIndex = 0;
   for (const sector of sectorDistribution) {
@@ -221,6 +222,7 @@ async function generateBusinesses(users: any[], categories: any[], categoryMap: 
       ownerIndex++;
       const city = pick(saudiCities);
       const slug = `rt-${sector.categorySlug}-${i + 1}`;
+      const subcategoryId = ((category as any).Subcategory?.length ? (category as any).Subcategory[0].id : null);
       businessInputs.push({
         userId: owner.id,
         name: `${faker.company.name()} ${category.name}`,
@@ -229,7 +231,6 @@ async function generateBusinesses(users: any[], categories: any[], categoryMap: 
         logo: businessLogo(slug),
         cover: businessCover(slug),
         categoryId: category.id,
-        subcategoryId: ((category as any).Subcategory?.length ? (category as any).Subcategory[0].id : null),
         city: city.name,
         address: faker.location.streetAddress(),
         latitude: city.lat + (Math.random() - 0.5) * 0.1,
@@ -252,6 +253,9 @@ async function generateBusinesses(users: any[], categories: any[], categoryMap: 
           friday: { open: '16:00', close: '23:00' },
         }),
       });
+      if (subcategoryId) {
+        businessSubcategoryMap.set(slug, subcategoryId);
+      }
     }
   }
 
@@ -266,6 +270,17 @@ async function generateBusinesses(users: any[], categories: any[], categoryMap: 
       }
       console.error('Business create error:', e.message);
     }
+  }
+
+  // Attach subcategories via the BusinessSubcategory join model
+  const businessSubcategoryRecords = created
+    .filter((biz) => businessSubcategoryMap.has(biz.slug))
+    .map((biz) => ({
+      businessId: biz.id,
+      subcategoryId: businessSubcategoryMap.get(biz.slug)!,
+    }));
+  if (businessSubcategoryRecords.length) {
+    await prisma.businessSubcategory.createMany({ data: businessSubcategoryRecords, skipDuplicates: true });
   }
 
   // Create themes & pages for businesses
@@ -401,6 +416,259 @@ async function generateCatalog(businesses: any[]) {
   }
 
   return { products, services };
+}
+
+// ─── Showcase: High-fidelity demo spa for design comparison ───
+const SHOWCASE_SLUG = 'rt-lg-health-demo-spa';
+
+const SHOWCASE_IMAGES = {
+  logo: '/uploads/demo-spa/logo.jpg',
+  cover: '/uploads/demo-spa/cover.jpg',
+  gallery: Array.from({ length: 8 }, (_, i) => `/uploads/demo-spa/gallery/${i + 1}.jpg`),
+};
+
+const SHOWCASE_PRODUCT_IMAGES: Record<string, string[]> = {
+  'العناية بالبشرة': ['/uploads/demo-spa/products/skincare-1.jpg', '/uploads/demo-spa/products/skincare-2.jpg'],
+  'جلسات التدليك والاسترخاء': ['/uploads/demo-spa/products/massage-1.jpg', '/uploads/demo-spa/products/massage-2.jpg'],
+  'العناية بالشعر': ['/uploads/demo-spa/products/hair-1.jpg', '/uploads/demo-spa/products/hair-2.jpg'],
+  'الباقات المميزة': ['/uploads/demo-spa/products/package-1.jpg', '/uploads/demo-spa/products/package-2.jpg'],
+};
+
+const SHOWCASE_PRODUCTS = [
+  { name: 'جلسة تنظيف بشرة عميق', description: 'تنظيف عميق للمسام مع تقشير خفيف وترطيب مكثف لبشرة نضرة ومشرقة.', price: 320, comparePrice: 450, category: 'العناية بالبشرة', quantity: 50 },
+  { name: 'جلسة فيشل الذهبي', description: 'علاج متكامل يشمل التنظيف، التقشير، الترطيب، والماسك الذهبي لتجديد الخلايا.', price: 580, comparePrice: 750, category: 'العناية بالبشرة', quantity: 30 },
+  { name: 'حقن البلازما للوجه', description: 'جلسة بلازما غنية بالصفائح الدموية لتحفيز الكولاجين وتجديد نضارة البشرة.', price: 950, comparePrice: 1200, category: 'العناية بالبشرة', quantity: 20 },
+  { name: 'مساج استرخاء كامل 60 دقيقة', description: 'جلسة مساج سويدي لاسترخاء العضلات وتنشيط الدورة الدموية بزيوت عطرية طبيعية.', price: 380, comparePrice: 480, category: 'جلسات التدليك والاسترخاء', quantity: 40 },
+  { name: 'مساج حجر ساخن 90 دقيقة', description: 'علاج بالأحجار البركانية الساخنة لإذابة التوتر واستعادة توازن الجسم.', price: 550, comparePrice: 700, category: 'جلسات التدليك والاسترخاء', quantity: 25 },
+  { name: 'جلسة أروماثيرابي', description: 'جلسة مساج مع زيوت أساسية مختارة حسب حالتك المزاجية والجسدية.', price: 420, comparePrice: null, category: 'جلسات التدليك والاسترخاء', quantity: 35 },
+  { name: 'قص وتصفيف الشعر', description: 'قصة احترافية حسب شكل الوجه مع غسيل وتصفيف لإطلالة أنيقة.', price: 180, comparePrice: null, category: 'العناية بالشعر', quantity: 100 },
+  { name: 'بروتين معالج للشعر', description: 'علاج البروتين البرازيلي لتنعيم الشعر المجعد والتالف لمدة تصل إلى 3 أشهر.', price: 850, comparePrice: 1100, category: 'العناية بالشعر', quantity: 15 },
+  { name: 'صبغة شعر كاملة', description: 'صبغة عالية الجودة مع خصلات متناسقة وعلاج عميق للشعر.', price: 450, comparePrice: 600, category: 'العناية بالشعر', quantity: 25 },
+  { name: 'باقة العروس', description: 'يوم كامل من العناية يشمل بشرة، شعر، مساج، ومناكير لإطلالة فاخرة.', price: 2200, comparePrice: 2800, category: 'الباقات المميزة', quantity: 10 },
+  { name: 'باقة يوم السبا', description: 'جلسة 3 ساعات تشمل مساج، تنظيف بشرة، وعلاج للشعر مع مشروب استقبال.', price: 1200, comparePrice: 1500, category: 'الباقات المميزة', quantity: 12 },
+  { name: 'باقة استرخاء زوجي', description: 'جلسة مساج للشخصين في غرفة خاصة مع أجواء هادئة وشموع عطرية.', price: 900, comparePrice: 1100, category: 'الباقات المميزة', quantity: 20 },
+];
+
+const SHOWCASE_SERVICES = [
+  { name: 'جلسات العناية بالبشرة', description: 'أحدث تقنيات التقشير والترطيب والتجديد بأيدي خبيرات معتمدات.', price: 320 },
+  { name: 'مساج واسترخاء', description: 'جلسات مساج متنوعة لتخفيف التوتر واستعادة حيوية الجسم.', price: 380 },
+  { name: 'صالون الشعر والأظافر', description: 'قصات، صبغات، عناية، وأظافر بأسلوب عصري يناسب جميع المناسبات.', price: 180 },
+  { name: 'باقات السبا الفاخرة', description: 'باقات مخصصة للعرائس والمناسبات الخاصة بأجواء خاصة وفاخرة.', price: 1200 },
+];
+
+const SHOWCASE_REVIEWS = [
+  { rating: 5, comment: 'تجربة رائعة! الجلسة كانت مريحة جداً والموظفات محترفات. سأعود بالتأكيد.' },
+  { rating: 5, comment: 'أفضل سبا زرته في الرياض، الأجواء هادئة والخدمة فاخرة من البداية للنهاية.' },
+  { rating: 4, comment: 'باقة العروس ممتازة، لكن كان يفضل أن يكون التنظيم أسرع قليلاً.' },
+  { rating: 5, comment: 'مساج الأحجار الساخنة كان رائعاً، أنصح به بشدة لمن يعاني من التوتر.' },
+  { rating: 4, comment: 'خدمة تنظيف البشرة كانت جيدة والنتيجة ظهرت من أول جلسة.' },
+  { rating: 5, comment: 'موقع ممتاز، أسعار مناسبة للجودة المقدمة. شكراً لفريق لمسة نور.' },
+];
+
+const SHOWCASE_WORKING_HOURS = {
+  saturday: { open: '10:00', close: '22:00' },
+  sunday: { open: '10:00', close: '22:00' },
+  monday: { open: '10:00', close: '22:00' },
+  tuesday: { open: '10:00', close: '22:00' },
+  wednesday: { open: '10:00', close: '22:00' },
+  thursday: { open: '10:00', close: '23:00' },
+  friday: { open: '14:00', close: '23:00' },
+};
+
+async function seedShowcaseSpaBusiness(categories: any[], categoryMap: Map<string, any>) {
+  const category = categoryMap.get('lg-health');
+  if (!category) {
+    console.warn('⚠️ lg-health category not found, skipping showcase spa');
+    return;
+  }
+
+  const owner = await prisma.user.upsert({
+    where: { email: `demo-spa@${TEST_EMAIL_DOMAIN}` },
+    update: {},
+    create: {
+      email: `demo-spa@${TEST_EMAIL_DOMAIN}`,
+      name: 'سارة العتيبي - لمسة نور سبا',
+      password: PASSWORD_HASH,
+      avatar: SHOWCASE_IMAGES.logo,
+      role: 'USER',
+      accountType: 'BUSINESS' as any,
+      emailVerified: new Date(),
+      phone: '0551234567',
+      username: 'rt_demo_spa',
+    },
+  });
+
+  const businessPayload = {
+    name: 'لمسة نور سبا',
+    description:
+      'لمسة نور سبا وجهتك الأولى للاسترخاء والجمال في الرياض. نقدم تجربة متكاملة من العناية بالبشرة، جلسات المساج، تصفيف الشعر، والباقات الفاخرة المخصصة للعرائس والمناسبات الخاصة. فريقنا من الخبيرات المعتمدات يضمن لك أعلى معايير الجودة والراحة في أجواء هادئة وفاخرة.',
+    logo: SHOWCASE_IMAGES.logo,
+    cover: SHOWCASE_IMAGES.cover,
+    categoryId: category.id,
+    city: 'الرياض',
+    address: 'حي الرياض، طريق الملك فهد، بجانب برج المملكة',
+    latitude: 24.7136,
+    longitude: 46.6753,
+    phone: '0551234567',
+    email: 'hello@lamsetnoor-spa.demo',
+    website: 'https://lamsetnoor-spa.demo',
+    status: 'ACTIVE' as any,
+    isVerified: true,
+    avgRating: 4.8,
+    reviewCount: SHOWCASE_REVIEWS.length,
+    businessType: 'COMPANY' as any,
+    websiteType: 'STORE' as any,
+    workingHours: JSON.stringify(SHOWCASE_WORKING_HOURS),
+    images: JSON.stringify(
+      SHOWCASE_IMAGES.gallery.map((url, idx) => ({
+        url,
+        type: 'gallery',
+        caption: `صورة ${idx + 1} من معرض لمسة نور سبا`,
+      }))
+    ),
+  };
+
+  const business = await prisma.business.upsert({
+    where: { slug: SHOWCASE_SLUG },
+    update: businessPayload,
+    create: { userId: owner.id, slug: SHOWCASE_SLUG, ...businessPayload },
+  });
+
+  // Attach first subcategory if available
+  if (category.Subcategory?.length) {
+    await prisma.businessSubcategory.createMany({
+      data: { businessId: business.id, subcategoryId: category.Subcategory[0].id },
+      skipDuplicates: true,
+    });
+  }
+
+  // Reset existing catalog for this business
+  await prisma.product.deleteMany({ where: { businessId: business.id } });
+  await prisma.service.deleteMany({ where: { businessId: business.id } });
+  await prisma.review.deleteMany({ where: { businessId: business.id } });
+
+  // Products
+  const createdProducts: any[] = [];
+  for (const product of SHOWCASE_PRODUCTS) {
+    const images = SHOWCASE_PRODUCT_IMAGES[product.category] || SHOWCASE_IMAGES.gallery.slice(0, 2);
+    const created = await prisma.product.create({
+      data: {
+        businessId: business.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        comparePrice: product.comparePrice,
+        sku: `LNS-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+        quantity: product.quantity,
+        category: product.category,
+        images: JSON.stringify(images.map((url) => ({ url, alt: product.name }))),
+        tags: `${product.category}, سبا, جمال, استرخاء`,
+        status: 'ACTIVE' as any,
+        isInMarketplace: true,
+      },
+    });
+    createdProducts.push(created);
+  }
+
+  // Marketplace listings for showcase products
+  if (createdProducts.length) {
+    await prisma.marketplaceListing.createMany({
+      data: createdProducts.map((p) => ({
+        productId: p.id,
+        category: p.category,
+        featured: false,
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  // Services
+  for (const service of SHOWCASE_SERVICES) {
+    await prisma.service.create({
+      data: {
+        businessId: business.id,
+        name: service.name,
+        description: service.description,
+        price: service.price,
+        duration: 60,
+        isActive: true,
+      },
+    });
+  }
+
+  // Reviews
+  const reviewers = await prisma.user.findMany({
+    where: { email: { endsWith: `@${TEST_EMAIL_DOMAIN}` }, NOT: { id: owner.id } },
+    take: SHOWCASE_REVIEWS.length,
+  });
+  for (let i = 0; i < SHOWCASE_REVIEWS.length; i++) {
+    const review = SHOWCASE_REVIEWS[i];
+    const user = reviewers[i] || owner;
+    await prisma.review.create({
+      data: {
+        businessId: business.id,
+        userId: user.id,
+        rating: review.rating,
+        comment: review.comment,
+      },
+    });
+  }
+
+  // Theme
+  await prisma.businessTheme.upsert({
+    where: { businessId: business.id },
+    update: {
+      primaryColor: '#8B5CF6',
+      secondaryColor: '#EC4899',
+      accentColor: '#F59E0B',
+      backgroundColor: '#FFFFFF',
+      surfaceColor: '#FFFFFF',
+      textColor: '#1F2937',
+      sections: JSON.stringify([
+        { id: 'hero', type: 'hero', enabled: true, order: 10 },
+        { id: 'about', type: 'about', enabled: true, order: 20 },
+        { id: 'services', type: 'services', enabled: true, order: 40 },
+        { id: 'gallery', type: 'gallery', enabled: true, order: 50 },
+        { id: 'reviews', type: 'reviews', enabled: true, order: 60 },
+        { id: 'contact', type: 'contact', enabled: true, order: 70 },
+      ]),
+    },
+    create: {
+      businessId: business.id,
+      primaryColor: '#8B5CF6',
+      secondaryColor: '#EC4899',
+      accentColor: '#F59E0B',
+      backgroundColor: '#FFFFFF',
+      surfaceColor: '#FFFFFF',
+      textColor: '#1F2937',
+      fontFamily: 'Cairo',
+      borderRadius: '1rem',
+      buttonStyle: 'gradient',
+      heroLayout: 'center',
+      navbarStyle: 'fixed',
+      sections: JSON.stringify([
+        { id: 'hero', type: 'hero', enabled: true, order: 10 },
+        { id: 'about', type: 'about', enabled: true, order: 20 },
+        { id: 'services', type: 'services', enabled: true, order: 40 },
+        { id: 'gallery', type: 'gallery', enabled: true, order: 50 },
+        { id: 'reviews', type: 'reviews', enabled: true, order: 60 },
+        { id: 'contact', type: 'contact', enabled: true, order: 70 },
+      ]),
+    },
+  });
+
+  // Pages
+  await prisma.businessPage.createMany({
+    data: [
+      { businessId: business.id, slug: 'home', title: 'الرئيسية', isHomePage: true, isVisible: true, sortOrder: 0 },
+      { businessId: business.id, slug: 'about', title: 'من نحن', isHomePage: false, isVisible: true, sortOrder: 10, content: businessPayload.description },
+      { businessId: business.id, slug: 'contact', title: 'تواصل معنا', isHomePage: false, isVisible: true, sortOrder: 20 },
+    ],
+    skipDuplicates: true,
+  });
+
+  console.log(`✅ Seeded showcase spa business: ${business.slug} (${business.id})`);
+  console.log(`   Products: ${SHOWCASE_PRODUCTS.length} | Services: ${SHOWCASE_SERVICES.length} | Reviews: ${SHOWCASE_REVIEWS.length}`);
 }
 
 // ─── Step 5: Social interactions ───
@@ -761,6 +1029,8 @@ async function main() {
   const users = await generateUsers();
   const businesses = await generateBusinesses(users, categories, categoryMap);
   const { products, services } = await generateCatalog(businesses);
+
+  await seedShowcaseSpaBusiness(categories, categoryMap);
 
   await generateSocial(users, businesses);
   await generateGroups(users);

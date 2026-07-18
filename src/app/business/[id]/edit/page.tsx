@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
-import { SubcategoryCombobox } from '@/components/business-apply/SubcategoryCombobox';
+import { SubcategoryMultiSelect } from '@/components/business-apply/SubcategoryMultiSelect';
 import MapPicker from '@/components/maps/MapPicker';
 import CountrySelect from '@/components/CountrySelect';
 import { compressImage } from '@/lib/media-compression';
@@ -120,6 +120,17 @@ export default function EditBusinessPage() {
       if (res.ok) {
         const data = await res.json();
         const b = data.business;
+        // Normalize multi-subcategory fields
+        b.subcategoryIds = (b.subcategories || []).map((s: any) => s.id);
+        b.customSubcategories = b.customSubcategories || [];
+        if (!b.subcategoryIds.length && b.subcategory?.id) {
+          b.subcategoryIds = [b.subcategory.id];
+        }
+        if (!b.customSubcategories.length && b.customSubcategory) {
+          b.customSubcategories = [b.customSubcategory];
+        }
+        // Normalize documents to always be an array
+        b.documents = Array.isArray(b.documents) ? b.documents : [];
         setForm(b);
         if (b.countryId) setCountryId(b.countryId);
       } else {
@@ -194,8 +205,8 @@ export default function EditBusinessPage() {
           description: form.description,
           businessType: form.businessType,
           categoryId: form.categoryId,
-          subcategoryId: form.subcategoryId,
-          customSubcategory: form.customSubcategory,
+          subcategoryIds: form.subcategoryIds || [],
+          customSubcategories: form.customSubcategories || [],
         };
       case 'branding':
         return { logo: form.logo, cover: form.cover };
@@ -461,27 +472,28 @@ export default function EditBusinessPage() {
                         })}
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="category-select" className="block text-sm font-medium text-foreground mb-1">التصنيف الرئيسي</label>
-                        <select
-                          id="category-select"
-                          value={form.categoryId || ''}
-                          onChange={(e) => setForm({ ...form, categoryId: e.target.value, subcategoryId: '', customSubcategory: '' })}
-                          className="w-full px-4 py-2.5 rounded-md border border-border bg-surface text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
-                        >
-                          <option value="">اختر تصنيفاً</option>
-                          {categories.map((c) => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <SubcategoryCombobox
+                    <div>
+                      <label htmlFor="category-select" className="block text-sm font-medium text-foreground mb-1">التصنيف الرئيسي</label>
+                      <select
+                        id="category-select"
+                        value={form.categoryId || ''}
+                        onChange={(e) => setForm({ ...form, categoryId: e.target.value, subcategoryIds: [], customSubcategories: [] })}
+                        className="w-full px-4 py-2.5 rounded-md border border-border bg-surface text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
+                      >
+                        <option value="">اختر تصنيفاً</option>
+                        {categories.map((c) => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <SubcategoryMultiSelect
                         subcategories={selectedCategory?.subcategories || []}
-                        selectedId={form.subcategoryId || ''}
-                        customValue={form.customSubcategory || ''}
-                        onChange={({ subcategoryId, customSubcategory }) =>
-                          setForm({ ...form, subcategoryId, customSubcategory })
+                        selectedIds={form.subcategoryIds || []}
+                        customSubcategories={form.customSubcategories || []}
+                        onChange={(subcategoryIds, customSubcategories) =>
+                          setForm({ ...form, subcategoryIds, customSubcategories })
                         }
                         disabled={!form.categoryId}
                         emptyMessage={!form.categoryId ? 'اختر التصنيف الرئيسي أولاً' : 'لا توجد تصنيفات فرعية'}

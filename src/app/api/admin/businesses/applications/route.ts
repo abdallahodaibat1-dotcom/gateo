@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { serverError } from '@/lib/api-utils';
+import { serializeBusiness } from '@/lib/business-serializer';
 import { requireAdmin } from '../../_lib/utils';
 
 // GET /api/admin/businesses/applications - List pending business applications
@@ -27,14 +28,18 @@ export async function GET(req: NextRequest) {
         include: {
           User: { select: { id: true, name: true, email: true, phone: true, avatar: true } },
           Category: { select: { id: true, name: true } },
-          Subcategory: { select: { id: true, name: true } },
+          BusinessSubcategory: {
+            include: {
+              Subcategory: { select: { id: true, name: true, slug: true } },
+            },
+          },
         },
       }),
       prisma.business.count({ where }),
     ]);
 
     return NextResponse.json({
-      businesses,
+      businesses: businesses.map(serializeBusiness),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {

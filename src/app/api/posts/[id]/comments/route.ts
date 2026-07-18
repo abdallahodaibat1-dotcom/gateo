@@ -9,6 +9,22 @@ const createCommentSchema = z.object({
   parentId: z.string().optional(),
 });
 
+function normalizeComment(comment: any) {
+  return {
+    ...comment,
+    user: comment.User || null,
+    User: undefined,
+    replies: comment.other_comments ? comment.other_comments.map(normalizeComment) : undefined,
+    other_comments: undefined,
+    _count: comment._count
+      ? {
+          replies: comment._count.other_comments ?? 0,
+          likes: comment._count.Like ?? 0,
+        }
+      : undefined,
+  };
+}
+
 // GET /api/posts/[id]/comments - Get comments
 export async function GET(
   req: NextRequest,
@@ -48,7 +64,7 @@ export async function GET(
     const total = await prisma.comment.count({ where: { postId: id, parentId: null } });
 
     return NextResponse.json({
-      comments,
+      comments: comments.map(normalizeComment),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
@@ -119,7 +135,7 @@ export async function POST(
       }
     }
 
-    return NextResponse.json({ comment }, { status: 201 });
+    return NextResponse.json({ comment: normalizeComment(comment) }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

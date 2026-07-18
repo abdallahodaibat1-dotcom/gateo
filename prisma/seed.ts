@@ -682,7 +682,6 @@ async function main() {
           slug: biz.slug,
           description: `أفضل الخدمات في ${biz.name}. نقدم تجربة فريدة للجميع مع أعلى معايير الجودة والاحترافية.`,
           categoryId: category.id,
-          subcategoryId: subcategory.id,
           city: biz.city,
           address: biz.address,
           phone: biz.phone,
@@ -693,6 +692,14 @@ async function main() {
           status: 'ACTIVE',
           isVerified: Math.random() > 0.3, // 70% verified
           updatedAt: new Date(),
+        },
+      });
+
+      await prisma.businessSubcategory.deleteMany({ where: { businessId: business.id } });
+      await prisma.businessSubcategory.create({
+        data: {
+          businessId: business.id,
+          subcategoryId: subcategory.id,
         },
       });
 

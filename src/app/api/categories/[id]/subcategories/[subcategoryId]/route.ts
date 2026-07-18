@@ -24,7 +24,7 @@ export async function GET(
       where: { id: subcategoryId, categoryId },
       include: {
         Category: { select: { id: true, name: true, slug: true } },
-        _count: { select: { Business: true } },
+        _count: { select: { BusinessSubcategory: true } },
       },
     });
 
@@ -73,7 +73,7 @@ export async function PUT(
       data,
       include: {
         Category: { select: { id: true, name: true, slug: true } },
-        _count: { select: { Business: true } },
+        _count: { select: { BusinessSubcategory: true } },
       },
     });
 

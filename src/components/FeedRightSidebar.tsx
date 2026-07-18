@@ -118,7 +118,7 @@ export default function FeedRightSidebar() {
             احصلي على موقع إلكتروني خاص وحلول حجز متكاملة
           </p>
           <Link
-            href="/business/apply"
+            href="/business/apply/start"
             className="inline-block px-4 py-2 bg-surface text-primary text-xs font-bold rounded-md hover:bg-slate-50 transition-colors shadow-sm"
           >
             ابدأ الآن

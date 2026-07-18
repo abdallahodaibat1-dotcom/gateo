@@ -4,8 +4,13 @@ export async function calculateCommission(
   appliesTo: string,
   amount: number,
   categoryId?: string | null,
-  subcategoryId?: string | null
+  subcategoryIds?: string[] | null
 ) {
+  const subcategoryFilter =
+    subcategoryIds && subcategoryIds.length > 0
+      ? { in: subcategoryIds }
+      : undefined;
+
   const rules = await prisma.commissionRule.findMany({
     where: {
       isActive: true,
@@ -13,7 +18,7 @@ export async function calculateCommission(
       OR: [
         { categoryId: null, subcategoryId: null },
         { categoryId: categoryId || undefined, subcategoryId: null },
-        { categoryId: categoryId || undefined, subcategoryId: subcategoryId || undefined },
+        { categoryId: categoryId || undefined, subcategoryId: subcategoryFilter },
       ],
     },
     orderBy: [{ categoryId: 'desc' }, { subcategoryId: 'desc' }],

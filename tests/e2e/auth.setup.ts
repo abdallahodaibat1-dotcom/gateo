@@ -84,6 +84,6 @@ setup('authenticate regular user', async ({ baseURL }) => {
 
 setup('authenticate admin', async ({ baseURL }) => {
   fs.mkdirSync(authDir, { recursive: true });
-  const jar = await login(baseURL!, 'admin@gateo.com', 'admin123', 'admin-credentials');
+  const jar = await login(baseURL!, 'admin@gateo.com', 'Admin123!', 'admin-credentials');
   fs.writeFileSync(adminAuthFile, JSON.stringify(toStorageState(jar), null, 2));
 });

@@ -2127,7 +2127,7 @@ export default function BusinessApplyPage() {
         <Navbar />
         <div className="max-w-4xl mx-auto px-4 py-6">
           <Link
-            href="/business/apply/ai"
+            href="/business/apply/ai-wizard"
             className="block w-full p-6 mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition"
           >
             <div className="flex items-center justify-between">

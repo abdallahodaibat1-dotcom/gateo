@@ -54,6 +54,7 @@ async function worker(queue: Endpoint[], results: Result[]) {
   }
 }
 
+{
 async function main() {
   const queue: Endpoint[] = [];
   for (let i = 0; i < REQUESTS; i++) {
@@ -124,3 +125,4 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
+}

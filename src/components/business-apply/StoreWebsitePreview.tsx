@@ -24,6 +24,8 @@ interface FormShape {
   description?: string;
   categoryId?: string;
   subcategoryId?: string;
+  subcategoryIds?: string[];
+  customSubcategories?: string[];
   logo?: string;
   cover?: string;
   gallery?: string[];
@@ -79,6 +81,28 @@ export function StoreWebsitePreview({ form, categories = [], designId, themeColo
     });
     return Array.from(cats).slice(0, 4);
   }, [products]);
+
+  const subcategoryBadges = useMemo(() => {
+    const badges: string[] = [];
+    const ids = form.subcategoryIds;
+    const custom = form.customSubcategories;
+
+    if (ids && ids.length > 0) {
+      ids.forEach((id) => {
+        const name = selectedCategory?.subcategories?.find((s) => s.id === id)?.name;
+        badges.push(name || id);
+      });
+    } else if (form.subcategoryId) {
+      const name = selectedCategory?.subcategories?.find((s) => s.id === form.subcategoryId)?.name;
+      badges.push(name || form.subcategoryId);
+    }
+
+    if (custom && custom.length > 0) {
+      badges.push(...custom);
+    }
+
+    return badges;
+  }, [form.subcategoryIds, form.customSubcategories, form.subcategoryId, selectedCategory]);
 
   const featuredProducts = products.slice(0, 4);
 
@@ -171,7 +195,7 @@ export function StoreWebsitePreview({ form, categories = [], designId, themeColo
           )}
 
           {/* Category badges */}
-          {(form.categoryId || form.subcategoryId) && (
+          {(form.categoryId || subcategoryBadges.length > 0) && (
             <div className="flex flex-wrap gap-1.5">
               {form.categoryId && (
                 <span
@@ -184,17 +208,18 @@ export function StoreWebsitePreview({ form, categories = [], designId, themeColo
                   {selectedCategory?.name || form.categoryId}
                 </span>
               )}
-              {form.subcategoryId && (
+              {subcategoryBadges.map((name, i) => (
                 <span
+                  key={i}
                   className="text-[10px] px-2 py-0.5 rounded-full font-medium"
                   style={{
                     backgroundColor: 'color-mix(in srgb, var(--theme-secondary) 10%, transparent)',
                     color: 'var(--theme-secondary)',
                   }}
                 >
-                  {selectedCategory?.subcategories?.find((s) => s.id === form.subcategoryId)?.name || form.subcategoryId}
+                  {name}
                 </span>
-              )}
+              ))}
             </div>
           )}
 

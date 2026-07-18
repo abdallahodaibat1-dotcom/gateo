@@ -17,7 +17,7 @@ export async function GET(
       where: { id },
       include: {
         Category: true,
-        _count: { select: { Business: true } },
+        _count: { select: { BusinessSubcategory: true } },
       },
     });
 

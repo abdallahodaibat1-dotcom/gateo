@@ -38,6 +38,8 @@ interface Business {
   category: { id: string; name: string } | null;
   subcategory: { id: string; name: string } | null;
   customSubcategory: string | null;
+  subcategories: { id: string; name: string; slug: string }[];
+  customSubcategories: string[];
   distance?: number | null;
   _count: { reviews: number };
 }
@@ -715,7 +717,7 @@ export default function LadiesGatePage() {
                 />
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-5">
                   {!hasActiveFilters && (
-                    <Link href="/business/apply" className="px-5 py-2 rounded-md bg-surface border border-primary/30 text-primary text-sm font-medium hover:bg-primary/10 transition-colors">
+                    <Link href="/business/apply/start" className="px-5 py-2 rounded-md bg-surface border border-primary/30 text-primary text-sm font-medium hover:bg-primary/10 transition-colors">
                       سجّل عملك الآن
                     </Link>
                   )}
@@ -751,13 +753,24 @@ export default function LadiesGatePage() {
                           </button>
                         </div>
                         <div className="p-3.5">
-                          {biz.subcategory ? (
-                            <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">{biz.subcategory.name}</span>
-                          ) : biz.customSubcategory ? (
-                            <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">{biz.customSubcategory}</span>
-                          ) : biz.category ? (
-                            <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">{biz.category.name}</span>
-                          ) : null}
+                          {(() => {
+                            const badges: { key: string; name: string }[] = [
+                              ...(biz.subcategories || []).map((s) => ({ key: `sub-${s.id}`, name: s.name })),
+                              ...(biz.customSubcategories || []).map((name, i) => ({ key: `custom-${i}`, name })),
+                            ];
+                            if (badges.length === 0) {
+                              if (biz.subcategory) badges.push({ key: `sub-${biz.subcategory.id}`, name: biz.subcategory.name });
+                              else if (biz.customSubcategory) badges.push({ key: 'custom-0', name: biz.customSubcategory });
+                              else if (biz.category) badges.push({ key: `cat-${biz.category.id}`, name: biz.category.name });
+                            }
+                            return (
+                              <div className="flex flex-wrap gap-1">
+                                {badges.map((b) => (
+                                  <span key={b.key} className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">{b.name}</span>
+                                ))}
+                              </div>
+                            );
+                          })()}
                           <h3 className="text-sm font-bold text-foreground mt-1.5 mb-0.5 group-hover:text-primary transition-colors truncate">{biz.name}</h3>
                           {biz.city && (
                             <div className="flex items-center gap-1 text-xs text-muted mb-1.5">
@@ -796,7 +809,7 @@ export default function LadiesGatePage() {
             <p className="text-lg text-white/80 max-w-2xl mx-auto mb-8">
               انضم إلى البوابة العامة في أي دولة كنت ووصل بآلاف العملاء المهتمين بخدماتك.
             </p>
-            <Link href="/business/apply" className="inline-flex items-center gap-2 px-8 py-4 rounded-md bg-surface text-primary font-bold text-lg shadow-lg hover:bg-slate-50 transition-colors">
+            <Link href="/business/apply/start" className="inline-flex items-center gap-2 px-8 py-4 rounded-md bg-surface text-primary font-bold text-lg shadow-lg hover:bg-slate-50 transition-colors">
               سجلي عملك الآن
               <ArrowLeft className="w-5 h-5" />
             </Link>

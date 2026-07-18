@@ -76,7 +76,7 @@ export default function BusinessDashboardLayout({
         const data = await res.json();
         setBusiness(data.business);
       } else if (res.status === 404) {
-        router.push('/business/apply');
+        router.push('/business/apply/start');
       }
     } catch (e) {
       console.error(e);
@@ -159,11 +159,11 @@ export default function BusinessDashboardLayout({
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <div className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2 border border-border">
                   <span className="text-xs text-muted truncate max-w-[140px] dir-ltr text-left">
-                    gateo.com/business/{business.slug}
+                    gateo.com/b/{business.slug}
                   </span>
                   <button
                     onClick={async () => {
-                      const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/business/${business.slug}`;
+                      const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/b/${business.slug}`;
                       try {
                         await navigator.clipboard.writeText(url);
                       } catch {
@@ -178,8 +178,8 @@ export default function BusinessDashboardLayout({
                       setTimeout(() => setCopied(false), 2000);
                     }}
                     className="p-1.5 rounded-md hover:bg-surface transition-colors"
-                    aria-label="نسخ الرابط"
-                    title="نسخ الرابط"
+                    aria-label="نسخ الرابط المختصر"
+                    title="نسخ الرابط المختصر"
                   >
                     {copied ? <CheckCircle className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5 text-muted" />}
                   </button>

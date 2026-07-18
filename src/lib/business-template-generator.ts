@@ -1,14 +1,13 @@
+import { getFashionOneSections } from './fashion-one-content';
+
+export { getFashionOneSections, FASHION_ONE_DEFAULTS } from './fashion-one-content';
+
 export type HomeTemplateId =
   | 'default'
-  | 'porto-shop1'
-  | 'flatsome'
-  | 'elessi'
-  | 'grand-restaurant'
-  | 'houzez'
-  | 'jacqueline'
-  | 'ohio'
   | 'enfold-spa'
-  | 'beauty-salon';
+  | 'beauty-salon-1'
+  | 'fashion-1'
+  | 'modern-intro';
 
 export interface ThemePreset {
   presetId: string;
@@ -45,6 +44,8 @@ export interface WebsiteSection {
     | 'about'
     | 'experience'
     | 'services'
+    | 'bridal'
+    | 'pricing'
     | 'products'
     | 'categories'
     | 'gallery'
@@ -128,6 +129,30 @@ const PRESETS: Record<string, ThemePreset> = {
     buttonStyle: 'gradient',
     heroLayout: 'center',
     navbarStyle: 'fixed',
+  },
+
+  modernIntro: {
+    presetId: 'modernIntro',
+    name: 'Modern Professional',
+    nameAr: 'عصري احترافي',
+    description: 'A clean, modern intro theme with strong typography, generous whitespace, and image-friendly sections.',
+    descriptionAr: 'ثيم تعريفي عصري نظيف بخطوط واضحة ومسافات بيضاء واسعة وأقسام تدعم الصور.',
+    source: 'Gateo',
+    style: 'modern',
+    categoryTags: ['عام', 'خدمات', 'شركات', 'مؤسسة', 'منظمة', 'جمعية', 'مكتب'],
+    keywords: ['modern', 'professional', 'intro', 'services', 'company', 'agency', 'corporate'],
+    primaryColor: '#4f46e5',
+    secondaryColor: '#06b6d4',
+    accentColor: '#f59e0b',
+    backgroundColor: '#ffffff',
+    surfaceColor: '#f8fafc',
+    textColor: '#0f172a',
+    fontFamily: 'Cairo',
+    borderRadius: '1rem',
+    buttonStyle: 'solid',
+    heroLayout: 'split',
+    navbarStyle: 'fixed',
+    homeTemplate: 'modern-intro',
   },
 
   // Industry presets
@@ -749,146 +774,31 @@ const PRESETS: Record<string, ThemePreset> = {
     heroLayout: 'split',
     navbarStyle: 'fixed',
   },
-
-  // ThemeForest-inspired presets
-  flatsome: {
-    presetId: 'flatsome',
-    name: 'Flatsome',
-    nameAr: 'فلاتسوم',
-    description: 'Modern clean ecommerce theme inspired by Flatsome with wide product cards and sidebar filters.',
-    descriptionAr: 'ثيم متجر عصري ونظيف مستوحى من Flatsome، يتميز ببطاقات منتجات واسعة وتصفية جانبية.',
-    source: 'ThemeForest',
-    style: 'modern',
-    categoryTags: ['متجر', 'تجارة', 'عام'],
-    keywords: ['flatsome', 'shop', 'ecommerce', 'store', 'multipurpose', 'clean'],
-    primaryColor: '#2563eb',
-    secondaryColor: '#06b6d4',
-    accentColor: '#f97316',
-    backgroundColor: '#ffffff',
-    surfaceColor: '#f8fafc',
-    textColor: '#0f172a',
-    fontFamily: 'Cairo',
-    borderRadius: '0.75rem',
-    buttonStyle: 'solid',
-    heroLayout: 'center',
-    navbarStyle: 'fixed',
-    homeTemplate: 'flatsome',
-  },
-  elessi: {
-    presetId: 'elessi',
-    name: 'Elessi',
-    nameAr: 'إليسي',
-    description: 'Fashion and beauty theme inspired by Elessi with large product showcases and elegant layout.',
-    descriptionAr: 'ثيم أزياء وجمال مستوحى من Elessi، بعرض منتجات كبير وتخطيط أنيق.',
-    source: 'ThemeForest',
+  fashion1: {
+    presetId: 'fashion1',
+    name: 'Fashion 1',
+    nameAr: 'فاشن 1',
+    description: 'Luxury wedding and evening dress store with gold accents, RTL Arabic typography and elegant sections.',
+    descriptionAr: 'متجر فاخر لفساتين الزفاف والسهرة بألوان ذهبية وتصميم عربي RTL وأقسام أنيقة.',
+    source: 'Gateo',
     style: 'elegant',
-    categoryTags: ['أزياء', 'موضة', 'جمال', 'متجر'],
-    keywords: ['elessi', 'fashion', 'beauty', 'boutique', 'clothing', 'accessories'],
-    primaryColor: '#ec4899',
-    secondaryColor: '#a855f7',
-    accentColor: '#f59e0b',
-    backgroundColor: '#ffffff',
-    surfaceColor: '#fff1f2',
-    textColor: '#1a1a2e',
-    fontFamily: 'Cairo',
-    borderRadius: '1rem',
-    buttonStyle: 'outline',
-    heroLayout: 'split',
-    navbarStyle: 'fixed',
-    homeTemplate: 'elessi',
-  },
-  grandRestaurant: {
-    presetId: 'grandRestaurant',
-    name: 'Grand Restaurant',
-    nameAr: 'جراند ريستورانت',
-    description: 'Elegant restaurant and cafe theme inspired by Grand Restaurant with dark atmosphere and warm gold accents.',
-    descriptionAr: 'ثيم مطاعم ومقاهي فاخر مستوحى من Grand Restaurant، بأجواء داكنة وألوان ذهبية دافئة.',
-    source: 'ThemeForest',
-    style: 'elegant',
-    categoryTags: ['مطعم', 'كافيه', 'طعام', 'فاخر'],
-    keywords: ['grand restaurant', 'restaurant', 'cafe', 'food', 'dining', 'menu', 'reservation'],
-    primaryColor: '#1a1a2e',
-    secondaryColor: '#d4af37',
-    accentColor: '#b45309',
-    backgroundColor: '#0f172a',
-    surfaceColor: '#1e293b',
-    textColor: '#f8fafc',
-    fontFamily: 'Cairo',
-    borderRadius: '0.5rem',
-    buttonStyle: 'outline',
-    heroLayout: 'center',
-    navbarStyle: 'transparent',
-    homeTemplate: 'grand-restaurant',
-  },
-  houzez: {
-    presetId: 'houzez',
-    name: 'Houzez',
-    nameAr: 'هوزيز',
-    description: 'Professional real estate theme inspired by Houzez with advanced search and clear property cards.',
-    descriptionAr: 'ثيم عقارات احترافي مستوحى من Houzez، ببحث متقدم وبطاقات عقارية واضحة.',
-    source: 'ThemeForest',
-    style: 'corporate',
-    categoryTags: ['عقارات', 'تطوير عقاري', 'استثمار', 'خدمات'],
-    keywords: ['houzez', 'real estate', 'property', 'realtor', 'apartment', 'villa', 'rent'],
-    primaryColor: '#0f766e',
-    secondaryColor: '#15803d',
-    accentColor: '#d97706',
-    backgroundColor: '#ffffff',
-    surfaceColor: '#f0fdf4',
-    textColor: '#14532d',
-    fontFamily: 'Cairo',
-    borderRadius: '1rem',
-    buttonStyle: 'solid',
-    heroLayout: 'split',
-    navbarStyle: 'fixed',
-    homeTemplate: 'houzez',
-  },
-  jacqueline: {
-    presetId: 'jacqueline',
-    name: 'Jacqueline',
-    nameAr: 'جاكلين',
-    description: 'Spa and beauty salon theme inspired by Jacqueline with soft pastel colors and relaxing services.',
-    descriptionAr: 'ثيم سبا وصالونات تجميل مستوحى من Jacqueline، بألوان باستيل ناعمة وخدمات استرخاء.',
-    source: 'ThemeForest',
-    style: 'elegant',
-    categoryTags: ['سبا', 'صالون', 'تجميل', 'عناية', 'صحة'],
-    keywords: ['jacqueline', 'spa', 'salon', 'beauty', 'massage', 'wellness', 'care'],
-    primaryColor: '#db2777',
-    secondaryColor: '#f472b6',
-    accentColor: '#84cc16',
-    backgroundColor: '#fdf2f8',
+    categoryTags: ['أزياء', 'فساتين', 'أعراس', 'سيدات', 'متجر'],
+    keywords: ['dress', 'wedding', 'evening', 'fashion', 'bride', 'gown', 'shop', 'rent', 'buy'],
+    primaryColor: '#a68a58',
+    secondaryColor: '#c9a86c',
+    accentColor: '#d4af37',
+    backgroundColor: '#faf8f5',
     surfaceColor: '#ffffff',
-    textColor: '#831843',
-    fontFamily: 'Cairo',
-    borderRadius: '1.5rem',
-    buttonStyle: 'gradient',
+    textColor: '#2a1f24',
+    fontFamily: 'Tajawal',
+    borderRadius: '0.5rem',
+    buttonStyle: 'solid',
     heroLayout: 'center',
     navbarStyle: 'fixed',
-    homeTemplate: 'jacqueline',
+    homeTemplate: 'fashion-1',
   },
-  ohio: {
-    presetId: 'ohio',
-    name: 'Ohio',
-    nameAr: 'أوهايو',
-    description: 'Portfolio and creative agency theme inspired by Ohio with a minimal bold design and generous whitespace.',
-    descriptionAr: 'ثيم معرض أعمال ووكالة إبداعية مستوحى من Ohio، بتصميم بسيط وجريء ومساحات بيضاء واسعة.',
-    source: 'ThemeForest',
-    style: 'minimal',
-    categoryTags: ['وكالة', 'معرض أعمال', 'إبداعي', 'خدمات'],
-    keywords: ['ohio', 'portfolio', 'agency', 'creative', 'freelancer', 'design'],
-    primaryColor: '#171717',
-    secondaryColor: '#525252',
-    accentColor: '#e5e5e5',
-    backgroundColor: '#ffffff',
-    surfaceColor: '#f8fafc',
-    textColor: '#0a0a0a',
-    fontFamily: 'Cairo',
-    borderRadius: '0.25rem',
-    buttonStyle: 'solid',
-    heroLayout: 'minimal',
-    navbarStyle: 'static',
-    homeTemplate: 'ohio',
-  },
+
+  // Intro-specific presets
   enfoldSpa: {
     presetId: 'enfoldSpa',
     name: 'Enfold Spa',
@@ -912,40 +822,40 @@ const PRESETS: Record<string, ThemePreset> = {
     navbarStyle: 'transparent',
     homeTemplate: 'enfold-spa',
   },
-  beautySalon: {
-    presetId: 'beautySalon',
-    name: 'Beauty Salon',
-    nameAr: 'صالون غالية',
-    description: 'Luxury ladies salon and spa landing page with rose and gold accents, RTL Arabic typography and elegant sections.',
-    descriptionAr: 'قالب هبوط فاخر لصالونات وسبا السيدات بألوان وردية وذهبية وتصميم عربي RTL وأقسام أنيقة.',
+  beautySalon1: {
+    presetId: 'beautySalon1',
+    name: 'Beauty Salon 1',
+    nameAr: 'صالون تجميل 1',
+    description: 'Primary intro template for beauty salons and spas with transparent hero, services, gallery, reviews and contact sections.',
+    descriptionAr: 'النموذج الرئيسي للموقع التعريفي لصالونات التجميل والسبا: هيدر شفاف فوق بطل عريض، أقسام خدمات، معرض صور، آراء، وتواصل.',
     source: 'Gateo',
     style: 'elegant',
-    categoryTags: ['صالون', 'سبا', 'تجميل', 'عناية', 'سيدات', 'موقع تعريفي'],
-    keywords: ['beauty salon', 'salon', 'spa', 'ladies', 'bridal', 'makeup', 'hair', 'nails', 'skin care'],
+    categoryTags: ['صالون تجميل', 'تجميل', 'صالون', 'سبا', 'عناية', 'سيدات', 'موقع تعريفي'],
+    keywords: ['beauty salon 1', 'salon', 'spa', 'ladies', 'makeup', 'hair', 'nails', 'skin care', 'intro'],
     primaryColor: '#b76e79',
     secondaryColor: '#c79b6b',
     accentColor: '#d9a1a8',
-    backgroundColor: '#fbf7f4',
+    backgroundColor: '#ffffff',
     surfaceColor: '#ffffff',
     textColor: '#2a1f24',
     fontFamily: 'Tajawal',
     borderRadius: '1.5rem',
     buttonStyle: 'solid',
-    heroLayout: 'split',
-    navbarStyle: 'fixed',
-    homeTemplate: 'beauty-salon',
+    heroLayout: 'center',
+    navbarStyle: 'transparent',
+    homeTemplate: 'beauty-salon-1',
   },
 };
 
 const DEFAULT_SECTIONS: WebsiteSection[] = [
   { id: 'hero', type: 'hero', enabled: true, order: 10 },
   { id: 'about', type: 'about', enabled: true, order: 20 },
-  { id: 'experience', type: 'experience', enabled: true, order: 30 },
-  { id: 'services', type: 'services', enabled: true, order: 40 },
-  { id: 'gallery', type: 'gallery', enabled: true, order: 50 },
-  { id: 'reviews', type: 'reviews', enabled: true, order: 60 },
-  { id: 'contact', type: 'contact', enabled: true, order: 70 },
-  { id: 'cta', type: 'cta', enabled: true, order: 80 },
+  { id: 'services', type: 'services', enabled: true, order: 30 },
+  { id: 'bridal', type: 'bridal', enabled: true, order: 40 },
+  { id: 'pricing', type: 'pricing', enabled: true, order: 50 },
+  { id: 'gallery', type: 'gallery', enabled: true, order: 60 },
+  { id: 'reviews', type: 'reviews', enabled: true, order: 70 },
+  { id: 'contact', type: 'contact', enabled: true, order: 80 },
 ];
 
 const STORE_SECTIONS: WebsiteSection[] = [
@@ -959,6 +869,33 @@ const STORE_SECTIONS: WebsiteSection[] = [
   { id: 'cta', type: 'cta', enabled: true, order: 80 },
 ];
 
+const BEAUTY_SALON_TEMPLATES: HomeTemplateId[] = ['beauty-salon-1'];
+const MODERN_INTRO_TEMPLATES: HomeTemplateId[] = ['modern-intro'];
+
+function getSectionsForTemplate(
+  websiteType: 'INTRO' | 'STORE',
+  homeTemplate?: HomeTemplateId
+): WebsiteSection[] {
+  if (homeTemplate === 'fashion-1') {
+    return getFashionOneSections();
+  }
+  if (homeTemplate && BEAUTY_SALON_TEMPLATES.includes(homeTemplate)) {
+    return DEFAULT_SECTIONS.map((s) => ({ ...s }));
+  }
+  if (homeTemplate && MODERN_INTRO_TEMPLATES.includes(homeTemplate)) {
+    return [
+      { id: 'hero', type: 'hero', enabled: true, order: 10 },
+      { id: 'features', type: 'custom', enabled: true, order: 15, title: 'لماذا نحن' },
+      { id: 'about', type: 'about', enabled: true, order: 20 },
+      { id: 'services', type: 'services', enabled: true, order: 30 },
+      { id: 'gallery', type: 'gallery', enabled: true, order: 50 },
+      { id: 'reviews', type: 'reviews', enabled: true, order: 60 },
+      { id: 'contact', type: 'contact', enabled: true, order: 80 },
+    ];
+  }
+  return websiteType === 'STORE' ? STORE_SECTIONS.map((s) => ({ ...s })) : DEFAULT_SECTIONS.map((s) => ({ ...s }));
+}
+
 function resolvePreset(business: BusinessLike): ThemePreset {
   const tokens = [
     business.category?.slug?.toLowerCase(),
@@ -971,7 +908,7 @@ function resolvePreset(business: BusinessLike): ThemePreset {
   const mappings: { keywords: string[]; preset: ThemePreset }[] = [
     {
       keywords: ['beauty', 'salon', 'cosmetic', 'makeup', 'skin', 'hair', 'spa', 'nail', 'perfume', 'care'],
-      preset: PRESETS.beauty,
+      preset: PRESETS.beautySalon1,
     },
     {
       keywords: ['medical', 'health', 'clinic', 'doctor', 'therapy', 'nutrition', 'laser', 'dermatology', 'dental'],
@@ -987,7 +924,7 @@ function resolvePreset(business: BusinessLike): ThemePreset {
     },
     {
       keywords: ['fashion', 'dress', 'clothing', 'abaya', 'lingerie', 'jewelry', 'bag', 'shoe', 'style', 'women fashion'],
-      preset: PRESETS.fashion,
+      preset: PRESETS.fashion1,
     },
     {
       keywords: ['agency', 'corporate', 'consulting', 'marketing', 'branding'],
@@ -1053,30 +990,6 @@ function resolvePreset(business: BusinessLike): ThemePreset {
       keywords: ['automotive', 'car', 'garage', 'repair', 'maintenance', 'auto'],
       preset: PRESETS.automotive,
     },
-    {
-      keywords: ['flatsome', 'multipurpose', 'general store'],
-      preset: PRESETS.flatsome,
-    },
-    {
-      keywords: ['elessi', 'fashion store', 'beauty store'],
-      preset: PRESETS.elessi,
-    },
-    {
-      keywords: ['grand restaurant', 'fine dining', 'luxury restaurant'],
-      preset: PRESETS.grandRestaurant,
-    },
-    {
-      keywords: ['houzez', 'real estate pro', 'property listing'],
-      preset: PRESETS.houzez,
-    },
-    {
-      keywords: ['jacqueline', 'spa', 'massage', 'wellness center'],
-      preset: PRESETS.jacqueline,
-    },
-    {
-      keywords: ['ohio', 'creative agency', 'portfolio studio'],
-      preset: PRESETS.ohio,
-    },
   ];
 
   for (const token of tokens) {
@@ -1095,17 +1008,8 @@ export function generateThemeForBusiness(
   websiteType: 'INTRO' | 'STORE' = 'INTRO'
 ): GeneratedWebsite {
   const preset = resolvePreset(business);
-
-  const baseSections = websiteType === 'STORE' ? STORE_SECTIONS : DEFAULT_SECTIONS;
-  const sections = baseSections.map((section) => {
-    if (section.id === 'experience') {
-      return {
-        ...section,
-        enabled: false, // يُفعّل تلقائياً إذا كان هناك خبرات
-      };
-    }
-    return section;
-  });
+  const homeTemplate = (preset.homeTemplate || 'default') as HomeTemplateId;
+  const sections = getSectionsForTemplate(websiteType, homeTemplate);
 
   const theme = {
     presetId: preset.presetId,
@@ -1120,7 +1024,7 @@ export function generateThemeForBusiness(
     buttonStyle: preset.buttonStyle,
     heroLayout: preset.heroLayout,
     navbarStyle: preset.navbarStyle,
-    homeTemplate: (preset.homeTemplate || 'default') as HomeTemplateId,
+    homeTemplate,
     sections,
   };
 
@@ -1187,58 +1091,22 @@ export function getHomeTemplateList(): HomeTemplate[] {
       descriptionAr: 'التصميم الافتراضي الحالي للمتجر ببطاقات منتجات نظيفة.',
     },
     {
-      id: 'porto-shop1',
-      name: 'Porto Shop 1',
-      nameAr: 'بوتو شوب ١',
-      descriptionAr: 'قالب متجر احترافي مستوحى من Porto Shop1 مع سلايدر، عروض، تقييمات، وفوتر متعدد الأعمدة.',
-    },
-    {
-      id: 'flatsome',
-      name: 'Flatsome',
-      nameAr: 'فلاتسوم',
-      descriptionAr: 'قالب متجر عصري ونظيف مستوحى من Flatsome مع تصفية جانبية وبطاقات منتجات واسعة.',
-    },
-    {
-      id: 'elessi',
-      name: 'Elessi',
-      nameAr: 'إليسي',
-      descriptionAr: 'قالب أزياء وجمال مستوحى من Elessi بعرض منتجات كبير وتخطيط أنيق.',
-    },
-    {
-      id: 'grand-restaurant',
-      name: 'Grand Restaurant',
-      nameAr: 'جراند ريستورانت',
-      descriptionAr: 'قالب مطاعم فاخر مستوحى من Grand Restaurant بأجواء داكنة وقائمة طعام وحجز.',
-    },
-    {
-      id: 'houzez',
-      name: 'Houzez',
-      nameAr: 'هوزيز',
-      descriptionAr: 'قالب عقارات احترافي مستوحى من Houzez مع بحث وبطاقات عقارية.',
-    },
-    {
-      id: 'jacqueline',
-      name: 'Jacqueline',
-      nameAr: 'جاكلين',
-      descriptionAr: 'قالب سبا وصالونات تجميل مستوحى من Jacqueline بألوان باستيل وخدمات استرخاء.',
-    },
-    {
-      id: 'ohio',
-      name: 'Ohio',
-      nameAr: 'أوهايو',
-      descriptionAr: 'قالب معرض أعمال ووكالة إبداعية مستوحى من Ohio بتصميم بسيط وجريء.',
-    },
-    {
       id: 'enfold-spa',
       name: 'Enfold Spa',
       nameAr: 'إنفولد سبا',
       descriptionAr: 'قالب سبا وعافية مستوحى من Enfold Spa بهيدر شفاف فوق بطل عريض وألوان باستيل ناعمة.',
     },
     {
-      id: 'beauty-salon',
-      name: 'Beauty Salon',
-      nameAr: 'صالون غالية',
-      descriptionAr: 'قالب هبوط فاخر لصالونات وسبا السيدات بألوان وردية وذهبية وتصميم عربي RTL.',
+      id: 'fashion-1',
+      name: 'Dress Shop',
+      nameAr: 'متجر فساتين',
+      descriptionAr: 'قالب متجر فاخر لفساتين الزفاف والسهرة بألوان ذهبية وهيدر أنيق وسلة وميجا منيو.',
+    },
+    {
+      id: 'modern-intro',
+      name: 'Modern Intro',
+      nameAr: 'تعريفي عصري',
+      descriptionAr: 'قالب intro احترافي حديث يناسب معظم الأنشطة التجارية مع hero واضح وأقسام متناسقة.',
     },
   ];
 }

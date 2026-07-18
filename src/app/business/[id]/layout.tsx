@@ -4,8 +4,8 @@ import { prisma } from '@/lib/db';
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   try {
-    const business = await prisma.business.findUnique({
-      where: { id },
+    const business = await prisma.business.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
       select: { name: true, description: true, city: true, avgRating: true, Category: { select: { name: true } } },
     });
     if (business) {

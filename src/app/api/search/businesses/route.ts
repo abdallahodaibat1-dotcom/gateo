@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     };
 
     if (categoryId) where.categoryId = categoryId;
-    if (subcategoryId) where.subcategoryId = subcategoryId;
+    if (subcategoryId) where.BusinessSubcategory = { some: { subcategoryId } };
     if (city) where.city = { contains: city };
     if (isVerified === 'true') where.isVerified = true;
     if (ladiesGate === 'true') {
@@ -55,7 +55,11 @@ export async function GET(req: NextRequest) {
         take: limit,
         include: {
           Category: { select: { id: true, name: true, slug: true } },
-          Subcategory: { select: { id: true, name: true, slug: true } },
+          BusinessSubcategory: {
+            include: {
+              Subcategory: { select: { id: true, name: true, slug: true } },
+            },
+          },
           _count: { select: { Review: true, Booking: true } },
           Service: {
             where: { isActive: true },

@@ -4,18 +4,38 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import AuthRequiredModal from '@/components/AuthRequiredModal';
 import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
 import {
-  Loader2, ShieldCheck, MapPin, Mail, Globe, Phone, MessageCircle,
-  BriefcaseBusiness, GraduationCap, Award, CheckCircle, Clock,
-  Image as ImageIcon, MapPinned, Star, Calendar, ArrowRight,
-  User, ExternalLink, AlertCircle, List, Building2
+  ShieldCheck,
+  MapPin,
+  Mail,
+  Globe,
+  Phone,
+  CheckCircle,
+  Clock,
+  Award,
+  Star,
+  GraduationCap,
+  BriefcaseBusiness,
+  User,
+  List,
+  Image as ImageIcon,
+  MapPinned,
+  ExternalLink,
+  AlertCircle,
+  ArrowLeft,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { DynamicFieldRenderer } from '@/components/dynamic-fields/DynamicFieldRenderer';
+import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import { ProfileStats } from '@/components/profile/ProfileStats';
+import { AvailabilityChips } from '@/components/profile/AvailabilityChips';
+import { ContactActions } from '@/components/profile/ContactActions';
+import { ProfileSection } from '@/components/profile/ProfileSection';
 
 interface ServiceItem {
   name: string;
@@ -66,6 +86,9 @@ interface ProfessionalProfile {
   status: string;
   category: { id: string; name: string; slug: string } | null;
   subcategory: { id: string; name: string; slug: string } | null;
+  customSubcategory?: string | null;
+  subcategories: { id: string; name: string; slug: string }[] | null;
+  customSubcategories: string[] | null;
   country: { id: string; name: string; flagEmoji: string } | null;
   fieldValues: { field: { id: string; name: string; label: string; fieldType: string; options: any }; value: string | null }[];
 }
@@ -139,7 +162,6 @@ export default function BusinessProfilePage() {
 
   const resolveProfile = async () => {
     try {
-      // If the id refers to a commercial business, redirect to its custom home page.
       const businessRes = await fetch(`/api/businesses/${id}`);
       if (businessRes.ok) {
         const businessData = await businessRes.json();
@@ -205,8 +227,6 @@ export default function BusinessProfilePage() {
     return phone.replace(/[^0-9+]/g, '');
   };
 
-  const contactPhone = formatPhone(prof?.whatsapp || prof?.phone);
-
   if (loading) {
     return (
       <>
@@ -245,7 +265,7 @@ export default function BusinessProfilePage() {
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-muted mb-4">
             <Link href="/businesses" className="hover:text-primary transition-colors">دليل الأعمال الاحترافية</Link>
-            <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+            <ArrowLeft className="w-3.5 h-3.5 rtl-arrow" />
             {prof.category && (
               <Link href={`/businesses/${prof.category.slug}`} className="hover:text-primary transition-colors">
                 {prof.category.name}
@@ -253,399 +273,238 @@ export default function BusinessProfilePage() {
             )}
           </div>
 
-          {/* Header Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden mb-4"
-          >
-            <div className="h-32 bg-gradient-to-r from-primary to-primary-dark" />
-            <div className="px-6 pb-6">
-              <div className="relative -mt-12 mb-4 flex items-end justify-between">
-                <img
-                  src={prof.personalLogo || user.avatar || '/logo/favicon.svg'}
-                  alt=""
-                  className="w-24 h-24 rounded-full object-cover border-4 border-surface shadow-lg bg-surface"
-                />
-                {prof.isVerified && (
-                  <div className="mb-2 inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    محترف موثق
-                  </div>
-                )}
-              </div>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+            <ProfileHeader user={user} prof={prof} />
 
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">{user.name || 'محترف'}</h1>
-                {prof.title && (
-                  <p className="text-primary font-medium text-base mt-1">{prof.title}</p>
-                )}
-                <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted">
-                  {prof.category && (
-                    <Link
-                      href={`/businesses/${prof.category.slug}`}
-                      className="text-xs text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20 hover:bg-primary/20 transition-colors"
-                    >
-                      {prof.category.name}
-                    </Link>
-                  )}
-                  {prof.subcategory && (
-                    <span className="text-xs text-muted bg-slate-50 px-2.5 py-1 rounded-full">
-                      {prof.subcategory.name}
-                    </span>
-                  )}
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    انضم {new Date(user.createdAt).toLocaleDateString('ar-SA')}
-                  </span>
+            <ProfileStats
+              experienceYears={prof.experienceYears}
+              completedProjectsCount={prof.completedProjectsCount}
+              clientsCount={prof.clientsCount}
+            />
+
+            <AvailabilityChips
+              availableForWork={prof.availableForWork}
+              availableForHiring={prof.availableForHiring}
+              availableForFreelance={prof.availableForFreelance}
+              availableForConsultation={prof.availableForConsultation}
+            />
+
+            <ContactActions
+              onSendMessage={handleSendMessage}
+              phone={prof.phone}
+              whatsapp={prof.whatsapp}
+              email={prof.email}
+              isOwnProfile={isOwnProfile}
+            />
+
+            {!isActive && isOwnProfile && (
+              <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 text-amber-800 text-sm">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 mt-0.5" />
+                  <div>
+                    <p className="font-medium">ملفك المهني قيد المراجعة</p>
+                    <p className="text-amber-700/80 mt-0.5">
+                      سيتم نشر ملفك تلقائياً بمجرد اعتماده من الإدارة.
+                    </p>
+                  </div>
                 </div>
               </div>
+            )}
 
-              {/* Quick Stats */}
-              <div className="grid grid-cols-3 gap-2 mt-5 pt-5 border-t border-border">
-                <div className="text-center bg-slate-50 rounded-lg p-3 border border-border">
-                  <div className="text-xl font-bold text-primary">{prof.experienceYears || 0}</div>
-                  <div className="text-xs text-muted">سنوات خبرة</div>
-                </div>
-                <div className="text-center bg-slate-50 rounded-lg p-3 border border-border">
-                  <div className="text-xl font-bold text-primary">{prof.completedProjectsCount}</div>
-                  <div className="text-xs text-muted">مشروع</div>
-                </div>
-                <div className="text-center bg-slate-50 rounded-lg p-3 border border-border">
-                  <div className="text-xl font-bold text-primary">{prof.clientsCount}</div>
-                  <div className="text-xs text-muted">عميل</div>
-                </div>
-              </div>
+            {prof.bio && (
+              <ProfileSection title="نبذة تعريفية" icon={User}>
+                <p className="text-muted text-sm leading-relaxed">{prof.bio}</p>
+              </ProfileSection>
+            )}
 
-              {/* Availability chips */}
-              <div className="flex flex-wrap gap-2 mt-4">
-                {prof.availableForWork && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-success/10 text-success text-xs font-medium border border-success/20">
-                    <CheckCircle className="w-3 h-3" />
-                    متاح للعمل
-                  </span>
-                )}
-                {prof.availableForHiring && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">
-                    <Building2 className="w-3 h-3" />
-                    متاح للتوظيف
-                  </span>
-                )}
-                {prof.availableForFreelance && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-warning/10 text-warning text-xs font-medium border border-warning/20">
-                    <BriefcaseBusiness className="w-3 h-3" />
-                    عمل حر
-                  </span>
-                )}
-                {prof.availableForConsultation && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-info/10 text-info text-xs font-medium border border-info/20">
-                    <User className="w-3 h-3" />
-                    استشارات
-                  </span>
-                )}
-              </div>
+            {prof.fieldValues && prof.fieldValues.length > 0 && (
+              <ProfileSection title="تفاصيل إضافية" icon={List}>
+                <DynamicFieldRenderer fieldValues={prof.fieldValues} />
+              </ProfileSection>
+            )}
 
-              {/* Contact Actions */}
-              {!isOwnProfile && (
-                <div className="mt-5 pt-5 border-t border-border">
-                  <div className="grid grid-cols-3 gap-2">
-                    <button
-                      onClick={handleSendMessage}
-                      className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md bg-foreground text-white text-sm font-medium hover:bg-foreground/90 transition-colors"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      رسالة
-                    </button>
-                    {contactPhone && (
-                      <>
-                        <a
-                          href={`tel:${contactPhone}`}
-                          className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors"
-                        >
-                          <Phone className="w-4 h-4" />
-                          اتصال
-                        </a>
-                        <a
-                          href={`https://wa.me/${contactPhone}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md bg-success/10 text-success text-sm font-medium hover:bg-success/20 transition-colors"
-                        >
-                          <MessageCircle className="w-4 h-4" />
-                          واتساب
-                        </a>
-                      </>
-                    )}
-                    {!contactPhone && (
-                      <a
-                        href={`mailto:${prof.email || ''}`}
-                        className="col-span-2 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md bg-success/10 text-success text-sm font-medium hover:bg-success/20 transition-colors"
-                      >
-                        <Mail className="w-4 h-4" />
-                        بريد
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Status warning if not active */}
-              {!isActive && isOwnProfile && (
-                <div className="mt-5 p-4 rounded-lg bg-amber-50 border border-amber-100 text-amber-800 text-sm">
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 mt-0.5" />
-                    <div>
-                      <p className="font-medium">ملفك المهني قيد المراجعة</p>
-                      <p className="text-amber-700/80 mt-0.5">
-                        سيتم نشر ملفك تلقائياً بمجرد اعتماده من الإدارة.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
-
-          {/* Bio */}
-          {prof.bio && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-surface rounded-lg border border-border shadow-sm p-5 mb-4"
-            >
-              <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5 mb-3">
-                <User className="w-4 h-4 text-primary" />
-                نبذة تعريفية
-              </h3>
-              <p className="text-muted text-sm leading-relaxed">{prof.bio}</p>
-            </motion.div>
-          )}
-
-          {/* Dynamic Fields */}
-          {prof.fieldValues && prof.fieldValues.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-surface rounded-lg border border-border shadow-sm p-5 mb-4"
-            >
-              <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5 mb-3">
-                <List className="w-4 h-4 text-primary" />
-                تفاصيل إضافية
-              </h3>
-              <DynamicFieldRenderer fieldValues={prof.fieldValues} />
-            </motion.div>
-          )}
-
-          {/* Qualifications */}
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-surface rounded-lg border border-border shadow-sm p-5 mb-4"
-          >
-            <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5 mb-3">
-              <GraduationCap className="w-4 h-4 text-primary" />
-              المؤهلات والخبرات
-            </h3>
-            <div className="space-y-3">
-              {prof.degree && (
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <CheckCircle className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{prof.degree}</p>
-                    {prof.academicSpecialization && (
-                      <p className="text-xs text-muted">{prof.academicSpecialization}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-              {prof.experienceYears ? (
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <Clock className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{prof.experienceYears} سنوات خبرة</p>
-                    <p className="text-xs text-muted">خبرة عملية في المجال</p>
-                  </div>
-                </div>
-              ) : null}
-              {prof.certifications && (
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <Award className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">الشهادات والاعتمادات</p>
-                    <p className="text-xs text-muted">{prof.certifications}</p>
-                  </div>
-                </div>
-              )}
-              {prof.professionalAccreditations && (
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">الاعتمادات المهنية</p>
-                    <p className="text-xs text-muted">{prof.professionalAccreditations}</p>
-                  </div>
-                </div>
-              )}
-              {prof.courses && (
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <Star className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">الدورات التدريبية</p>
-                    <p className="text-xs text-muted">{prof.courses}</p>
-                  </div>
-                </div>
-              )}
-              {prof.skills && (
-                <div className="pt-2">
-                  <p className="text-xs text-muted mb-2">المهارات</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {prof.skills.split(',').map((s, i) => (
-                      <span key={i} className="px-2.5 py-1 rounded-full bg-slate-100 text-foreground text-xs">
-                        {s.trim()}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {prof.languages && (
-                <div className="pt-2">
-                  <p className="text-xs text-muted mb-2">اللغات</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {prof.languages.split(',').map((s, i) => (
-                      <span key={i} className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs border border-primary/20">
-                        {s.trim()}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
-
-          {/* Services */}
-          {prof.services && prof.services.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-surface rounded-lg border border-border shadow-sm p-5 mb-4"
-            >
-              <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5 mb-3">
-                <BriefcaseBusiness className="w-4 h-4 text-primary" />
-                الخدمات المقدمة
-              </h3>
-              <div className="space-y-3">
-                {prof.services.map((svc, i) => (
-                  <div key={i} className="p-3 rounded-lg bg-slate-50 border border-border">
-                    <h4 className="font-bold text-foreground text-sm mb-1">{svc.name}</h4>
-                    {svc.description && <p className="text-xs text-muted mb-2">{svc.description}</p>}
-                    {svc.duration && (
-                      <span className="inline-flex items-center gap-1 text-xs text-muted">
-                        <Clock className="w-3 h-3" />
-                        {svc.duration}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Portfolio */}
-          {prof.portfolioProjects && prof.portfolioProjects.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-surface rounded-lg border border-border shadow-sm p-5 mb-4"
-            >
-              <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5 mb-3">
-                <ImageIcon className="w-4 h-4 text-primary" />
-                معرض الأعمال
-              </h3>
+            <ProfileSection title="المؤهلات والخبرات" icon={GraduationCap}>
               <div className="space-y-4">
-                {prof.portfolioProjects.map((project, i) => (
-                  <div key={i} className="rounded-lg border border-border overflow-hidden">
-                    {project.images && project.images.length > 0 && (
-                      <div className="grid grid-cols-2 gap-1">
-                        {project.images.slice(0, 2).map((img, idx) => (
-                          <img key={idx} src={img} alt={project.title || 'صورة المشروع'} className="w-full h-32 object-cover" />
-                        ))}
-                      </div>
-                    )}
-                    <div className="p-3">
-                      <h4 className="font-bold text-foreground text-sm">{project.title}</h4>
-                      {project.description && <p className="text-xs text-muted mt-1">{project.description}</p>}
+                {prof.degree && (
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <CheckCircle className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{prof.degree}</p>
+                      {prof.academicSpecialization && (
+                        <p className="text-xs text-muted">{prof.academicSpecialization}</p>
+                      )}
                     </div>
                   </div>
-                ))}
+                )}
+                {prof.experienceYears ? (
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Clock className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{prof.experienceYears} سنوات خبرة</p>
+                      <p className="text-xs text-muted">خبرة عملية في المجال</p>
+                    </div>
+                  </div>
+                ) : null}
+                {prof.certifications && (
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Award className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">الشهادات والاعتمادات</p>
+                      <p className="text-xs text-muted">{prof.certifications}</p>
+                    </div>
+                  </div>
+                )}
+                {prof.professionalAccreditations && (
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">الاعتمادات المهنية</p>
+                      <p className="text-xs text-muted">{prof.professionalAccreditations}</p>
+                    </div>
+                  </div>
+                )}
+                {prof.courses && (
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Star className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">الدورات التدريبية</p>
+                      <p className="text-xs text-muted">{prof.courses}</p>
+                    </div>
+                  </div>
+                )}
+                {prof.skills && (
+                  <div className="pt-2 border-t border-border">
+                    <p className="text-xs text-muted mb-2">المهارات</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {prof.skills.split(',').map((s, i) => (
+                        <span key={i} className="px-2.5 py-1 rounded-full bg-slate-100 text-foreground text-xs">
+                          {s.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {prof.languages && (
+                  <div className="pt-2 border-t border-border">
+                    <p className="text-xs text-muted mb-2">اللغات</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {prof.languages.split(',').map((s, i) => (
+                        <span key={i} className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs border border-primary/20">
+                          {s.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            </motion.div>
-          )}
+            </ProfileSection>
 
-          {/* Contact & Location */}
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            id="contact"
-            className="bg-surface rounded-lg border border-border shadow-sm p-5 mb-4"
-          >
-            <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5 mb-3">
-              <MapPinned className="w-4 h-4 text-primary" />
-              التواصل والموقع
-            </h3>
-            <div className="space-y-2 text-sm">
-              {prof.city && (
-                <div className="flex items-center gap-2 text-muted">
-                  <MapPin className="w-4 h-4 text-slate-400" />
-                  {prof.city}
-                  {prof.country && <span><Globe className="w-3 h-3 inline ml-1" /> {prof.country.name}</span>}
+            {prof.services && prof.services.length > 0 && (
+              <ProfileSection title="الخدمات المقدمة" icon={BriefcaseBusiness}>
+                <div className="space-y-3">
+                  {prof.services.map((svc, i) => (
+                    <div key={i} className="p-4 rounded-xl bg-slate-50 border border-border">
+                      <h4 className="font-semibold text-foreground text-sm mb-1">{svc.name}</h4>
+                      {svc.description && <p className="text-xs text-muted mb-2">{svc.description}</p>}
+                      {svc.duration && (
+                        <span className="inline-flex items-center gap-1 text-xs text-muted">
+                          <Clock className="w-3 h-3" />
+                          {svc.duration}
+                        </span>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              )}
-              {prof.workScope && (
-                <div className="flex items-center gap-2 text-muted">
-                  <Clock className="w-4 h-4 text-slate-400" />
-                  {prof.workScope === 'REMOTE' ? 'عمل عن بُعد' : prof.workScope === 'IN_PERSON' ? 'عمل حضوري' : 'عمل حضوري وعن بُعد'}
+              </ProfileSection>
+            )}
+
+            {prof.portfolioProjects && prof.portfolioProjects.length > 0 && (
+              <ProfileSection title="معرض الأعمال" icon={ImageIcon}>
+                <div className="space-y-4">
+                  {prof.portfolioProjects.map((project, i) => (
+                    <div key={i} className="rounded-xl border border-border overflow-hidden bg-slate-50">
+                      {project.images && project.images.length > 0 && (
+                        <div className="grid grid-cols-2 gap-1">
+                          {project.images.slice(0, 2).map((img, idx) => (
+                            <div key={idx} className="relative h-40 bg-slate-100">
+                              <Image
+                                src={img}
+                                alt={project.title || 'صورة المشروع'}
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 768px) 50vw, 400px"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="p-4">
+                        <h4 className="font-semibold text-foreground text-sm">{project.title}</h4>
+                        {project.description && <p className="text-xs text-muted mt-1">{project.description}</p>}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              )}
-              {prof.willingToTravel && (
-                <div className="flex items-center gap-2 text-muted">
-                  <CheckCircle className="w-4 h-4 text-slate-400" />
-                  مستعد للسفر
-                </div>
-              )}
-              {prof.email && (
-                <a href={`mailto:${prof.email}`} className="flex items-center gap-2 text-muted hover:text-primary transition-colors">
-                  <Mail className="w-4 h-4 text-slate-400" />
-                  {prof.email}
-                </a>
-              )}
-              {prof.website && (
-                <a
-                  href={prof.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-muted hover:text-primary transition-colors"
-                >
-                  <Globe className="w-4 h-4 text-slate-400" />
-                  {prof.website}
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
-              {prof.phone && (
-                <a href={`tel:${formatPhone(prof.phone)}`} className="flex items-center gap-2 text-muted hover:text-primary transition-colors">
-                  <Phone className="w-4 h-4 text-slate-400" />
-                  {prof.phone}
-                </a>
-              )}
-            </div>
+              </ProfileSection>
+            )}
+
+            <ProfileSection title="التواصل والموقع" icon={MapPinned}>
+              <div className="space-y-3 text-sm">
+                {prof.city && (
+                  <div className="flex items-center gap-2 text-muted">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    {prof.city}
+                    {prof.country && <span><Globe className="w-3 h-3 inline ml-1" /> {prof.country.name}</span>}
+                  </div>
+                )}
+                {prof.workScope && (
+                  <div className="flex items-center gap-2 text-muted">
+                    <Clock className="w-4 h-4 text-primary" />
+                    {prof.workScope === 'REMOTE' ? 'عمل عن بُعد' : prof.workScope === 'IN_PERSON' ? 'عمل حضوري' : 'عمل حضوري وعن بُعد'}
+                  </div>
+                )}
+                {prof.willingToTravel && (
+                  <div className="flex items-center gap-2 text-muted">
+                    <CheckCircle className="w-4 h-4 text-primary" />
+                    مستعد للسفر
+                  </div>
+                )}
+                {prof.email && (
+                  <a href={`mailto:${prof.email}`} className="flex items-center gap-2 text-muted hover:text-primary transition-colors">
+                    <Mail className="w-4 h-4 text-primary" />
+                    {prof.email}
+                  </a>
+                )}
+                {prof.website && (
+                  <a
+                    href={prof.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-muted hover:text-primary transition-colors"
+                  >
+                    <Globe className="w-4 h-4 text-primary" />
+                    {prof.website}
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+                {prof.phone && (
+                  <a href={`tel:${formatPhone(prof.phone)}`} className="flex items-center gap-2 text-muted hover:text-primary transition-colors">
+                    <Phone className="w-4 h-4 text-primary" />
+                    {prof.phone}
+                  </a>
+                )}
+              </div>
+            </ProfileSection>
           </motion.div>
         </div>
       </main>

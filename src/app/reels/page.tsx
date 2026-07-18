@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
@@ -15,9 +15,11 @@ interface Reel {
   createdAt: string;
   isLiked: boolean;
   isSaved: boolean;
+  views: number;
+  shares: number;
   user: { id: string; name: string | null; avatar: string | null } | null;
   business: { id: string; name: string; logo: string | null } | null;
-  _count: { likes: number; comments: number };
+  _count: { likes: number; comments: number; views: number; shares: number };
 }
 
 export default function ReelsPage() {
@@ -31,6 +33,10 @@ export default function ReelsPage() {
   const [mutedMap, setMutedMap] = useState<Record<string, boolean>>({});
   const [likedMap, setLikedMap] = useState<Record<string, boolean>>({});
   const [likeCountMap, setLikeCountMap] = useState<Record<string, number>>({});
+  const [viewCountMap, setViewCountMap] = useState<Record<string, number>>({});
+  const [shareCountMap, setShareCountMap] = useState<Record<string, number>>({});
+  const [commentCountMap, setCommentCountMap] = useState<Record<string, number>>({});
+  const trackedViewsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -55,14 +61,23 @@ export default function ReelsPage() {
         // Init maps
         const newLiked: Record<string, boolean> = {};
         const newLikeCount: Record<string, number> = {};
+        const newViewCount: Record<string, number> = {};
+        const newShareCount: Record<string, number> = {};
+        const newCommentCount: Record<string, number> = {};
         const newMuted: Record<string, boolean> = {};
         newReels.forEach((r) => {
           newLiked[r.id] = r.isLiked;
           newLikeCount[r.id] = r._count.likes;
+          newViewCount[r.id] = r._count.views;
+          newShareCount[r.id] = r._count.shares;
+          newCommentCount[r.id] = r._count.comments;
           newMuted[r.id] = true;
         });
         setLikedMap((prev) => ({ ...prev, ...newLiked }));
         setLikeCountMap((prev) => ({ ...prev, ...newLikeCount }));
+        setViewCountMap((prev) => ({ ...prev, ...newViewCount }));
+        setShareCountMap((prev) => ({ ...prev, ...newShareCount }));
+        setCommentCountMap((prev) => ({ ...prev, ...newCommentCount }));
         setMutedMap((prev) => ({ ...prev, ...newMuted }));
       }
     } catch (e) {
@@ -76,7 +91,7 @@ export default function ReelsPage() {
     fetchReels(1);
   }, [fetchReels]);
 
-  // Intersection observer to auto-play visible reel
+  // Intersection observer to auto-play visible reel and track views
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -87,6 +102,7 @@ export default function ReelsPage() {
           if (entry.isIntersecting) {
             setActiveReelId(reelId);
             video?.play().catch(() => {});
+            trackReelView(reelId);
           } else {
             video?.pause();
           }
@@ -99,6 +115,27 @@ export default function ReelsPage() {
     items.forEach((item) => observer.observe(item));
     return () => observer.disconnect();
   }, [reels]);
+
+  const trackReelView = (reelId: string) => {
+    if (trackedViewsRef.current.has(reelId)) return;
+    if (typeof window === 'undefined') return;
+    try {
+      const viewed = JSON.parse(localStorage.getItem('viewed_posts') || '[]') as string[];
+      if (viewed.includes(reelId)) return;
+      viewed.push(reelId);
+      localStorage.setItem('viewed_posts', JSON.stringify(viewed));
+      trackedViewsRef.current.add(reelId);
+      fetch(`/api/posts/${reelId}/view`, { method: 'POST' }).catch(() => {});
+      setViewCountMap((prev) => ({ ...prev, [reelId]: (prev[reelId] || 0) + 1 }));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleShare = (reelId: string) => {
+    setShareCountMap((prev) => ({ ...prev, [reelId]: (prev[reelId] || 0) + 1 }));
+    fetch(`/api/posts/${reelId}/share`, { method: 'POST' }).catch(() => {});
+  };
 
   const handleLike = async (reelId: string) => {
     try {
@@ -145,6 +182,9 @@ export default function ReelsPage() {
             const isActive = activeReelId === reel.id;
             const liked = likedMap[reel.id];
             const likeCount = likeCountMap[reel.id] || 0;
+            const viewCount = viewCountMap[reel.id] || 0;
+            const shareCount = shareCountMap[reel.id] || 0;
+            const commentCount = commentCountMap[reel.id] || 0;
             const muted = mutedMap[reel.id] !== false;
 
             return (
@@ -195,7 +235,7 @@ export default function ReelsPage() {
                       }`}
                     />
                     <span className="text-white text-xs font-medium drop-shadow">
-                      {likeCount > 0 ? likeCount : ''}
+                      {likeCount > 0 ? likeCount.toLocaleString('ar-SA') : ''}
                     </span>
                   </button>
                   <button
@@ -203,6 +243,9 @@ export default function ReelsPage() {
                     className="flex flex-col items-center gap-1"
                   >
                     <MessageCircle className="w-8 h-8 text-white" />
+                    <span className="text-white text-xs font-medium drop-shadow">
+                      {commentCount > 0 ? commentCount.toLocaleString('ar-SA') : ''}
+                    </span>
                   </button>
                   <button
                     aria-label="حفظ"
@@ -211,10 +254,14 @@ export default function ReelsPage() {
                     <Bookmark className="w-7 h-7 text-white" />
                   </button>
                   <button
+                    onClick={() => handleShare(reel.id)}
                     aria-label="مشاركة"
                     className="flex flex-col items-center gap-1"
                   >
                     <Share2 className="w-7 h-7 text-white" />
+                    <span className="text-white text-xs font-medium drop-shadow">
+                      {shareCount > 0 ? shareCount.toLocaleString('ar-SA') : ''}
+                    </span>
                   </button>
                 </div>
 
@@ -231,10 +278,14 @@ export default function ReelsPage() {
                     </span>
                   </div>
                   {reel.content && (
-                    <p className="text-white text-sm leading-relaxed drop-shadow line-clamp-3">
+                    <p className="text-white text-sm leading-relaxed drop-shadow line-clamp-3 mb-2">
                       {reel.content}
                     </p>
                   )}
+                  <div className="flex items-center gap-3 text-white/80 text-xs drop-shadow">
+                    {viewCount > 0 && <span>{viewCount.toLocaleString('ar-SA')} مشاهدة</span>}
+                    {likeCount > 0 && <span>{likeCount.toLocaleString('ar-SA')} إعجاب</span>}
+                  </div>
                 </div>
               </motion.div>
             );

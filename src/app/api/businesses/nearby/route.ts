@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser, serverError, badRequest } from '@/lib/api-utils';
 import { prisma } from '@/lib/db';
+import { serializeBusiness } from '@/lib/business-serializer';
 
 function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
@@ -41,7 +42,11 @@ export async function GET(req: NextRequest) {
       },
       include: {
         Category: { select: { id: true, name: true } },
-        Subcategory: { select: { id: true, name: true } },
+        BusinessSubcategory: {
+          include: {
+            Subcategory: { select: { id: true, name: true, slug: true } },
+          },
+        },
         Country: { select: { id: true, name: true } },
         User: { select: { id: true, name: true } },
         _count: {
@@ -58,7 +63,7 @@ export async function GET(req: NextRequest) {
           b.latitude || 0,
           b.longitude || 0
         );
-        return { ...b, distance };
+        return { ...serializeBusiness(b), distance };
       })
       .filter((b) => b.distance <= radius)
       .sort((a, b) => a.distance - b.distance)

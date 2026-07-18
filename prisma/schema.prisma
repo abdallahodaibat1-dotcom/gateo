@@ -209,7 +209,7 @@ model BusinessAsset {
   type        String   // HERO | ABOUT | SERVICE | PRODUCT | TEAM | GALLERY | LOGO | COVER | BRANCH
   url         String
   source      String   // USER | REFERENCE | AI_GENERATED
-  sourceUrl   String?  // original URL if extracted from reference
+  sourceUrl   String?  @db.Text // original URL if extracted from reference
   altText     String?
   title       String?
   role        String?  // hero-main | about-1 | service-dental ...

@@ -75,7 +75,6 @@ async function applyStoreWithDesign(jar: CookieJar) {
     slug: TEST_SLUG,
     description: 'متجر تجريبي لاختبار مكتبة التصاميم الجديدة واستخراج الألوان من الشعار.',
     categoryId: category.id,
-    subcategoryId: subcategory?.id || undefined,
     acceptedTerms: true,
     websiteType: 'STORE',
     designId: 'store-porto-shop1',
@@ -129,6 +128,14 @@ async function applyStoreWithDesign(jar: CookieJar) {
     throw new Error(`Apply failed: ${res.status}`);
   }
   console.log('✅ Store created via designId:', data.business?.slug || TEST_SLUG);
+
+  if (subcategory && data.business?.id) {
+    await prisma.businessSubcategory.create({
+      data: { businessId: data.business.id, subcategoryId: subcategory.id },
+    });
+    console.log('🏷️ Linked subcategory:', subcategory.id);
+  }
+
   return TEST_SLUG;
 }
 

@@ -296,7 +296,7 @@ async function main() {
 
   // Admin endpoints (via NextAuth admin-credentials provider)
   const adminJar = new CookieJar();
-  const adminLoggedIn = await login(adminJar, 'admin@gateo.com', 'admin123', 'admin-credentials');
+  const adminLoggedIn = await login(adminJar, 'admin@gateo.com', 'Admin123!', 'admin-credentials');
   if (adminLoggedIn) {
     await request('Admin: dashboard', '/api/admin/dashboard', {}, adminJar);
     await request('Admin: users', '/api/admin/users', {}, adminJar);
@@ -315,7 +315,7 @@ async function main() {
     const adminLoginRes = await fetch(`${BASE_URL}/api/admin/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'admin@gateo.com', password: 'admin123' }),
+      body: JSON.stringify({ email: 'admin@gateo.com', password: 'Admin123!' }),
     });
     const adminLoginBody = await adminLoginRes.text();
     results.push({

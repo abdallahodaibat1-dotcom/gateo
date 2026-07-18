@@ -27,7 +27,7 @@ interface Post {
   isSaved: boolean;
   user: { id: string; name: string | null; avatar: string | null } | null;
   business: { id: string; name: string | null; logo: string | null } | null;
-  _count: { likes: number; comments: number };
+  _count: { likes: number; comments: number; views: number; shares: number };
 }
 
 export default function FeedPage() {

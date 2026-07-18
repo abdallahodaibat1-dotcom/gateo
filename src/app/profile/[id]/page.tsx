@@ -109,7 +109,7 @@ interface Post {
   isLiked: boolean;
   isSaved: boolean;
   user: { id: string; name: string | null; avatar: string | null } | null;
-  _count: { likes: number; comments: number };
+  _count: { likes: number; comments: number; views: number; shares: number };
 }
 
 export default function ProfilePage() {
@@ -142,13 +142,19 @@ export default function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
+      setLoading(true);
       const res = await fetch(`/api/users/${id}`);
       if (res.ok) {
         const data = await res.json();
         setUser(data);
+      } else {
+        setUser(null);
       }
     } catch (e) {
       console.error(e);
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -162,8 +168,7 @@ export default function ProfilePage() {
       }
     } catch (e) {
       console.error(e);
-    } finally {
-      setLoading(false);
+      setPosts([]);
     }
   };
 
@@ -245,6 +250,31 @@ export default function ProfilePage() {
                   <Skeleton className="h-16 rounded-lg" />
                 </div>
               </div>
+            </Card>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  if (!user) {
+    return (
+      <>
+        <Navbar />
+        <main className="pt-20 pb-10 min-h-screen bg-slate-50">
+          <div className="max-w-xl mx-auto px-4">
+            <Card className="text-center py-12">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+                <User className="w-8 h-8 text-muted" />
+              </div>
+              <h1 className="text-lg font-bold text-foreground mb-2">المستخدم غير موجود</h1>
+              <p className="text-sm text-muted mb-6">لم نتمكن من العثور على ملف الشخصي المطلوب.</p>
+              <button
+                onClick={() => router.push('/')}
+                className="px-5 py-2 rounded-md bg-primary text-white text-sm font-medium hover:bg-primary-dark transition-colors"
+              >
+                العودة للرئيسية
+              </button>
             </Card>
           </div>
         </main>
@@ -602,7 +632,7 @@ export default function ProfilePage() {
 
                     {!user?.business && (
                       <Link
-                        href="/business/apply"
+                        href="/business/apply/start"
                         className="flex items-center gap-3 p-3 rounded-lg bg-surface border border-border hover:border-primary/30 hover:shadow-sm transition-all group"
                       >
                         <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">

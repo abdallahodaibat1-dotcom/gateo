@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { serverError } from '@/lib/api-utils';
 import { requireAdmin } from '../_lib/utils';
+import { serializeBusiness } from '@/lib/business-serializer';
 
 // GET /api/admin/businesses - List all businesses with filters
 export async function GET(req: NextRequest) {
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
         include: {
           User: { select: { id: true, name: true, email: true } },
           Category: { select: { id: true, name: true } },
-          Subcategory: { select: { id: true, name: true } },
+          BusinessSubcategory: { include: { Subcategory: { select: { id: true, name: true, slug: true } } } },
           _count: { select: { Service: true, Review: true, Booking: true, Post: true } },
         },
       }),
@@ -45,7 +46,7 @@ export async function GET(req: NextRequest) {
     ]);
 
     return NextResponse.json({
-      businesses,
+      businesses: businesses.map(serializeBusiness),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {

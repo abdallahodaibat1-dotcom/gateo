@@ -191,9 +191,16 @@ export default function CreatePostPage() {
   );
 
   const handleSubmit = async () => {
-    if (!content.trim() && files.length === 0) return;
+    if (!content.trim() && files.length === 0) {
+      showToast('أضف محتوى أو ملفاً قبل النشر', 'error');
+      return;
+    }
     if (files.some((f) => f.uploading)) {
       showToast('يرجى الانتظار حتى اكتمال رفع الملفات', 'error');
+      return;
+    }
+    if (isReel && files.length === 0) {
+      showToast('الريل يحتاج إلى فيديو', 'error');
       return;
     }
 
@@ -273,7 +280,12 @@ export default function CreatePostPage() {
                 <button
                   role="tab"
                   aria-selected={postType === 'POST'}
-                  onClick={() => { setPostType('POST'); setFiles([]); }}
+                  onClick={() => {
+                    setPostType('POST');
+                    // Reels only allow one video; keep it when switching to post.
+                    // Images uploaded in reel mode are not supported, remove them.
+                    setFiles((prev) => prev.filter((f) => f.type === 'video'));
+                  }}
                   className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${
                     postType === 'POST'
                       ? 'bg-surface text-foreground shadow-sm'
@@ -285,7 +297,16 @@ export default function CreatePostPage() {
                 <button
                   role="tab"
                   aria-selected={postType === 'REEL'}
-                  onClick={() => { setPostType('REEL'); setFiles([]); }}
+                  onClick={() => {
+                    setPostType('REEL');
+                    // Reels support only a single video. Keep the first video and remove images/extra videos.
+                    const firstVideo = files.find((f) => f.type === 'video');
+                    if (firstVideo) {
+                      setFiles([firstVideo]);
+                    } else {
+                      setFiles([]);
+                    }
+                  }}
                   className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${
                     postType === 'REEL'
                       ? 'bg-surface text-primary shadow-sm'

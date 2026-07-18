@@ -15,6 +15,7 @@ import { CategoriesSection } from '@/components/business-website/CategoriesSecti
 import { GallerySection } from '@/components/business-website/GallerySection';
 import { WorkingHoursSection } from '@/components/business-website/WorkingHoursSection';
 import { PromoSection } from '@/components/business-website/PromoSection';
+import { BusinessServicesSection } from '@/components/business-website/BusinessServicesSection';
 
 const AboutPageTemplate = dynamic(() => import('@/components/business-website/pages').then((m) => m.AboutPageTemplate));
 const ContactPageTemplate = dynamic(() => import('@/components/business-website/pages').then((m) => m.ContactPageTemplate));
@@ -29,15 +30,12 @@ const WishlistPageTemplate = dynamic(() => import('@/components/business-website
 const AccountPageTemplate = dynamic(() => import('@/components/business-website/pages').then((m) => m.AccountPageTemplate));
 const CheckoutPageTemplate = dynamic(() => import('@/components/business-website/pages').then((m) => m.CheckoutPageTemplate));
 
-const PortoShop1Template = dynamic(() => import('@/components/business-website/PortoShop1Template').then((m) => m.PortoShop1Template));
-const FlatsomeTemplate = dynamic(() => import('@/components/business-website/FlatsomeTemplate').then((m) => m.FlatsomeTemplate));
-const ElessiTemplate = dynamic(() => import('@/components/business-website/ElessiTemplate').then((m) => m.ElessiTemplate));
-const GrandRestaurantTemplate = dynamic(() => import('@/components/business-website/GrandRestaurantTemplate').then((m) => m.GrandRestaurantTemplate));
-const HouzezTemplate = dynamic(() => import('@/components/business-website/HouzezTemplate').then((m) => m.HouzezTemplate));
-const JacquelineTemplate = dynamic(() => import('@/components/business-website/JacquelineTemplate').then((m) => m.JacquelineTemplate));
-const OhioTemplate = dynamic(() => import('@/components/business-website/OhioTemplate').then((m) => m.OhioTemplate));
 const EnfoldSpaTemplate = dynamic(() => import('@/components/business-website/EnfoldSpaTemplate').then((m) => m.EnfoldSpaTemplate));
 const BeautySalonTemplate = dynamic(() => import('@/components/business-website/BeautySalonTemplate').then((m) => m.BeautySalonTemplate));
+const ModernIntroTemplate = dynamic(() => import('@/components/business-website/ModernIntroTemplate').then((m) => m.ModernIntroTemplate));
+const FashionOneHome = dynamic(() => import('@/components/business-website/fashion-1/FashionOneHome').then((m) => m.FashionOneHome));
+const FashionOneShop = dynamic(() => import('@/components/business-website/fashion-1/FashionOneShop').then((m) => m.FashionOneShop));
+const FashionOneLayout = dynamic(() => import('@/components/business-website/fashion-1/FashionOneLayout').then((m) => m.FashionOneLayout));
 
 interface Product {
   id: string;
@@ -78,12 +76,14 @@ interface Business {
     isPublished: boolean;
   } | null;
   pages: { id: string; slug: string; title: string; isHomePage: boolean; pageTemplate: string }[];
+  services?: { id: string; name: string; description: string | null; price: number | string | null; duration: number | null; image: string | null }[];
   products?: Product[];
   posts?: { id: string; title: string; content?: string | null; image?: string | null; createdAt: string }[];
   cover?: string | null;
   address?: string | null;
   images?: { url: string; type?: string; caption?: string }[] | null;
   workingHours?: { day: string; open: string; close: string }[] | Record<string, string> | string | null;
+  assets?: { type: string; url: string; role?: string | null; altText?: string | null }[];
 }
 
 interface PageData {
@@ -177,7 +177,7 @@ function renderPageTemplate({ business, page }: { business: Business; page: Page
 function splitDescriptionIntoServices(description: string | null | undefined) {
   if (!description) return [];
   const sentences = description
-    .split(/[.\.\n]+/)
+    .split(/[\.\.\n]+/)
     .map((s) => s.trim())
     .filter((s) => s.length > 10);
   if (sentences.length === 0) return [];
@@ -195,12 +195,14 @@ function DefaultStoreHome({ business }: { business: Business }) {
   const galleryImages =
     business.images?.filter((img) => !img.type || img.type === 'gallery').map((img) => img.url) || [];
 
+  const businessServices = business.services || [];
+
   const productServices = categories.slice(0, 6).map((cat) => ({
     title: cat,
     description: `تصفح تشكيلة ${cat} المميزة من ${business.name}`,
   }));
 
-  const services =
+  const fallbackServices =
     productServices.length > 0
       ? productServices
       : splitDescriptionIntoServices(business.description);
@@ -209,13 +211,19 @@ function DefaultStoreHome({ business }: { business: Business }) {
     <>
       <StoreHero business={business} />
       <ContactInfoCards business={{ ...business, workingHours }} />
-      {services.length > 0 && (
+      {businessServices.length > 0 ? (
+        <BusinessServicesSection
+          title="خدماتنا"
+          subtitle="ما نقدمه لكم"
+          services={businessServices}
+        />
+      ) : fallbackServices.length > 0 ? (
         <ServicesSection
           title="ما نقدمه"
           subtitle="خدماتنا المميزة"
-          services={services}
+          services={fallbackServices}
         />
-      )}
+      ) : null}
       <PromoSection business={business} />
       {business.websiteType === 'STORE' && (
         <ProductGrid
@@ -279,7 +287,10 @@ export default function BusinessCustomPage() {
     return (
       <BusinessThemeProvider theme={null}>
         <div className="min-h-screen flex items-center justify-center bg-[var(--theme-background,var(--color-background))]">
-          <Loader2 className="w-10 h-10 animate-spin text-[var(--theme-primary,var(--color-primary))]" />
+          <div className="text-center">
+            <Loader2 className="w-10 h-10 animate-spin text-[var(--theme-primary,var(--color-primary))] mx-auto mb-4" />
+            <p className="text-muted text-sm">جارٍ تحميل {id}/{pageSlug}</p>
+          </div>
         </div>
       </BusinessThemeProvider>
     );
@@ -287,27 +298,31 @@ export default function BusinessCustomPage() {
 
   if (!business || !page) return null;
 
-  const fullPageTemplates = [
-    'porto-shop1',
-    'flatsome',
-    'elessi',
-    'grand-restaurant',
-    'houzez',
-    'jacqueline',
-    'ohio',
-    'enfold-spa',
-    'beauty-salon',
-  ];
-  const isEnfoldSpaIntro = business.theme?.homeTemplate === 'enfold-spa' && business.websiteType === 'INTRO';
+  const fullPageTemplates = ['enfold-spa', 'beauty-salon-1', 'fashion-1', 'modern-intro'];
+  const isBeautyIntroTemplate =
+    (business.theme?.homeTemplate === 'enfold-spa' || business.theme?.homeTemplate === 'beauty-salon-1') &&
+    business.websiteType === 'INTRO';
+  const isModernIntroTemplate = business.theme?.homeTemplate === 'modern-intro' && business.websiteType === 'INTRO';
+  const isFashionStoreTemplate = business.theme?.homeTemplate === 'fashion-1' && business.websiteType === 'STORE';
   const useTemplateShell =
     fullPageTemplates.includes(business.theme?.homeTemplate || '') &&
-    ((business.websiteType === 'STORE' && page.isHomePage) || isEnfoldSpaIntro);
+    ((business.websiteType === 'STORE' && page.isHomePage) || isBeautyIntroTemplate || isModernIntroTemplate || isFashionStoreTemplate);
 
   if (useTemplateShell) {
     return (
       <BusinessThemeProvider theme={business.theme}>
         {business.websiteType === 'STORE' && page.isHomePage ? (
           <FullPageTemplate business={business} />
+        ) : isFashionStoreTemplate && page.slug === 'shop' ? (
+          <FashionOneShop business={business} />
+        ) : isFashionStoreTemplate ? (
+          <FashionOneLayout business={business}>
+            {renderPageTemplate({ business, page })}
+          </FashionOneLayout>
+        ) : business.theme?.homeTemplate === 'beauty-salon-1' ? (
+          <BeautySalonTemplate business={business} />
+        ) : business.theme?.homeTemplate === 'modern-intro' ? (
+          <ModernIntroTemplate business={business} />
         ) : (
           <EnfoldSpaTemplate business={business} page={page} />
         )}
@@ -332,22 +347,14 @@ export default function BusinessCustomPage() {
 
 function FullPageTemplate({ business }: { business: Business }) {
   switch (business.theme?.homeTemplate) {
-    case 'porto-shop1':
-      return <PortoShop1Template business={business} />;
-    case 'flatsome':
-      return <FlatsomeTemplate business={business} />;
-    case 'elessi':
-      return <ElessiTemplate business={business} />;
-    case 'grand-restaurant':
-      return <GrandRestaurantTemplate business={business} />;
-    case 'houzez':
-      return <HouzezTemplate business={business} />;
-    case 'jacqueline':
-      return <JacquelineTemplate business={business} />;
-    case 'ohio':
-      return <OhioTemplate business={business} />;
-    case 'beauty-salon':
+    case 'enfold-spa':
+      return <EnfoldSpaTemplate business={business} />;
+    case 'beauty-salon-1':
       return <BeautySalonTemplate business={business} />;
+    case 'fashion-1':
+      return <FashionOneHome business={business} />;
+    case 'modern-intro':
+      return <ModernIntroTemplate business={business} />;
     default:
       return null;
   }

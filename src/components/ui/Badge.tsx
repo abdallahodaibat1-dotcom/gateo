@@ -2,12 +2,12 @@ import { cn } from '@/lib/utils';
 import { HTMLAttributes, forwardRef } from 'react';
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'success' | 'warning' | 'danger' | 'muted';
+  variant?: 'primary' | 'secondary' | 'outline' | 'success' | 'warning' | 'danger' | 'muted' | 'theme';
   size?: 'sm' | 'md';
 }
 
 const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
-  ({ children, variant = 'primary', size = 'sm', className, ...props }, ref) => {
+  ({ children, variant = 'primary', size = 'sm', className, style, ...props }, ref) => {
     const variants = {
       primary: 'bg-primary/10 text-primary border-primary/20',
       secondary: 'bg-secondary/10 text-secondary border-secondary/20',
@@ -16,12 +16,21 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
       warning: 'bg-warning/10 text-warning border-warning/20',
       danger: 'bg-danger/10 text-danger border-danger/20',
       muted: 'bg-slate-100 text-muted border-slate-200',
+      theme: 'border-transparent',
     };
 
     const sizes = {
       sm: 'px-2 py-0.5 text-xs',
       md: 'px-2.5 py-1 text-sm',
     };
+
+    const themeStyle =
+      variant === 'theme'
+        ? {
+            backgroundColor: 'color-mix(in srgb, var(--theme-primary, var(--color-primary)) 10%, transparent)',
+            color: 'var(--theme-primary, var(--color-primary))',
+          }
+        : undefined;
 
     return (
       <span
@@ -32,6 +41,7 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
           sizes[size],
           className
         )}
+        style={{ ...themeStyle, ...style }}
         {...props}
       >
         {children}

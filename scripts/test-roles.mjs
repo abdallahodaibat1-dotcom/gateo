@@ -94,7 +94,7 @@ async function main() {
   let failed = false;
 
   console.log('=== Role: ADMIN ===');
-  const adminCookies = await login(browser, 'admin@gateo.com', 'admin123', true);
+  const adminCookies = await login(browser, 'admin@gateo.com', 'Admin123!', true);
   const adminApi = await request('/api/admin/categories', cookieHeader(adminCookies));
   console.log('GET /api/admin/categories:', adminApi.status, adminApi.status === 200 ? '✅' : '❌');
   if (adminApi.status !== 200) failed = true;

@@ -38,9 +38,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       posts: savedPosts.map((sp) => ({
         ...sp.Post,
+        user: sp.Post.User,
+        business: sp.Post.Business,
+        _count: { likes: (sp.Post._count as any).Like, comments: (sp.Post._count as any).Comment, views: sp.Post.views, shares: sp.Post.shares },
         isLiked: sp.Post.Like.length > 0,
         isSaved: sp.Post.SavedPosts.length > 0,
         savedAt: sp.createdAt,
+        User: undefined,
+        Business: undefined,
         Like: undefined,
         SavedPosts: undefined,
       })),
