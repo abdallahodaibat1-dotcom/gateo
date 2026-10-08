@@ -6,7 +6,15 @@ import { registerSchema } from '@/lib/zod';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: 'طلب غير صالح: JSON مالفورمات' },
+        { status: 400 }
+      );
+    }
     const parsed = registerSchema.safeParse(body);
 
     if (!parsed.success) {

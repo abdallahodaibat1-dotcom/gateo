@@ -66,10 +66,11 @@ export async function POST(request: NextRequest) {
 
     const data = validation.data;
 
-    // Enforce AI image generation feature flag
+    // Enforce AI image generation feature flag (disabled only when explicitly "false",
+    // consistent with ai-image-generator.ts which treats anything except "false" as enabled)
     if (
       data.allowAiImageGeneration &&
-      process.env.AI_IMAGE_GENERATION_ENABLED !== "true"
+      process.env.AI_IMAGE_GENERATION_ENABLED === "false"
     ) {
       return NextResponse.json(
         { error: "AI image generation is not enabled" },

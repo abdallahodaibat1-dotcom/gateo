@@ -6,10 +6,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params;
 
   try {
-    await prisma.post.update({
+    const result = await prisma.post.updateMany({
       where: { id },
       data: { views: { increment: 1 } },
     });
+    if (result.count === 0) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error('Failed to increment views:', e);

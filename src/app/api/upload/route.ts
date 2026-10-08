@@ -15,6 +15,43 @@ async function getSharp() {
   return sharpModule;
 }
 
+// Resolve ffmpeg/ffprobe binaries: prefer a system install on PATH, fall
+// back to the bundled static binaries in node_modules. We resolve the
+// node_modules paths manually because bundlers (Turbopack/webpack) rewrite
+// the __dirname inside ffmpeg-static/ffprobe-static to a bogus "\ROOT".
+import { existsSync } from 'fs';
+
+let ffmpegPath: string | null = null;
+let ffprobePath: string | null = null;
+
+function firstExisting(candidates: string[], fallback: string): string {
+  for (const candidate of candidates) {
+    if (candidate && existsSync(candidate)) return candidate;
+  }
+  return fallback;
+}
+
+function resolveBinaries() {
+  if (ffmpegPath !== null) return;
+  const isWindows = process.platform === 'win32';
+  const nm = join(process.cwd(), 'node_modules');
+  ffmpegPath = firstExisting(
+    [
+      join(nm, 'ffmpeg-static', 'ffmpeg.exe'),
+      join(nm, 'ffmpeg-static', 'ffmpeg'),
+      join(nm, 'ffmpeg-static', 'ffmpeg-linux'),
+    ],
+    'ffmpeg'
+  );
+  ffprobePath = firstExisting(
+    [
+      join(nm, 'ffprobe-static', 'bin', process.platform, process.arch, isWindows ? 'ffprobe.exe' : 'ffprobe'),
+      join(nm, 'ffprobe-static', 'ffprobe.exe'),
+    ],
+    'ffprobe'
+  );
+}
+
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm', 'video/avi', 'video/x-matroska'];
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -38,6 +75,7 @@ interface UploadResult {
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return unauthorized();
+  resolveBinaries();
 
   try {
     const formData = await req.formData();
@@ -158,7 +196,7 @@ export async function POST(req: NextRequest) {
       if (!isReel) {
         try {
           const probeOutput = await new Promise<string>((resolve) => {
-            const ffprobe = spawn('ffprobe', [
+            const ffprobe = spawn(ffprobePath, [
               '-v', 'error',
               '-select_streams', 'v:0',
               '-show_entries', 'stream=codec_name',
@@ -167,10 +205,11 @@ export async function POST(req: NextRequest) {
             ]);
             let output = '';
             ffprobe.stdout.on('data', (d) => { output += d.toString(); });
+            ffprobe.on('error', () => resolve(''));
             ffprobe.on('close', () => resolve(output.trim().toLowerCase()));
           });
           const audioCodec = await new Promise<string>((resolve) => {
-            const ffprobe = spawn('ffprobe', [
+            const ffprobe = spawn(ffprobePath, [
               '-v', 'error',
               '-select_streams', 'a:0',
               '-show_entries', 'stream=codec_name',
@@ -179,6 +218,7 @@ export async function POST(req: NextRequest) {
             ]);
             let output = '';
             ffprobe.stdout.on('data', (d) => { output += d.toString(); });
+            ffprobe.on('error', () => resolve(''));
             ffprobe.on('close', () => resolve(output.trim().toLowerCase()));
           });
           canCopy = probeOutput === 'h264' && (audioCodec === 'aac' || audioCodec === '');
@@ -192,7 +232,7 @@ export async function POST(req: NextRequest) {
       if (canCopy) {
         try {
           await new Promise<void>((resolve, reject) => {
-            const ffmpeg = spawn('ffmpeg', [
+            const ffmpeg = spawn(ffmpegPath, [
               '-y',
               '-i', rawPath,
               '-c', 'copy',
@@ -220,7 +260,7 @@ export async function POST(req: NextRequest) {
           : 'scale=-2:720:force_original_aspect_ratio=decrease';
 
         await new Promise<void>((resolve, reject) => {
-          const ffmpeg = spawn('ffmpeg', [
+          const ffmpeg = spawn(ffmpegPath, [
             '-y',
             '-i', rawPath,
             '-c:v', 'libx264',
@@ -264,7 +304,7 @@ export async function POST(req: NextRequest) {
       // Generate thumbnail at 1s mark
       try {
         await new Promise<void>((resolve, reject) => {
-          const ffmpegThumb = spawn('ffmpeg', [
+          const ffmpegThumb = spawn(ffmpegPath, [
             '-y',
             '-i', outPath,
             '-ss', '00:00:01.000',
@@ -287,7 +327,7 @@ export async function POST(req: NextRequest) {
       // Get video duration
       let duration = 0;
       try {
-        const ffprobe = spawn('ffprobe', [
+        const ffprobe = spawn(ffprobePath, [
           '-v', 'error',
           '-show_entries', 'format=duration',
           '-of', 'default=noprint_wrappers=1:nokey=1',
@@ -296,6 +336,7 @@ export async function POST(req: NextRequest) {
         duration = await new Promise<number>((resolve) => {
           let output = '';
           ffprobe.stdout.on('data', (d) => { output += d.toString(); });
+          ffprobe.on('error', () => resolve(0));
           ffprobe.on('close', () => resolve(parseFloat(output) || 0));
         });
       } catch {}
@@ -304,7 +345,7 @@ export async function POST(req: NextRequest) {
       let width = 0;
       let height = 0;
       try {
-        const ffprobeDim = spawn('ffprobe', [
+        const ffprobeDim = spawn(ffprobePath, [
           '-v', 'error',
           '-select_streams', 'v:0',
           '-show_entries', 'stream=width,height',
@@ -314,6 +355,7 @@ export async function POST(req: NextRequest) {
         const dimOutput = await new Promise<string>((resolve) => {
           let output = '';
           ffprobeDim.stdout.on('data', (d) => { output += d.toString(); });
+          ffprobeDim.on('error', () => resolve(''));
           ffprobeDim.on('close', () => resolve(output.trim()));
         });
         const [w, h] = dimOutput.split('x').map(Number);

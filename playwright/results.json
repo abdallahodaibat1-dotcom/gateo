@@ -1,7 +1,7 @@
 {
   "config": {
-    "configFile": "/home/abdalah/code/gateo/playwright.config.ts",
-    "rootDir": "/home/abdalah/code/gateo/tests/e2e",
+    "configFile": "C:\\Users\\DELL 7410\\code\\gateo\\playwright.config.ts",
+    "rootDir": "C:/Users/DELL 7410/code/gateo/tests/e2e",
     "forbidOnly": false,
     "fullyParallel": true,
     "globalSetup": null,
@@ -10,17 +10,21 @@
     "grep": {},
     "grepInvert": null,
     "maxFailures": 0,
-    "metadata": {},
+    "metadata": {
+      "actualWorkers": 2
+    },
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "/home/abdalah/code/gateo/test-results",
+        "outputDir": "C:/Users/DELL 7410/code/gateo/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 2
+        },
         "id": "setup",
         "name": "setup",
-        "testDir": "/home/abdalah/code/gateo/tests/e2e",
+        "testDir": "C:/Users/DELL 7410/code/gateo/tests/e2e",
         "testIgnore": [],
         "testMatch": [
           "/.*\\.setup\\.ts/"
@@ -28,13 +32,15 @@
         "timeout": 30000
       },
       {
-        "outputDir": "/home/abdalah/code/gateo/test-results",
+        "outputDir": "C:/Users/DELL 7410/code/gateo/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 2
+        },
         "id": "chromium",
         "name": "chromium",
-        "testDir": "/home/abdalah/code/gateo/tests/e2e",
+        "testDir": "C:/Users/DELL 7410/code/gateo/tests/e2e",
         "testIgnore": [
           "/admin-dashboard\\.spec\\.ts/"
         ],
@@ -44,13 +50,15 @@
         "timeout": 30000
       },
       {
-        "outputDir": "/home/abdalah/code/gateo/test-results",
+        "outputDir": "C:/Users/DELL 7410/code/gateo/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 2
+        },
         "id": "admin",
         "name": "admin",
-        "testDir": "/home/abdalah/code/gateo/tests/e2e",
+        "testDir": "C:/Users/DELL 7410/code/gateo/tests/e2e",
         "testIgnore": [],
         "testMatch": [
           "/.*admin-dashboard\\.spec\\.ts/"
@@ -80,22 +88,185 @@
     "updateSnapshots": "missing",
     "updateSourceMethod": "patch",
     "version": "1.60.0",
-    "workers": 2,
+    "workers": 4,
     "webServer": null
   },
-  "suites": [],
-  "errors": [
+  "suites": [
     {
-      "message": "Error: No tests found",
-      "stack": "Error: No tests found"
+      "title": "auth.setup.ts",
+      "file": "auth.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "authenticate regular user",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "setup",
+              "projectName": "setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 160,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T18:49:51.051Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "17e3fe6f4d9d8bd79c6b-e65ed151773c55a5879c",
+          "file": "auth.setup.ts",
+          "line": 77,
+          "column": 6
+        },
+        {
+          "title": "authenticate admin",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "setup",
+              "projectName": "setup",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 267,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T18:49:51.058Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "17e3fe6f4d9d8bd79c6b-a04d83a028572a7e3261",
+          "file": "auth.setup.ts",
+          "line": 85,
+          "column": 6
+        }
+      ]
+    },
+    {
+      "title": "ai-site-generation.spec.ts",
+      "file": "ai-site-generation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "AI site generation flow",
+          "file": "ai-site-generation.spec.ts",
+          "line": 68,
+          "column": 6,
+          "specs": [
+            {
+              "title": "user can generate a complete AI site end-to-end via the wizard",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 2771,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('معلومات النشاط')\nExpected: visible\nError: strict mode violation: getByText('معلومات النشاط') resolved to 3 elements:\n    1) <span class=\"text-xs font-medium whitespace-nowrap\">معلومات النشاط</span> aka locator('span').filter({ hasText: /^معلومات النشاط$/ })\n    2) <span class=\"text-sm text-gray-600\">…</span> aka getByText('الخطوة 1 من 6: معلومات النشاط')\n    3) <h2 class=\"text-2xl font-bold text-gray-900 mb-2\">معلومات النشاط</h2> aka getByRole('heading', { name: 'معلومات النشاط' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('معلومات النشاط')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('معلومات النشاط')\nExpected: visible\nError: strict mode violation: getByText('معلومات النشاط') resolved to 3 elements:\n    1) <span class=\"text-xs font-medium whitespace-nowrap\">معلومات النشاط</span> aka locator('span').filter({ hasText: /^معلومات النشاط$/ })\n    2) <span class=\"text-sm text-gray-600\">…</span> aka getByText('الخطوة 1 من 6: معلومات النشاط')\n    3) <h2 class=\"text-2xl font-bold text-gray-900 mb-2\">معلومات النشاط</h2> aka getByRole('heading', { name: 'معلومات النشاط' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('معلومات النشاط')\u001b[22m\n\n    at C:\\Users\\DELL 7410\\code\\gateo\\tests\\e2e\\ai-site-generation.spec.ts:112:52",
+                        "location": {
+                          "file": "C:\\Users\\DELL 7410\\code\\gateo\\tests\\e2e\\ai-site-generation.spec.ts",
+                          "column": 52,
+                          "line": 112
+                        },
+                        "snippet": "  110 |     await page.goto('/business/apply/ai', { waitUntil: 'networkidle' });\n  111 |     await expect(page).toHaveURL(/ai-wizard/);\n> 112 |     await expect(page.getByText('معلومات النشاط')).toBeVisible();\n      |                                                    ^\n  113 |\n  114 |     // 2. Step 1: business info\n  115 |     await page.getByPlaceholder('مثال: عيادة الابتسامة').fill(businessName);"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\DELL 7410\\code\\gateo\\tests\\e2e\\ai-site-generation.spec.ts",
+                            "column": 52,
+                            "line": 112
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('معلومات النشاط')\nExpected: visible\nError: strict mode violation: getByText('معلومات النشاط') resolved to 3 elements:\n    1) <span class=\"text-xs font-medium whitespace-nowrap\">معلومات النشاط</span> aka locator('span').filter({ hasText: /^معلومات النشاط$/ })\n    2) <span class=\"text-sm text-gray-600\">…</span> aka getByText('الخطوة 1 من 6: معلومات النشاط')\n    3) <h2 class=\"text-2xl font-bold text-gray-900 mb-2\">معلومات النشاط</h2> aka getByRole('heading', { name: 'معلومات النشاط' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('معلومات النشاط')\u001b[22m\n\n\n  110 |     await page.goto('/business/apply/ai', { waitUntil: 'networkidle' });\n  111 |     await expect(page).toHaveURL(/ai-wizard/);\n> 112 |     await expect(page.getByText('معلومات النشاط')).toBeVisible();\n      |                                                    ^\n  113 |\n  114 |     // 2. Step 1: business info\n  115 |     await page.getByPlaceholder('مثال: عيادة الابتسامة').fill(businessName);\n    at C:\\Users\\DELL 7410\\code\\gateo\\tests\\e2e\\ai-site-generation.spec.ts:112:52"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-07T18:49:51.879Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\DELL 7410\\code\\gateo\\test-results\\ai-site-generation-AI-site-c42b2-e-end-to-end-via-the-wizard-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\DELL 7410\\code\\gateo\\test-results\\ai-site-generation-AI-site-c42b2-e-end-to-end-via-the-wizard-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\DELL 7410\\code\\gateo\\test-results\\ai-site-generation-AI-site-c42b2-e-end-to-end-via-the-wizard-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\DELL 7410\\code\\gateo\\tests\\e2e\\ai-site-generation.spec.ts",
+                        "column": 52,
+                        "line": 112
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0c1167cfaf610db82aef-190d104b67eaddab4fa9",
+              "file": "ai-site-generation.spec.ts",
+              "line": 69,
+              "column": 7
+            }
+          ]
+        }
+      ]
     }
   ],
+  "errors": [],
   "stats": {
-    "startTime": "2026-06-29T00:41:29.750Z",
-    "duration": 729.5609999999999,
-    "expected": 0,
+    "startTime": "2026-10-07T18:49:50.358Z",
+    "duration": 4465.984,
+    "expected": 2,
     "skipped": 0,
-    "unexpected": 0,
+    "unexpected": 1,
     "flaky": 0
   }
 }

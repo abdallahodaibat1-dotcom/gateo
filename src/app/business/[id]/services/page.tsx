@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useCurrency } from '@/hooks/useCurrency';
+import { compressImage } from '@/lib/media-compression';
 
 interface Service {
   id: string;
@@ -41,9 +42,7 @@ export default function ManageServicesPage() {
   const { showToast } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
   const { format, convert } = useCurrency();
-  const [imagePromptOpen, setImagePromptOpen] = useState(false);
-  const [imagePromptValue, setImagePromptValue] = useState('');
-  const imagePromptResolveRef = useRef<((value: string | null) => void) | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -70,18 +69,41 @@ export default function ManageServicesPage() {
     setShowForm(false);
   };
 
-  const promptImage = () => {
-    setImagePromptValue('');
-    setImagePromptOpen(true);
-    return new Promise<string | null>((resolve) => {
-      imagePromptResolveRef.current = resolve;
-    });
+  const handleFileUpload = async (file: File) => {
+    if (!file) return;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      showToast('يرجى اختيار صورة بصيغة JPEG, PNG, WebP, أو GIF', 'error');
+      return;
+    }
+    setUploadingImage(true);
+    try {
+      const compressedFile = await compressImage(file, {
+        maxWidth: 1200,
+        maxHeight: 1200,
+        quality: 0.88,
+        maxSizeBytes: 4 * 1024 * 1024,
+      });
+      const formData = new FormData();
+      formData.append('file', compressedFile);
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setForm((prev) => ({ ...prev, image: data.url }));
+      } else {
+        showToast(data.error || 'فشل في رفع الصورة', 'error');
+      }
+    } catch {
+      showToast('فشل في رفع الصورة', 'error');
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
-  const closeImagePrompt = (url: string | null) => {
-    setImagePromptOpen(false);
-    imagePromptResolveRef.current?.(url);
-    imagePromptResolveRef.current = null;
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileUpload(file);
   };
 
   const handleSubmit = async () => {
@@ -224,26 +246,40 @@ export default function ManageServicesPage() {
                     </div>
                   </div>
                   <div>
-                    <label htmlFor="service-image" className="block text-sm font-medium text-foreground mb-1">صورة</label>
-                    <div className="flex gap-2">
+                    <label htmlFor="service-image" className="block text-sm font-medium text-foreground mb-1">صورة الخدمة</label>
+                    {form.image && (
+                      <div className="mb-2 w-16 h-16 rounded-lg overflow-hidden border border-border">
+                        <img src={form.image} alt={form.name || 'صورة الخدمة'} className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <div
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={handleDrop}
+                      className="relative w-full px-4 py-2.5 rounded-md border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer text-center"
+                    >
                       <input
                         id="service-image"
-                        value={form.image}
-                        onChange={(e) => setForm({ ...form, image: e.target.value })}
-                        className="flex-1 px-4 py-2.5 rounded-md border border-border bg-surface text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none"
-                        placeholder="رابط الصورة..."
-                      />
-                      <button
-                        onClick={async () => {
-                          const url = await promptImage();
-                          if (url) setForm({ ...form, image: url });
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file);
                         }}
-                        className="px-3 py-2.5 rounded-md border border-border bg-surface hover:bg-slate-50 transition-colors"
-                        aria-label="إضافة رابط صورة"
-                      >
-                        <ImagePlus className="w-5 h-5 text-muted" />
-                      </button>
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      {uploadingImage ? (
+                        <div className="flex items-center justify-center gap-2 text-primary">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span className="text-sm">جاري الرفع...</span>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted">
+                          <span className="text-primary font-medium">اضغط لاختيار صورة</span>
+                          <span className="mx-1">أو اسحبها هنا</span>
+                        </div>
+                      )}
                     </div>
+                    <p className="text-xs text-muted mt-1">JPEG, PNG, WebP, GIF — يتم ضغط الصورة تلقائياً</p>
                   </div>
                   <div className="flex justify-end gap-2">
                     <button
@@ -318,35 +354,6 @@ export default function ManageServicesPage() {
         </div>
       </main>
       <ConfirmDialog />
-      {imagePromptOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => closeImagePrompt(null)} />
-          <div className="relative bg-surface rounded-lg shadow-xl w-full max-w-sm p-5">
-            <h3 className="text-lg font-bold text-foreground mb-3">رابط الصورة</h3>
-            <input
-              type="text"
-              value={imagePromptValue}
-              onChange={(e) => setImagePromptValue(e.target.value)}
-              placeholder="أدخل رابط الصورة"
-              className="w-full px-4 py-2.5 rounded-md border border-border bg-surface text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none mb-4"
-            />
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => closeImagePrompt(null)}
-                className="px-4 py-2 rounded-md text-muted hover:bg-slate-100 transition-colors"
-              >
-                إلغاء
-              </button>
-              <button
-                onClick={() => closeImagePrompt(imagePromptValue.trim() || null)}
-                className="px-4 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary-dark transition-colors"
-              >
-                تأكيد
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

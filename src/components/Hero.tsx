@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-slate-900">
+    <section className="relative min-h-svh flex items-center overflow-hidden bg-slate-900">
       {/* Background Shapes */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 right-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-float" />
@@ -21,7 +21,7 @@ export default function Hero() {
         />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 lg:py-0">
+      <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 sm:pt-28 lg:pt-32 lg:pb-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Content */}
           <motion.div
@@ -40,7 +40,7 @@ export default function Hero() {
               منصة الأعمال والمحترفين في العالم العربي
             </motion.div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight mb-6">
+            <h1 className="text-[clamp(2rem,3.5vw+0.75rem,3.75rem)] font-bold text-white leading-tight mb-6">
               اكتشف عالم{' '}
               <span className="text-primary-light">
                 الأعمال
@@ -48,7 +48,7 @@ export default function Hero() {
               والمحترفين
             </h1>
 
-            <p className="text-lg sm:text-xl text-white/70 max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed">
+            <p className="text-base sm:text-lg lg:text-xl text-white/70 max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed">
               تواصل مع أفضل الشركات، العيادات، المكاتب الاستشارية، والمحترفين. احجز مواعيدك، تسوق المنتجات، وطوّر شبكتك المهنية بكل سهولة.
             </p>
 
@@ -108,7 +108,7 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
             className="hidden lg:block relative"
           >
-            <div className="relative mx-auto w-[300px] h-[560px]">
+            <div className="relative mx-auto w-[300px] h-[560px] scale-[0.8] xl:scale-90 2xl:scale-100">
               <div className="absolute inset-0 rounded-[3rem] bg-gradient-to-br from-slate-800 to-slate-950 shadow-2xl shadow-black/50 border-8 border-slate-800 overflow-hidden">
                 <div className="absolute inset-1 rounded-[2.5rem] bg-slate-50 overflow-hidden">
                   <div className="p-5 pt-12">

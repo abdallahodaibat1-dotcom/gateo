@@ -32,8 +32,17 @@ interface Step {
 }
 
 function runCommand(cmd: string, args: string[], options: SpawnOptionsWithoutStdio = {}): Promise<{ code: number; output: string }> {
+  // On Windows, .cmd shims cannot be spawned directly (Node >= 20 throws
+  // EINVAL; older versions throw ENOENT). Run the ts-node CLI entrypoint
+  // through node instead of going through the npx shim.
+  let resolvedCmd = cmd;
+  let resolvedArgs = args;
+  if (process.platform === 'win32' && cmd === 'npx' && args[0] === 'ts-node') {
+    resolvedCmd = process.execPath;
+    resolvedArgs = [require.resolve('ts-node/dist/bin.js'), ...args.slice(1)];
+  }
   return new Promise((resolve) => {
-    const child = spawn(cmd, args, {
+    const child = spawn(resolvedCmd, resolvedArgs, {
       cwd: PROJECT_ROOT,
       env: { ...process.env, BASE_URL },
       ...options,

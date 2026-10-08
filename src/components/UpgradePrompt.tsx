@@ -59,7 +59,7 @@ export default function UpgradePrompt() {
           </p>
           <div className="flex items-center gap-2 flex-shrink-0">
             <Link
-              href="/users/upgrade"
+              href="/upgrade"
               className="px-4 py-1.5 rounded-full bg-surface text-primary text-xs font-bold hover:bg-slate-50 transition-colors"
             >
               ترقية الحساب

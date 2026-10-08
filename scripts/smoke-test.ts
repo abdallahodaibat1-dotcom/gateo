@@ -36,7 +36,7 @@ async function request(
   path: string,
   options: RequestInit = {},
   jar?: CookieJar,
-  expectedStatus: number = 200
+  expectedStatus: number | number[] = 200
 ): Promise<any> {
   const url = `${BASE_URL}${path}`;
   const start = Date.now();
@@ -60,7 +60,8 @@ async function request(
       json = body.slice(0, 200);
     }
 
-    if (res.status === expectedStatus) {
+    const expectedStatuses = Array.isArray(expectedStatus) ? expectedStatus : [expectedStatus];
+    if (expectedStatuses.includes(res.status)) {
       results.push({ name, status: 'PASS', statusCode: res.status, durationMs: duration });
     } else {
       results.push({
@@ -289,7 +290,7 @@ async function main() {
           body: JSON.stringify({ participantIds: [targetUser.id], initialMessage: 'Hello from smoke test' }),
         },
         jar,
-        201
+        [200, 201] // 201 on first creation, 200 when the conversation already exists
       );
     }
   }

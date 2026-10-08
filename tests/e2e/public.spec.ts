@@ -12,7 +12,7 @@ test.describe('Public pages', () => {
     await expect(page.locator('body')).toContainText('دليل الأعمال');
     // Wait for JS hydration and API results
     await page.waitForTimeout(3000);
-    const cards = page.locator('[href^="/businesses/"]').first();
+    const cards = page.locator('[href^="/business/"]').first();
     await expect(cards).toBeVisible();
   });
 

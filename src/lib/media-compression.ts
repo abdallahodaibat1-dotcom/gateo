@@ -187,7 +187,10 @@ async function getFFmpeg(): Promise<any> {
       import('@ffmpeg/util'),
     ]);
     const ffmpeg = new FFmpeg();
-    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd';
+    // Serve the ffmpeg core from the local public/ folder instead of the
+    // unpkg CDN: the CDN is slow/unreachable in some networks, which made
+    // large-video compression fail and fall back to the oversized original.
+    const baseURL = `${window.location.origin}/ffmpeg`;
     await ffmpeg.load({
       coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
       wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),

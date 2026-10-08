@@ -536,7 +536,7 @@ async function main() {
             fieldType: def.fieldType,
             appliesTo: def.appliesTo,
             categoryId: category.id,
-            options: def.options as any,
+            options: def.options ? JSON.stringify(def.options) : undefined,
             isRequired: def.isRequired ?? false,
             updatedAt: new Date(),
           },

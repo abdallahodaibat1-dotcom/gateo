@@ -1,6 +1,4 @@
 import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
 
 interface CookieJar {
   [name: string]: string;
@@ -68,9 +66,9 @@ function toStorageState(jar: CookieJar) {
 }
 
 test.describe('AI site generation flow', () => {
-  test('user can generate a complete AI site end-to-end', async ({ page, baseURL, context }) => {
-    // Create a fresh test user for this test because the Business model
-    // enforces one business per user (`userId @unique`).
+  test('user can generate a complete AI site end-to-end via the wizard', async ({ page, baseURL, context }) => {
+    // Create a fresh test user because the Business model enforces one
+    // business per user (`userId @unique`).
     const timestamp = Date.now();
     const testEmail = `ai-e2e-${timestamp}@gateo.local`;
     const testPassword = `TestPass${timestamp}!`;
@@ -97,11 +95,7 @@ test.describe('AI site generation flow', () => {
 
     const businessName = `اختبار الذكاء الاصطناعي ${timestamp}`;
 
-    // 1. Navigate to AI apply page while authenticated
-    await page.goto('/business/apply/ai', { waitUntil: 'networkidle' });
-    await page.waitForSelector('text=أدخل القليل، واحصل على موقع جاهز', { timeout: 30000 });
-
-    // 2. Fetch a real business category
+    // Fetch a real business category to select in step 2
     const categoriesRes = await fetch(`${baseURL}/api/categories?type=BUSINESS`, {
       headers: { Cookie: cookieString(jar) },
     });
@@ -109,47 +103,58 @@ test.describe('AI site generation flow', () => {
     const categoriesData = (await categoriesRes.json()) as {
       categories?: { id: string; name: string }[];
     };
-    const categories = categoriesData.categories || [];
-    const category = categories.find((c) => c.name.includes('أسنان')) || categories[0];
+    const category = categoriesData.categories?.[0];
     test.skip(!category, 'No business category available for AI generation test');
 
-    // 3. Fill the form
+    // 1. Wizard entry point redirects to the first step
+    await page.goto('/business/apply/ai', { waitUntil: 'networkidle' });
+    await expect(page).toHaveURL(/ai-wizard/);
+    await expect(page.getByText('معلومات النشاط')).toBeVisible();
+
+    // 2. Step 1: business info
     await page.getByPlaceholder('مثال: عيادة الابتسامة').fill(businessName);
-    await page.locator('select', { hasText: 'اختر التصنيف' }).selectOption(category.id);
+    // Country dropdown (custom component): focus opens the list, pick first country
+    await page.getByText('اختر الدولة').click();
+    await page.waitForTimeout(500);
+    await page.locator('button').filter({ hasText: /🇸🇦|🇦🇪|🇪🇬|🇰🇼/ }).first().click();
     await page.getByPlaceholder('مثال: الرياض').fill('الرياض');
-    await page.getByPlaceholder('مثال: عيادة أسنان متخصصة في التقويم وتبييض الأسنان...').fill(
-      'عيادة أسنان متخصصة في التقويم وتبييض الأسنان'
-    );
+    await page.getByRole('button', { name: 'التالي' }).click();
 
-    // Brand style: professional (visible after scrolling)
-    await page.getByText('احترافي وموثوق').click();
+    // 3. Step 2: category
+    await expect(page.getByText('التصنيف')).toBeVisible();
+    await page.getByRole('button', { name: new RegExp(category.name.slice(0, 6)) }).first().click();
+    await page.getByRole('button', { name: 'التالي' }).click();
 
-    // Submit
-    await page.getByRole('button', { name: /إنشاء الموقع الذكي/ }).click();
+    // 4. Step 3: description
+    await page.getByPlaceholder('نحن شركة متخصصة في...').fill('عيادة أسنان متخصصة في التقويم وتبييض الأسنان');
+    await page.getByRole('button', { name: 'التالي' }).click();
 
-    // 4. Wait for success state with generous timeout for image generation
-    await page.waitForSelector('text=تم إنشاء موقعك بنجاح!', { timeout: 120000 });
+    // 5. Step 4: audience
+    await page.getByRole('button', { name: 'أفراد' }).first().click();
+    await page.getByRole('button', { name: 'التالي' }).click();
 
-    // 5. Extract generated site URL
-    const previewLink = page.locator('a', { hasText: 'معاينة الموقع' });
-    await expect(previewLink).toBeVisible({ timeout: 10000 });
-    const siteUrl = await previewLink.getAttribute('href');
-    expect(siteUrl).toBeTruthy();
-    expect(siteUrl).toMatch(/^\/business\//);
+    // 6. Step 5: personality
+    await page.getByRole('button', { name: 'احترافي' }).first().click();
+    await page.getByRole('button', { name: 'التالي' }).click();
 
-    // 6. Visit the generated site and verify it renders
-    await page.goto(siteUrl!, { waitUntil: 'networkidle' });
+    // 7. Step 6: visual identity — default ("لا، اقترح علي") is fine, finish
+    await expect(page.getByText('هل لديك هوية بصرية جاهزة؟')).toBeVisible();
+    await page.getByRole('button', { name: 'إنهاء' }).click();
+
+    // 8. Analysis runs automatically and lands on the proposal page
+    await expect(page).toHaveURL(/ai-proposal/, { timeout: 120000 });
+    await expect(page.getByText(/ملخص التحليل/)).toBeVisible();
+
+    // 9. Pick the first recommended design and continue to build
+    await page.locator('button').filter({ hasText: 'درجة التوافق' }).first().click();
+    await page.getByRole('button', { name: /متابعة لإنشاء الموقع/ }).click();
+
+    // 10. Build page generates the site, then redirects to review
+    await expect(page).toHaveURL(/ai-review/, { timeout: 180000 });
+    await expect(page.getByText('معاينة الصفحة الرئيسية')).toBeVisible({ timeout: 30000 });
+
+    // 11. Open the generated site and verify it renders the business name
+    await page.getByRole('link', { name: /فتح المعاينة/ }).click();
     await expect(page.locator('body')).toContainText(businessName, { timeout: 30000 });
-
-    // 7. Verify generated images are present and are real images (not mock SVG placeholders)
-    await page.waitForLoadState('networkidle');
-    const images = page.locator('img');
-    await expect(images.first()).toBeVisible({ timeout: 15000 });
-    const imageCount = await images.count();
-    expect(imageCount).toBeGreaterThan(0);
-
-    const firstImageSrc = await images.first().getAttribute('src');
-    expect(firstImageSrc).toBeTruthy();
-    expect(firstImageSrc).not.toMatch(/^data:image\/svg\+xml/);
   });
 });

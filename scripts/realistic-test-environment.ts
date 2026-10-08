@@ -7,6 +7,9 @@ const prisma = new PrismaClient({ log: ['warn', 'error'] });
 const TEST_EMAIL_DOMAIN = 'realistic.gateo.com';
 const PASSWORD_HASH = bcrypt.hashSync('demo123', 10);
 
+// MySQL-specific statements that SQLite does not support
+const IS_SQLITE = (process.env.DATABASE_URL || '').startsWith('file:');
+
 // ─── Cleanup previous realistic test data ───
 async function cleanupRealisticData() {
   console.log('🧹 Cleaning previous realistic test data...');
@@ -45,6 +48,7 @@ async function cleanupRealisticData() {
     `SET FOREIGN_KEY_CHECKS = 1`,
   ];
   for (const q of queries) {
+    if (IS_SQLITE && q.startsWith('SET ')) continue; // SQLite does not support SET FOREIGN_KEY_CHECKS
     try {
       await prisma.$executeRawUnsafe(q);
     } catch (e: any) {
@@ -166,7 +170,7 @@ async function generateUsers() {
     }));
 
   if (profileBatch.length) {
-    await prisma.profile.createMany({ data: profileBatch as any, skipDuplicates: true });
+    await prisma.profile.createMany({ data: profileBatch as any });
   }
 
   console.log(`✅ Created ${created.length} users`);
@@ -280,7 +284,7 @@ async function generateBusinesses(users: any[], categories: any[], categoryMap: 
       subcategoryId: businessSubcategoryMap.get(biz.slug)!,
     }));
   if (businessSubcategoryRecords.length) {
-    await prisma.businessSubcategory.createMany({ data: businessSubcategoryRecords, skipDuplicates: true });
+    await prisma.businessSubcategory.createMany({ data: businessSubcategoryRecords });
   }
 
   // Create themes & pages for businesses
@@ -318,7 +322,6 @@ async function generateBusinesses(users: any[], categories: any[], categoryMap: 
           { businessId: biz.id, slug: 'about', title: 'من نحن', isHomePage: false, isVisible: true, sortOrder: 10, content: faker.lorem.paragraph() },
           { businessId: biz.id, slug: 'contact', title: 'تواصل معنا', isHomePage: false, isVisible: true, sortOrder: 20 },
         ],
-        skipDuplicates: true,
       });
     } catch (e: any) {
       console.warn('Theme/page error:', e.message);
@@ -367,7 +370,7 @@ async function generateCatalog(businesses: any[]) {
       });
     }
 
-    await prisma.product.createMany({ data: productInputs, skipDuplicates: true });
+    await prisma.product.createMany({ data: productInputs });
     products = await prisma.product.findMany({ where: { name: { startsWith: 'RT-' } } });
 
     // Create marketplace listings
@@ -378,7 +381,7 @@ async function generateCatalog(businesses: any[]) {
         category: p.category,
         featured: Math.random() > 0.85,
       }));
-      await prisma.marketplaceListing.createMany({ data: listings, skipDuplicates: true });
+      await prisma.marketplaceListing.createMany({ data: listings });
     }
     console.log(`✅ Created ${products.length} products`);
   } else {
@@ -408,7 +411,7 @@ async function generateCatalog(businesses: any[]) {
       });
     }
 
-    await prisma.service.createMany({ data: serviceInputs, skipDuplicates: true });
+    await prisma.service.createMany({ data: serviceInputs });
     services = await prisma.service.findMany({ where: { name: { startsWith: 'RT-' } } });
     console.log(`✅ Created ${services.length} services`);
   } else {
@@ -538,7 +541,6 @@ async function seedShowcaseSpaBusiness(categories: any[], categoryMap: Map<strin
   if (category.Subcategory?.length) {
     await prisma.businessSubcategory.createMany({
       data: { businessId: business.id, subcategoryId: category.Subcategory[0].id },
-      skipDuplicates: true,
     });
   }
 
@@ -578,7 +580,6 @@ async function seedShowcaseSpaBusiness(categories: any[], categoryMap: Map<strin
         category: p.category,
         featured: false,
       })),
-      skipDuplicates: true,
     });
   }
 
@@ -664,7 +665,6 @@ async function seedShowcaseSpaBusiness(categories: any[], categoryMap: Map<strin
       { businessId: business.id, slug: 'about', title: 'من نحن', isHomePage: false, isVisible: true, sortOrder: 10, content: businessPayload.description },
       { businessId: business.id, slug: 'contact', title: 'تواصل معنا', isHomePage: false, isVisible: true, sortOrder: 20 },
     ],
-    skipDuplicates: true,
   });
 
   console.log(`✅ Seeded showcase spa business: ${business.slug} (${business.id})`);
@@ -704,7 +704,7 @@ async function generateSocial(users: any[], businesses: any[]) {
     });
   }
 
-  await prisma.post.createMany({ data: postInputs, skipDuplicates: true });
+  await prisma.post.createMany({ data: postInputs });
   const posts = await prisma.post.findMany({ where: { userId: { in: users.map((u) => u.id) } } });
   console.log(`✅ Created ${posts.length} posts/reels`);
 
@@ -719,7 +719,7 @@ async function generateSocial(users: any[], businesses: any[]) {
     likeSet.add(key);
     likeInputs.push({ userId: user.id, postId: post.id });
   }
-  await prisma.like.createMany({ data: likeInputs, skipDuplicates: true });
+  await prisma.like.createMany({ data: likeInputs });
   console.log(`✅ Created ${likeInputs.length} likes`);
 
   // Comments
@@ -734,7 +734,7 @@ async function generateSocial(users: any[], businesses: any[]) {
       createdAt: new Date(Date.now() - rand(1, 30) * 24 * 60 * 60 * 1000),
     });
   }
-  await prisma.comment.createMany({ data: commentInputs, skipDuplicates: true });
+  await prisma.comment.createMany({ data: commentInputs });
   console.log(`✅ Created ${commentInputs.length} comments`);
 
   // Saved posts
@@ -748,7 +748,7 @@ async function generateSocial(users: any[], businesses: any[]) {
     savedSet.add(key);
     savedInputs.push({ userId: user.id, postId: post.id });
   }
-  await prisma.savedPosts.createMany({ data: savedInputs, skipDuplicates: true });
+  await prisma.savedPosts.createMany({ data: savedInputs });
   console.log(`✅ Created ${savedInputs.length} saved posts`);
 
   // Follows
@@ -763,7 +763,7 @@ async function generateSocial(users: any[], businesses: any[]) {
     followSet.add(key);
     followInputs.push({ followerId: follower.id, followingId: following.id });
   }
-  await prisma.follow.createMany({ data: followInputs, skipDuplicates: true });
+  await prisma.follow.createMany({ data: followInputs });
   console.log(`✅ Created ${followInputs.length} follows`);
 }
 
@@ -792,7 +792,7 @@ async function generateGroups(users: any[]) {
     });
   }
 
-  await prisma.group.createMany({ data: groupInputs, skipDuplicates: true });
+  await prisma.group.createMany({ data: groupInputs });
   const groups = await prisma.group.findMany({ where: { name: { startsWith: 'RT-' } } });
   console.log(`✅ Created ${groups.length} groups`);
 
@@ -802,14 +802,20 @@ async function generateGroups(users: any[]) {
   for (const group of groups) {
     const admins = sample(users, rand(1, 3));
     for (const u of admins) {
+      const key = `${group.id}:${u.id}`;
+      if (memberSet.has(key)) continue;
+      memberSet.add(key);
       memberInputs.push({ groupId: group.id, userId: u.id, role: 'ADMIN' as group_members_role });
     }
     const members = sample(users, rand(5, 30));
     for (const u of members) {
+      const key = `${group.id}:${u.id}`;
+      if (memberSet.has(key)) continue;
+      memberSet.add(key);
       memberInputs.push({ groupId: group.id, userId: u.id, role: 'MEMBER' as group_members_role });
     }
   }
-  await prisma.groupMember.createMany({ data: memberInputs as any, skipDuplicates: true });
+  await prisma.groupMember.createMany({ data: memberInputs as any });
   console.log(`✅ Created group members`);
 
   // Group posts
@@ -827,7 +833,7 @@ async function generateGroups(users: any[]) {
       createdAt: new Date(Date.now() - rand(1, 60) * 24 * 60 * 60 * 1000),
     });
   }
-  await prisma.groupPosts.createMany({ data: groupPostInputs as any, skipDuplicates: true });
+  await prisma.groupPosts.createMany({ data: groupPostInputs as any });
   console.log(`✅ Created ${groupPostInputs.length} group posts`);
 
   // Group messages
@@ -844,7 +850,7 @@ async function generateGroups(users: any[]) {
       });
     }
   }
-  await prisma.groupMessage.createMany({ data: groupMessageInputs as any, skipDuplicates: true });
+  await prisma.groupMessage.createMany({ data: groupMessageInputs as any });
   console.log(`✅ Created ${groupMessageInputs.length} group messages`);
 }
 
@@ -881,7 +887,7 @@ async function generateMessaging(users: any[]) {
           createdAt: new Date(Date.now() - rand(1, 60) * 24 * 60 * 60 * 1000),
         });
       }
-      await prisma.message.createMany({ data: messageInputs, skipDuplicates: true });
+      await prisma.message.createMany({ data: messageInputs });
     } catch (e: any) {
       console.warn('Conversation error:', e.message);
     }
@@ -918,7 +924,7 @@ async function generateBookings(users: any[], businesses: any[], services: any[]
     });
   }
 
-  await prisma.booking.createMany({ data: bookingInputs as any, skipDuplicates: true });
+  await prisma.booking.createMany({ data: bookingInputs as any });
   console.log(`✅ Created ${bookingInputs.length} bookings`);
 }
 
@@ -1012,7 +1018,7 @@ async function generateReviews(users: any[], businesses: any[]) {
     });
   }
 
-  await prisma.review.createMany({ data: reviewInputs, skipDuplicates: true });
+  await prisma.review.createMany({ data: reviewInputs });
   console.log(`✅ Created ${reviewInputs.length} reviews`);
 }
 

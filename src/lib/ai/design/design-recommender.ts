@@ -1,4 +1,4 @@
-import { WebsiteDesign, getDesignList } from '@/lib/business-design-library';
+import { DesignStyle, WebsiteDesign, getDesignList } from '@/lib/business-design-library';
 import { BusinessAnalysisOutput } from '@/lib/ai/schemas/business-analysis-schema';
 
 export interface DesignRecommendation {
@@ -6,6 +6,29 @@ export interface DesignRecommendation {
   score: number;
   reason: string;
   features: string[];
+}
+
+/** كلمات مفتاحية (عربية وإنجليزية) لكل نمط تصميم لتحليل نمط التصميم المقترح */
+const STYLE_KEYWORDS: Record<DesignStyle, string[]> = {
+  modern: ['عصري', 'حديث', 'modern'],
+  minimal: ['بسيط', 'نظيف', 'minimal', 'clean', 'simple'],
+  corporate: ['احترافي', 'رسمي', 'شركات', 'مؤسسي', 'corporate', 'professional', 'formal'],
+  creative: ['إبداعي', 'ابداعي', 'creative'],
+  elegant: ['فاخر', 'أنيق', 'انيق', 'راقي', 'elegant', 'luxury', 'ultraLuxury'],
+  bold: ['جريء', 'شبابي', 'bold', 'youthful'],
+  warm: ['دافئ', 'warm'],
+  dark: ['داكن', 'تقني', 'dark', 'tech'],
+};
+
+/** تحويل نمط التصميم المقترح (نص حر عربي) إلى نمط معروف من المكتبة */
+function resolveTargetStyle(designStyle: string): DesignStyle | null {
+  const target = designStyle.toLowerCase();
+  for (const [style, keywords] of Object.entries(STYLE_KEYWORDS)) {
+    if (keywords.some((k) => target.includes(k))) {
+      return style as DesignStyle;
+    }
+  }
+  return null;
 }
 
 export function recommendDesigns(
@@ -16,24 +39,13 @@ export function recommendDesigns(
     (d) => d.websiteType === websiteType || d.websiteType === 'BOTH'
   );
 
+  const targetStyle = resolveTargetStyle(analysis.designStyle);
+
   const scored = designs.map((design) => {
     let score = 0;
     const reasons: string[] = [];
 
-    const styleKeywords: Record<string, string[]> = {
-      modern: ['modern', 'minimal', 'clean'],
-      minimal: ['minimal', 'simple', 'clean'],
-      corporate: ['professional', 'formal', 'corporate'],
-      creative: ['creative', 'bold', 'youthful'],
-      elegant: ['luxury', 'elegant', 'ultraLuxury', 'feminine'],
-      bold: ['bold', 'youthful', 'creative'],
-      warm: ['warm', 'simple', 'modern'],
-      dark: ['tech', 'modern', 'creative'],
-    };
-
-    const targetStyle = analysis.designStyle.toLowerCase();
-    const styleMatches = styleKeywords[design.style || 'modern'] || [];
-    if (styleMatches.some((k) => targetStyle.includes(k) || k.includes(targetStyle))) {
+    if (targetStyle && design.style === targetStyle) {
       score += 25;
       reasons.push('يتناسب مع أسلوب التصميم المطلوب');
     }
@@ -59,7 +71,7 @@ export function recommendDesigns(
       reasons.push('قالب صفحة رئيسية متكامل');
     }
 
-    if (design.style === 'elegant' && targetStyle.includes('فاخر')) {
+    if (design.style === 'elegant' && targetStyle === 'elegant') {
       score += 15;
       reasons.push('ألوان تتناسب مع الطابع الفاخر');
     }
@@ -79,5 +91,16 @@ export function recommendDesigns(
     };
   });
 
-  return scored.sort((a, b) => b.score - a.score).slice(0, 3);
+  const byScore = (a: DesignRecommendation, b: DesignRecommendation) => b.score - a.score;
+
+  // تصاميم النمط المقترح أولاً، ثم تُكمل القائمة بأفضل التصاميم المتبقية إن لزم
+  if (targetStyle) {
+    const matching = scored.filter((s) => s.design.style === targetStyle).sort(byScore);
+    if (matching.length > 0) {
+      const rest = scored.filter((s) => s.design.style !== targetStyle).sort(byScore);
+      return [...matching, ...rest].slice(0, 3);
+    }
+  }
+
+  return scored.sort(byScore).slice(0, 3);
 }

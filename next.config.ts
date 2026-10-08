@@ -20,6 +20,11 @@ const nextConfig: NextConfig = {
         destination: '/business/:slug',
         permanent: true,
       },
+      {
+        source: '/users/upgrade',
+        destination: '/upgrade',
+        permanent: true,
+      },
     ];
   },
   async headers() {

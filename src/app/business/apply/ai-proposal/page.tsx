@@ -150,7 +150,7 @@ export default function AiProposalPage() {
 
         {/* Design Recommendations */}
         <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">أفضل 3 تصاميم موصى بها</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">أفضل 3 تصاميم ضمن نمط «{analysis.designStyle}»</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {recommendations.map((rec, index) => (
               <motion.div

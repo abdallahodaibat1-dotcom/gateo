@@ -43,7 +43,7 @@ export async function POST() {
         type: NotificationType.SYSTEM,
         title: PROMPT_TITLE,
         body: PROMPT_BODY,
-        data: JSON.stringify({ link: '/users/upgrade' }),
+        data: JSON.stringify({ link: '/upgrade' }),
       },
     });
 

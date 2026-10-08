@@ -19,6 +19,7 @@ export default auth((req) => {
     pathname.startsWith('/ads') ||
     pathname.startsWith('/uploads') ||
     pathname.startsWith('/templates') ||
+    pathname.startsWith('/ffmpeg') ||
     pathname === '/admin/login' ||
     pathname.startsWith('/admin/login/') ||
     // Public content pages
