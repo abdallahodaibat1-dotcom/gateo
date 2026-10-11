@@ -20,6 +20,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import type { TemplateBusiness } from './template-types';
+import { GateoFooterBar } from './GateoFooterBar';
 import { TEMPLATE_STYLES } from './beauty-salon-template-styles';
 
 interface BeautySalonTemplateProps {
@@ -892,6 +893,9 @@ export function BeautySalonTemplate({ business }: BeautySalonTemplateProps) {
             <span className="serif-en">
               Designed with <span className="text-[#b76e79]">♥</span> for beauty
             </span>
+          </div>
+          <div className="footer-bottom" style={{ opacity: 0.65 }}>
+            <GateoFooterBar business={business} />
           </div>
         </div>
       </footer>

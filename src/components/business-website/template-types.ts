@@ -46,6 +46,7 @@ export interface TemplateReview {
 
 export interface TemplateBusiness {
   id: string;
+  userId?: string | null;
   name: string;
   slug: string;
   description: string | null;

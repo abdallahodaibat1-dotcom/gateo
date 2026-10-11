@@ -9,6 +9,7 @@ import type { TemplateBusiness } from '@/components/business-website/template-ty
 import { getSectionSettings, getSetting } from '../section-settings';
 import { FASHION_ONE_DEFAULTS } from '@/lib/fashion-one-content';
 import styles from './fashion-one.module.css';
+import { GateoFooterBar } from '../GateoFooterBar';
 
 interface FashionOneLayoutProps {
   business: TemplateBusiness;
@@ -427,6 +428,9 @@ export function FashionOneLayout({ business, children, activeCategory }: Fashion
                   <i className="fab fa-cc-apple-pay" />
                 </div>
               )}
+            </div>
+            <div style={{ opacity: 0.65 }}>
+              <GateoFooterBar business={business} />
             </div>
           </div>
         </div>

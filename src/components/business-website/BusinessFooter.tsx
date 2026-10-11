@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Phone, Mail, MapPin } from 'lucide-react';
+import { GateoFooterBar } from './GateoFooterBar';
 
 interface NavItem {
   id: string;
@@ -12,6 +13,7 @@ interface NavItem {
 interface BusinessFooterProps {
   business: {
     id: string;
+    userId?: string | null;
     name: string;
     slug?: string | null;
     description?: string | null;
@@ -105,6 +107,9 @@ export function BusinessFooter({ business, navItems }: BusinessFooterProps) {
           <p className="text-center text-sm text-white/50">
             © {currentYear} {business.name}. جميع الحقوق محفوظة.
           </p>
+          <div className="text-white/50">
+            <GateoFooterBar business={business} />
+          </div>
         </div>
       </div>
     </footer>

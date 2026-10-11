@@ -36,6 +36,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useCart } from '@/components/CartProvider';
 import { useToast } from '@/components/ui/Toast';
 import { MarketplaceCartDrawer } from '@/components/marketplace/MarketplaceCartDrawer';
+import Navbar from '@/components/Navbar';
 
 interface Listing {
   id: string;
@@ -283,7 +284,8 @@ export default function MarketplacePage() {
   }, [activeGroup]);
 
   return (
-    <div className="min-h-screen bg-slate-50" dir="rtl">
+    <div className="min-h-screen bg-slate-50 pt-20" dir="rtl">
+      <Navbar />
       {/* Floating cart button */}
       <button
         type="button"

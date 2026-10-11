@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import EmptyState from '@/components/ui/EmptyState';
+import Navbar from '@/components/Navbar';
 import { Trophy, Medal } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -27,8 +28,10 @@ export default async function LeaderboardPage() {
   const medalColors = ['text-yellow-500', 'text-muted', 'text-amber-600'];
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8">
-      <div className="max-w-3xl mx-auto px-4">
+    <>
+      <Navbar />
+      <main className="min-h-screen bg-slate-50 pt-24 pb-8">
+        <div className="max-w-3xl mx-auto px-4">
         <div className="text-center mb-8">
           <Trophy className="w-10 h-10 text-primary mx-auto mb-3" />
           <h1 className="text-3xl font-bold text-foreground mb-2">لوحة المتصدرين</h1>
@@ -84,5 +87,6 @@ export default async function LeaderboardPage() {
         </div>
       </div>
     </main>
+    </>
   );
 }

@@ -27,6 +27,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useCart } from '@/components/CartProvider';
 import { useToast } from '@/components/ui/Toast';
 import { MarketplaceCartDrawer } from '@/components/marketplace/MarketplaceCartDrawer';
+import Navbar from '@/components/Navbar';
 
 interface Listing {
   id: string;
@@ -142,7 +143,8 @@ export default function MarketplaceProductPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 pt-8" dir="rtl">
+      <div className="min-h-screen bg-slate-50 pt-20" dir="rtl">
+        <Navbar />
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <ProductDetailSkeleton />
         </div>
@@ -170,7 +172,8 @@ export default function MarketplaceProductPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-slate-50" dir="rtl">
+    <div className="min-h-screen bg-slate-50 pt-20" dir="rtl">
+      <Navbar />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <Link
           href="/marketplace"

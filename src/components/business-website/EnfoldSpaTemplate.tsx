@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { StarRating } from './StarRating';
 import { formatWorkingHours, type TemplateBusiness } from './template-types';
+import { GateoFooterBar } from './GateoFooterBar';
 
 interface EnfoldSpaTemplateProps {
   business: TemplateBusiness;
@@ -650,6 +651,9 @@ export function EnfoldSpaTemplate({ business, page }: EnfoldSpaTemplateProps) {
           </div>
           <div className="border-t border-white/10 pt-6 text-center text-xs text-white/50">
             © {new Date().getFullYear()} {business.name}. جميع الحقوق محفوظة.
+          </div>
+          <div className="text-xs text-white/50">
+            <GateoFooterBar business={business} />
           </div>
         </div>
       </footer>

@@ -24,6 +24,7 @@ import {
   Send,
 } from 'lucide-react';
 import type { TemplateBusiness } from './template-types';
+import { GateoFooterBar } from './GateoFooterBar';
 import { TEMPLATE_STYLES } from './modern-intro-template-styles';
 
 interface ModernIntroTemplateProps {
@@ -827,6 +828,9 @@ export function ModernIntroTemplate({ business }: ModernIntroTemplateProps) {
               © {new Date().getFullYear()} {business.name}. جميع الحقوق محفوظة.
             </span>
             <span>صُمم بعناية ليبدو مميزاً</span>
+          </div>
+          <div className="mi-footer-bottom" style={{ opacity: 0.65 }}>
+            <GateoFooterBar business={business} />
           </div>
         </div>
       </footer>
